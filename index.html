@@ -21,22 +21,22 @@
         <div>
             <div class="p-6 border-b border-[#333333]">
                 <h1 class="text-xl font-bold text-[#00E5FF] tracking-wide">Stamping QC</h1>
-                <p class="text-xs text-gray-400 mt-1">Defect Analysis System</p>
+                <p class="text-xs text-gray-400 mt-1">Haier Defect Dashboard</p>
             </div>
             <nav class="p-4 space-y-2">
                 <a href="#" class="flex items-center gap-3 px-4 py-3 bg-[#252526] text-[#00E5FF] rounded-lg font-medium text-sm">
-                    <span>📊</span> แดชบอร์ดภาพรวม
+                    <span>📊</span> ภาพรวมแดชบอร์ด
                 </a>
-                <a href="#defect-table" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-[#252526] hover:text-white rounded-lg text-sm transition">
-                    <span>📋</span> ข้อมูลของเสีย
+                <a href="#prod-section" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-[#252526] hover:text-white rounded-lg text-sm transition">
+                    <span>🏭</span> ข้อมูลการผลิต (รุ่น/เครื่อง)
                 </a>
-                <a href="#prod-table" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-[#252526] hover:text-white rounded-lg text-sm transition">
-                    <span>🏭</span> ยอดการผลิต
+                <a href="#defect-section" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-[#252526] hover:text-white rounded-lg text-sm transition">
+                    <span>📋</span> อัพโหลดข้อมูลของเสีย
                 </a>
             </nav>
         </div>
         <div class="p-4 border-t border-[#333333] text-xs text-gray-500 text-center">
-            Haier Stamping Line &copy; 2026
+            Stamping Quality System &copy; 2026
         </div>
     </aside>
 
@@ -46,29 +46,41 @@
         <!-- Top Bar with Filters -->
         <header class="bg-[#1E1E1E] border-b border-[#333333] px-6 py-4 flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h2 class="text-lg font-bold text-white">แดชบอร์ดของเสียเครื่องปั๊ม (400T, 200T, 100T)</h2>
-                <p class="text-xs text-gray-400">ระบบติดตามและวิเคราะห์ของเสียแบบเรียลไทม์</p>
+                <h2 class="text-lg font-bold text-white">แดชบอร์ดควบคุมของเสียเครื่องปั๊ม (400T, 200T, 100T)</h2>
+                <p class="text-xs text-gray-400">วิเคราะห์เรทของเสีย ต้นทุนความเสียหาย และพาเรโตปัญหา</p>
             </div>
             
-            <!-- Filters -->
+            <!-- Filter Controls -->
             <div class="flex flex-wrap items-center gap-3">
-                <select id="filterMachine" class="bg-[#252526] border border-[#333333] text-sm rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-[#00E5FF]">
-                    <option value="ALL">เครื่องจักรทั้งหมด</option>
-                    <option value="400T">400T</option>
-                    <option value="200T">200T</option>
-                    <option value="100T">100T</option>
+                <select id="filterDate" class="bg-[#252526] border border-[#333333] text-xs rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-[#00E5FF]">
+                    <option value="ALL">วันที่ทั้งหมด</option>
+                    <option value="2026-08-01">2026-08-01</option>
+                    <option value="2026-08-02">2026-08-02</option>
+                    <option value="2026-08-03">2026-08-03</option>
                 </select>
-                <select id="filterShift" class="bg-[#252526] border border-[#333333] text-sm rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-[#00E5FF]">
+                <select id="filterWeek" class="bg-[#252526] border border-[#333333] text-xs rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-[#00E5FF]">
+                    <option value="ALL">สัปดาห์ทั้งหมด</option>
+                    <option value="W31">สัปดาห์ที่ 31</option>
+                    <option value="W32">สัปดาห์ที่ 32</option>
+                </select>
+                <select id="filterMonth" class="bg-[#252526] border border-[#333333] text-xs rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-[#00E5FF]">
+                    <option value="ALL">เดือนทั้งหมด</option>
+                    <option value="08">สิงหาคม 2026</option>
+                </select>
+                <select id="filterYear" class="bg-[#252526] border border-[#333333] text-xs rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-[#00E5FF]">
+                    <option value="2026">2026</option>
+                </select>
+                <select id="filterShift" class="bg-[#252526] border border-[#333333] text-xs rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-[#00E5FF]">
                     <option value="ALL">กะทั้งหมด</option>
                     <option value="กะเช้า">กะเช้า</option>
                     <option value="กะบ่าย">กะบ่าย</option>
                     <option value="กะดึก">กะดึก</option>
                 </select>
-                <select id="filterPeriod" class="bg-[#252526] border border-[#333333] text-sm rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-[#00E5FF]">
-                    <option value="daily">รายวัน</option>
-                    <option value="weekly">รายสัปดาห์</option>
-                    <option value="monthly">รายเดือน</option>
-                    <option value="yearly">รายปี</option>
+                <select id="filterMachine" class="bg-[#252526] border border-[#333333] text-xs rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-[#00E5FF]">
+                    <option value="ALL">เครื่องจักรทั้งหมด</option>
+                    <option value="400T">400T</option>
+                    <option value="200T">200T</option>
+                    <option value="100T">100T</option>
                 </select>
             </div>
         </header>
@@ -76,100 +88,109 @@
         <!-- Dashboard Body -->
         <div class="p-6 space-y-6">
 
-            <!-- KPI Cards Row -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Total Production -->
-                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg flex items-center justify-between">
+            <!-- KPI Cards Row: Defect Qty, Production Qty, Defect Rate, Financial Value -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Defect Qty -->
+                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-4 shadow-lg flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-gray-400">ยอดผลิตรวม (Actual Qty)</p>
-                        <h3 id="kpiProd" class="text-2xl font-bold text-white mt-1">13,030</h3>
-                        <span class="text-xs text-emerald-400 font-medium mt-1 inline-block">↑ จากแผนการผลิตปกติ</span>
+                        <p class="text-xs font-medium text-gray-400">จำนวนของเสีย (Defect Qty)</p>
+                        <h3 class="text-2xl font-bold text-rose-400 mt-1">154 ชิ้น</h3>
+                        <span class="text-xs text-rose-400 font-medium mt-1 inline-block">⚠️ ควบคุมด่วน</span>
                     </div>
-                    <div class="w-12 h-12 rounded-lg bg-[#252526] flex items-center justify-center text-xl">🏭</div>
+                    <div class="w-10 h-10 rounded-lg bg-[#252526] flex items-center justify-center text-lg">⚠️</div>
                 </div>
 
-                <!-- Total Defect -->
-                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg flex items-center justify-between">
+                <!-- Production Qty -->
+                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-4 shadow-lg flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-gray-400">ของเสียรวม (Defect Qty)</p>
-                        <h3 id="kpiDefect" class="text-2xl font-bold text-rose-400 mt-1">154</h3>
-                        <span class="text-xs text-rose-400 font-medium mt-1 inline-block">⚠️ ต้องควบคุมจุดวิกฤต</span>
+                        <p class="text-xs font-medium text-gray-400">ยอดผลิตรวม (Production Qty)</p>
+                        <h3 class="text-2xl font-bold text-white mt-1">13,030 ชิ้น</h3>
+                        <span class="text-xs text-emerald-400 font-medium mt-1 inline-block">↑ ตามแผนผลิต</span>
                     </div>
-                    <div class="w-12 h-12 rounded-lg bg-[#252526] flex items-center justify-center text-xl">⚠️</div>
+                    <div class="w-10 h-10 rounded-lg bg-[#252526] flex items-center justify-center text-lg">🏭</div>
                 </div>
 
                 <!-- Defect Rate -->
-                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg flex items-center justify-between">
+                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-4 shadow-lg flex items-center justify-between">
                     <div>
                         <p class="text-xs font-medium text-gray-400">อัตราของเสีย (Defect Rate)</p>
-                        <h3 id="kpiRate" class="text-2xl font-bold text-[#00E5FF] mt-1">1.18%</h3>
+                        <h3 class="text-2xl font-bold text-[#00E5FF] mt-1">1.18%</h3>
                         <span class="text-xs text-gray-400 font-medium mt-1 inline-block">เป้าหมาย &lt; 1.50%</span>
                     </div>
-                    <div class="w-12 h-12 rounded-lg bg-[#252526] flex items-center justify-center text-xl">📊</div>
+                    <div class="w-10 h-10 rounded-lg bg-[#252526] flex items-center justify-center text-lg">📊</div>
+                </div>
+
+                <!-- Financial Cost -->
+                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-4 shadow-lg flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-400">มูลค่าความเสียหาย (Cost Value)</p>
+                        <h3 class="text-2xl font-bold text-amber-400 mt-1">฿22,480</h3>
+                        <span class="text-xs text-amber-400 font-medium mt-1 inline-block">💰 ต้นทุนของเสียรวม</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-[#252526] flex items-center justify-center text-lg">💰</div>
                 </div>
             </div>
 
-            <!-- Charts Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Daily Trend Chart -->
-                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg">
-                    <h3 class="text-sm font-semibold text-gray-200 mb-4">📈 กราฟแสดงของเสียในแต่ละวัน (Daily Defect Trend)</h3>
+            <!-- Main Charts Row: Large Defect Rate Trend & Side Machine Breakdown -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Large Main Chart: Defect Rate Trend -->
+                <div class="lg:col-span-2 bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-200 mb-1">📈 กราฟแสดงเปอร์เซ็นต์เรทของเสียรายวัน (Defect Rate Trend Over Time)</h3>
+                        <p class="text-xs text-gray-400 mb-4">แสดงแนวโน้มอัตราของเสียเทียบกับเป้าหมายตามตัวกรอง</p>
+                    </div>
                     <div class="relative h-72">
-                        <canvas id="dailyChart"></canvas>
+                        <canvas id="mainRateChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Pareto Chart -->
+                <!-- Side Chart: Defect & Production by Machine -->
+                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-200 mb-1">⚙️ ของเสียและยอดผลิตแยกตามเครื่องจักร</h3>
+                        <p class="text-xs text-gray-400 mb-4">เปรียบเทียบ 400T, 200T, 100T</p>
+                    </div>
+                    <div class="relative h-72">
+                        <canvas id="machineBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Charts Row: Pareto by Root Cause & Defect by Model -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Pareto Chart by Root Cause -->
                 <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg">
-                    <h3 class="text-sm font-semibold text-gray-200 mb-4">📉 กราฟพาเรโตวิเคราะห์สาเหตุปัญหา (Pareto Analysis)</h3>
+                    <h3 class="text-sm font-semibold text-gray-200 mb-1">📉 กราฟพาเรโตวิเคราะห์ปัญหาของเสีย (Pareto by Root Cause)</h3>
+                    <p class="text-xs text-gray-400 mb-4">จัดลำดับสาเหตุปัญหาที่เกิดขึ้นบ่อยที่สุด</p>
                     <div class="relative h-72">
                         <canvas id="paretoChart"></canvas>
                     </div>
                 </div>
-            </div>
 
-            <!-- Data Tables Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Defect Table -->
-                <div id="defect-table" class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg overflow-hidden">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-semibold text-gray-200">📋 รายการบันทึกของเสียเครื่องปั๊ม</h3>
-                        <span class="text-xs bg-[#252526] text-gray-400 px-2 py-1 rounded">อัพโหลดผ่าน Excel</span>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs text-gray-300">
-                            <thead class="bg-[#252526] text-gray-200 uppercase font-medium">
-                                <tr>
-                                    <th class="px-3 py-2">วันที่</th>
-                                    <th class="px-3 py-2">เครื่อง</th>
-                                    <th class="px-3 py-2">รุ่น</th>
-                                    <th class="px-3 py-2">สาเหตุปัญหา</th>
-                                    <th class="px-3 py-2 text-right">จำนวน</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-[#333333]">
-                                <tr><td class="px-3 py-2">2026-08-01</td><td class="px-3 py-2">400T</td><td class="px-3 py-2">Model-A</td><td class="px-3 py-2">แม่พิมพ์สึกหรอ</td><td class="px-3 py-2 text-right text-rose-400">15</td></tr>
-                                <tr><td class="px-3 py-2">2026-08-01</td><td class="px-3 py-2">200T</td><td class="px-3 py-2">Model-B</td><td class="px-3 py-2">แรงดันสูงเกินไป</td><td class="px-3 py-2 text-right text-rose-400">8</td></tr>
-                                <tr><td class="px-3 py-2">2026-08-02</td><td class="px-3 py-2">100T</td><td class="px-3 py-2">Model-C</td><td class="px-3 py-2">รอยขีดข่วนถาดรอง</td><td class="px-3 py-2 text-right text-rose-400">25</td></tr>
-                                <tr><td class="px-3 py-2">2026-08-02</td><td class="px-3 py-2">400T</td><td class="px-3 py-2">Model-A</td><td class="px-3 py-2">เศษโลหะติดในแม่พิมพ์</td><td class="px-3 py-2 text-right text-rose-400">12</td></tr>
-                                <tr><td class="px-3 py-2">2026-08-03</td><td class="px-3 py-2">200T</td><td class="px-3 py-2">Model-B</td><td class="px-3 py-2">ไม่ได้ปรับ Clearance</td><td class="px-3 py-2 text-right text-rose-400">30</td></tr>
-                            </tbody>
-                        </table>
+                <!-- Defect by Model Chart -->
+                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg">
+                    <h3 class="text-sm font-semibold text-gray-200 mb-1">🏷️ กราฟแสดงจำนวนของเสียแยกตามรุ่นสินค้า (Defect by Model)</h3>
+                    <p class="text-xs text-gray-400 mb-4">ระบุรุ่นสินค้าที่เกิดปัญหาของเสียสูงสุด</p>
+                    <div class="relative h-72">
+                        <canvas id="modelChart"></canvas>
                     </div>
                 </div>
+            </div>
 
-                <!-- Production Plan Table -->
-                <div id="prod-table" class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg overflow-hidden">
+            <!-- Data Input Sheets Preview Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Production Input Sheet Preview -->
+                <div id="prod-section" class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-semibold text-gray-200">🏭 บันทึกแผนการผลิตและยอดผลิตจริง</h3>
-                        <span class="text-xs bg-[#252526] text-gray-400 px-2 py-1 rounded">กรอกรายวัน</span>
+                        <h3 class="text-sm font-semibold text-gray-200">🏭 ชีทกรอกข้อมูลการผลิตตามรุ่นและเครื่องจักร</h3>
+                        <span class="text-xs bg-[#252526] text-[#00E5FF] px-2 py-1 rounded">Production_Input</span>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs text-gray-300">
                             <thead class="bg-[#252526] text-gray-200 uppercase font-medium">
                                 <tr>
                                     <th class="px-3 py-2">วันที่</th>
-                                    <th class="px-3 py-2">เครื่อง</th>
+                                    <th class="px-3 py-2">เครื่องจักร</th>
                                     <th class="px-3 py-2">รุ่นสินค้า</th>
                                     <th class="px-3 py-2 text-right">แผนผลิต</th>
                                     <th class="px-3 py-2 text-right">ผลิตจริง</th>
@@ -179,8 +200,32 @@
                                 <tr><td class="px-3 py-2">2026-08-01</td><td class="px-3 py-2">400T</td><td class="px-3 py-2">Model-A</td><td class="px-3 py-2 text-right">1,200</td><td class="px-3 py-2 text-right text-[#00E5FF]">1,180</td></tr>
                                 <tr><td class="px-3 py-2">2026-08-01</td><td class="px-3 py-2">200T</td><td class="px-3 py-2">Model-B</td><td class="px-3 py-2 text-right">1,500</td><td class="px-3 py-2 text-right text-[#00E5FF]">1,490</td></tr>
                                 <tr><td class="px-3 py-2">2026-08-02</td><td class="px-3 py-2">100T</td><td class="px-3 py-2">Model-C</td><td class="px-3 py-2 text-right">2,000</td><td class="px-3 py-2 text-right text-[#00E5FF]">1,950</td></tr>
-                                <tr><td class="px-3 py-2">2026-08-02</td><td class="px-3 py-2">400T</td><td class="px-3 py-2">Model-A</td><td class="px-3 py-2 text-right">1,200</td><td class="px-3 py-2 text-right text-[#00E5FF]">1,210</td></tr>
-                                <tr><td class="px-3 py-2">2026-08-03</td><td class="px-3 py-2">200T</td><td class="px-3 py-2">Model-B</td><td class="px-3 py-2 text-right">1,500</td><td class="px-3 py-2 text-right text-[#00E5FF]">1,470</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Defect Upload Sheet Preview -->
+                <div id="defect-section" class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-semibold text-gray-200">📋 ชีทอัพโหลดข้อมูลของเสียผ่าน Excel</h3>
+                        <span class="text-xs bg-[#252526] text-rose-400 px-2 py-1 rounded">Defect_Upload</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-gray-300">
+                            <thead class="bg-[#252526] text-gray-200 uppercase font-medium">
+                                <tr>
+                                    <th class="px-3 py-2">วันที่</th>
+                                    <th class="px-3 py-2">เครื่องจักร</th>
+                                    <th class="px-3 py-2">รหัสปัญหา</th>
+                                    <th class="px-3 py-2">สาเหตุปัญหา</th>
+                                    <th class="px-3 py-2 text-right">จำนวน</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-[#333333]">
+                                <tr><td class="px-3 py-2">2026-08-01</td><td class="px-3 py-2">400T</td><td class="px-3 py-2">Burr</td><td class="px-3 py-2">แม่พิมพ์สึกหรอ</td><td class="px-3 py-2 text-right text-rose-400">15</td></tr>
+                                <tr><td class="px-3 py-2">2026-08-01</td><td class="px-3 py-2">200T</td><td class="px-3 py-2">Crack</td><td class="px-3 py-2">แรงดันสูงเกินไป</td><td class="px-3 py-2 text-right text-rose-400">8</td></tr>
+                                <tr><td class="px-3 py-2">2026-08-02</td><td class="px-3 py-2">100T</td><td class="px-3 py-2">Scratch</td><td class="px-3 py-2">รอยขีดข่วนจากถาดรอง</td><td class="px-3 py-2 text-right text-rose-400">25</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -192,18 +237,18 @@
 
     <!-- Chart Script -->
     <script>
-        // Daily Defect Chart
-        const ctxDaily = document.getElementById('dailyChart').getContext('2d');
-        const dailyChart = new Chart(ctxDaily, {
+        // 1. Main Defect Rate Trend Chart
+        const ctxMain = document.getElementById('mainRateChart').getContext('2d');
+        new Chart(ctxMain, {
             type: 'line',
             data: {
-                labels: ['01ส.ค.', '02ส.ค.', '03ส.ค.', '04ส.ค.', '05ส.ค.'],
+                labels: ['01 ส.ค.', '02 ส.ค.', '03 ส.ค.', '04 ส.ค.', '05 ส.ค.'],
                 datasets: [{
-                    label: 'จำนวนของเสีย (ชิ้น)',
-                    data: [23, 37, 44, 40, 49],
+                    label: 'Defect Rate (%)',
+                    data: [1.95, 1.86, 2.20, 1.55, 1.62],
                     borderColor: '#00E5FF',
                     backgroundColor: 'rgba(0, 229, 255, 0.1)',
-                    borderWidth: 2,
+                    borderWidth: 3,
                     fill: true,
                     tension: 0.3
                 }]
@@ -219,16 +264,62 @@
             }
         });
 
-        // Pareto Chart
-        const ctxPareto = document.getElementById('paretoChart').getContext('2d');
-        const paretoChart = new Chart(ctxPareto, {
+        // 2. Machine Comparison Bar Chart
+        const ctxMachine = document.getElementById('machineBarChart').getContext('2d');
+        new Chart(ctxMachine, {
             type: 'bar',
             data: {
-                labels: ['รอยขีดข่วนถาด', 'แม่พิมพ์สึกหรอ', 'แรงดันสูง', 'เศษโลหะติด', 'วัสดุหนาเกิน'],
+                labels: ['400T', '200T', '100T'],
+                datasets: [
+                    { label: 'ของเสีย (ชิ้น)', data: [80, 38, 36], backgroundColor: '#FF5252', borderRadius: 4 },
+                    { label: 'ยอดผลิต (x10 ชิ้น)', data: [450, 420, 433], backgroundColor: '#00ADB5', borderRadius: 4 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#A0A0A0', font: { family: 'Prompt' } } } },
+                scales: {
+                    x: { ticks: { color: '#A0A0A0' }, grid: { color: '#333333' } },
+                    y: { ticks: { color: '#A0A0A0' }, grid: { color: '#333333' } }
+                }
+            }
+        });
+
+        // 3. Pareto Chart by Root Cause
+        const ctxPareto = document.getElementById('paretoChart').getContext('2d');
+        new Chart(ctxPareto, {
+            type: 'bar',
+            data: {
+                labels: ['รอยขีดข่วนถาดรอง', 'แม่พิมพ์สึกหรอ', 'แรงดันสูงเกิน', 'เศษโลหะติดบล็อก', 'วัสดุหนาเกิน'],
                 datasets: [{
                     label: 'จำนวนของเสีย',
                     data: [47, 45, 26, 26, 10],
                     backgroundColor: '#00ADB5',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#A0A0A0', font: { family: 'Prompt' } } } },
+                scales: {
+                    x: { ticks: { color: '#A0A0A0' }, grid: { color: '#333333' } },
+                    y: { ticks: { color: '#A0A0A0' }, grid: { color: '#333333' } }
+                }
+            }
+        });
+
+        // 4. Defect by Model Chart
+        const ctxModel = document.getElementById('modelChart').getContext('2d');
+        new Chart(ctxModel, {
+            type: 'bar',
+            data: {
+                labels: ['Model-A', 'Model-B', 'Model-C', 'Model-D'],
+                datasets: [{
+                    label: 'จำนวนของเสียตามรุ่น',
+                    data: [59, 38, 39, 18],
+                    backgroundColor: '#B388FF',
                     borderRadius: 4
                 }]
             },
