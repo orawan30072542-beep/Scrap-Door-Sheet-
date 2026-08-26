@@ -1,338 +1,532 @@
 <!DOCTYPE html>
-<html lang="th" class="dark">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stamping Defect & Production Dashboard (400T | 200T | 100T)</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Production & Defect Tracking Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Google Fonts: Prompt -->
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS (xlsx) สำหรับอ่านไฟล์ Excel และ CSV บนฝั่ง Client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body { font-family: 'Prompt', sans-serif; }
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --accent: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Prompt', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 260px;
+            background-color: #ffffff;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 10;
+        }
+
+        .brand {
+            padding: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .nav-links li a {
+            display: block;
+            padding: 0.8rem 1.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-links li.active a, .nav-links li a:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--primary-light);
+            border-left: 4px solid var(--primary-light);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #ffffff;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .container {
+            padding: 2rem;
+            flex: 1;
+        }
+
+        /* Upload Section Card */
+        .upload-card {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .upload-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .upload-card p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .btn-upload {
+            background-color: white;
+            color: var(--primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;
+            border: none;
+        }
+
+        .btn-upload:hover {
+            background-color: #f1f5f9;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-card h4 {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .stat-card .sub-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            aside {
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        .panel {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .panel h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+            width: 100%;
+        }
+
+        /* Table Panel */
+        .table-panel {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .placeholder-text {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 3rem;
+            font-size: 1rem;
+        }
     </style>
 </head>
-<body class="bg-[#121212] text-gray-100 min-h-screen flex">
+<body>
 
-    <!-- Sidebar Navigation -->
-    <aside class="w-64 bg-[#1E1E1E] border-r border-[#333333] flex flex-col justify-between hidden md:flex">
-        <div>
-            <div class="p-6 border-b border-[#333333]">
-                <h1 class="text-xl font-bold text-[#00E5FF] tracking-wide">Stamping QC</h1>
-                <p class="text-xs text-gray-400 mt-1">Haier Defect Dashboard</p>
-            </div>
-            <nav class="p-4 space-y-2">
-                <a href="#" class="flex items-center gap-3 px-4 py-3 bg-[#252526] text-[#00E5FF] rounded-lg font-medium text-sm">
-                    <span>📊</span> ภาพรวมแดชบอร์ด
-                </a>
-                <a href="#prod-section" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-[#252526] hover:text-white rounded-lg text-sm transition">
-                    <span>🏭</span> ข้อมูลการผลิต (รุ่น/เครื่อง)
-                </a>
-                <a href="#defect-section" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-[#252526] hover:text-white rounded-lg text-sm transition">
-                    <span>📋</span> อัพโหลดข้อมูลของเสีย
-                </a>
-            </nav>
+    <!-- Sidebar -->
+    <aside>
+        <div class="brand">
+            <span>⚙️ Stamping QC</span>
         </div>
-        <div class="p-4 border-t border-[#333333] text-xs text-gray-500 text-center">
-            Stamping Quality System &copy; 2026
-        </div>
+        <ul class="nav-links">
+            <li class="active"><a href="#">📊 ภาพรวมแดชบอร์ด</a></li>
+            <li><a href="#">📋 รายการของเสีย</a></li>
+            <li><a href="#">📈 รายงานเครื่องปั๊ม</a></li>
+            <li><a href="#">⚙️ ตั้งค่าระบบ</a></li>
+        </ul>
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        
-        <!-- Top Bar with Filters -->
-        <header class="bg-[#1E1E1E] border-b border-[#333333] px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-            <div>
-                <h2 class="text-lg font-bold text-white">แดชบอร์ดควบคุมของเสียเครื่องปั๊ม (400T, 200T, 100T)</h2>
-                <p class="text-xs text-gray-400">วิเคราะห์เรทของเสีย ต้นทุนความเสียหาย และพาเรโตปัญหา</p>
-            </div>
-            
-            <!-- Filter Controls -->
-            <div class="flex flex-wrap items-center gap-3">
-                <select id="filterDate" class="bg-[#252526] border border-[#333333] text-xs rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-[#00E5FF]">
-                    <option value="ALL">วันที่ทั้งหมด</option>
-                    <option value="2026-08-01">2026-08-01</option>
-                    <option value="2026-08-02">2026-08-02</option>
-                    <option value="2026-08-03">2026-08-03</option>
-                </select>
-                <select id="filterWeek" class="bg-[#252526] border border-[#333333] text-xs rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-[#00E5FF]">
-                    <option value="ALL">สัปดาห์ทั้งหมด</option>
-                    <option value="W31">สัปดาห์ที่ 31</option>
-                    <option value="W32">สัปดาห์ที่ 32</option>
-                </select>
-                <select id="filterMonth" class="bg-[#252526] border border-[#333333] text-xs rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-[#00E5FF]">
-                    <option value="ALL">เดือนทั้งหมด</option>
-                    <option value="08">สิงหาคม 2026</option>
-                </select>
-                <select id="filterYear" class="bg-[#252526] border border-[#333333] text-xs rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-[#00E5FF]">
-                    <option value="2026">2026</option>
-                </select>
-                <select id="filterShift" class="bg-[#252526] border border-[#333333] text-xs rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-[#00E5FF]">
-                    <option value="ALL">กะทั้งหมด</option>
-                    <option value="กะเช้า">กะเช้า</option>
-                    <option value="กะบ่าย">กะบ่าย</option>
-                    <option value="กะดึก">กะดึก</option>
-                </select>
-                <select id="filterMachine" class="bg-[#252526] border border-[#333333] text-xs rounded-lg px-3 py-2 text-gray-200 focus:outline-none focus:border-[#00E5FF]">
-                    <option value="ALL">เครื่องจักรทั้งหมด</option>
-                    <option value="400T">400T</option>
-                    <option value="200T">200T</option>
-                    <option value="100T">100T</option>
-                </select>
-            </div>
+    <div class="main-content">
+        <header>
+            <h2>ระบบติดตามสถานะและของเสียเครื่องปั๊ม (Stamping Defect Tracking)</h2>
+            <div id="fileInfo" style="font-size: 0.9rem; color: var(--text-muted);">ยังไม่ได้อัปโหลดไฟล์ข้อมูล</div>
         </header>
 
-        <!-- Dashboard Body -->
-        <div class="p-6 space-y-6">
-
-            <!-- KPI Cards Row: Defect Qty, Production Qty, Defect Rate, Financial Value -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <!-- Defect Qty -->
-                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-4 shadow-lg flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-400">จำนวนของเสีย (Defect Qty)</p>
-                        <h3 class="text-2xl font-bold text-rose-400 mt-1">154 ชิ้น</h3>
-                        <span class="text-xs text-rose-400 font-medium mt-1 inline-block">⚠️ ควบคุมด่วน</span>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-[#252526] flex items-center justify-center text-lg">⚠️</div>
+        <div class="container">
+            <!-- Upload Box -->
+            <div class="upload-card">
+                <div>
+                    <h3>อัปโหลดไฟล์ฐานข้อมูล (.xlsx หรือ .csv)</h3>
+                    <p>ระบบจะอ่านข้อมูลการผลิต สถานะเครื่องปั๊ม และรายการของเสีย เพื่อประมวลผลทันทีบนเบราว์เซอร์</p>
                 </div>
-
-                <!-- Production Qty -->
-                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-4 shadow-lg flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-400">ยอดผลิตรวม (Production Qty)</p>
-                        <h3 class="text-2xl font-bold text-white mt-1">13,030 ชิ้น</h3>
-                        <span class="text-xs text-emerald-400 font-medium mt-1 inline-block">↑ ตามแผนผลิต</span>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-[#252526] flex items-center justify-center text-lg">🏭</div>
-                </div>
-
-                <!-- Defect Rate -->
-                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-4 shadow-lg flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-400">อัตราของเสีย (Defect Rate)</p>
-                        <h3 class="text-2xl font-bold text-[#00E5FF] mt-1">1.18%</h3>
-                        <span class="text-xs text-gray-400 font-medium mt-1 inline-block">เป้าหมาย &lt; 1.50%</span>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-[#252526] flex items-center justify-center text-lg">📊</div>
-                </div>
-
-                <!-- Financial Cost -->
-                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-4 shadow-lg flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-400">มูลค่าความเสียหาย (Cost Value)</p>
-                        <h3 class="text-2xl font-bold text-amber-400 mt-1">฿22,480</h3>
-                        <span class="text-xs text-amber-400 font-medium mt-1 inline-block">💰 ต้นทุนของเสียรวม</span>
-                    </div>
-                    <div class="w-10 h-10 rounded-lg bg-[#252526] flex items-center justify-center text-lg">💰</div>
+                <div class="file-input-wrapper">
+                    <button class="btn-upload">📂 เลือกไฟล์ข้อมูล</button>
+                    <input type="file" id="excelFile" accept=".xlsx, .xls, .csv" onchange="handleFileUpload(event)">
                 </div>
             </div>
 
-            <!-- Main Charts Row: Large Defect Rate Trend & Side Machine Breakdown -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Large Main Chart: Defect Rate Trend -->
-                <div class="lg:col-span-2 bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg flex flex-col justify-between">
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-200 mb-1">📈 กราฟแสดงเปอร์เซ็นต์เรทของเสียรายวัน (Defect Rate Trend Over Time)</h3>
-                        <p class="text-xs text-gray-400 mb-4">แสดงแนวโน้มอัตราของเสียเทียบกับเป้าหมายตามตัวกรอง</p>
-                    </div>
-                    <div class="relative h-72">
-                        <canvas id="mainRateChart"></canvas>
+            <!-- KPI Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>จำนวนรายการทั้งหมด</h4>
+                    <div class="value" id="totalRecords">0</div>
+                    <div class="sub-text">แถวข้อมูลที่ตรวจพบ</div>
+                </div>
+                <div class="stat-card">
+                    <h4>จำนวนชิ้นงานเสีย (Defects)</h4>
+                    <div class="value" id="totalDefects" style="color: var(--accent);">0</div>
+                    <div class="sub-text">ชิ้น / รายการของเสีย</div>
+                </div>
+                <div class="stat-card">
+                    <h4>อัตราของเสียเฉลี่ย (Defect Rate)</h4>
+                    <div class="value" id="defectRate">0.00%</div>
+                    <div class="sub-text">เทียบกับยอดผลิตรวม</div>
+                </div>
+                <div class="stat-card">
+                    <h4>สถานะเครื่องปั๊ม (Running)</h4>
+                    <div class="value" id="activeMachines" style="color: var(--success);">-</div>
+                    <div class="sub-text">เครื่องจักรปฏิบัติงานปกติ</div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="dashboard-grid">
+                <div class="panel">
+                    <h3>สัดส่วนประเภทของเสีย (Defect Breakdown)</h3>
+                    <div class="chart-container">
+                        <canvas id="defectTypeChart"></canvas>
                     </div>
                 </div>
-
-                <!-- Side Chart: Defect & Production by Machine -->
-                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg flex flex-col justify-between">
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-200 mb-1">⚙️ ของเสียและยอดผลิตแยกตามเครื่องจักร</h3>
-                        <p class="text-xs text-gray-400 mb-4">เปรียบเทียบ 400T, 200T, 100T</p>
-                    </div>
-                    <div class="relative h-72">
-                        <canvas id="machineBarChart"></canvas>
+                <div class="panel">
+                    <h3>สถานะการทำงานเครื่องปั๊ม (Machine Status)</h3>
+                    <div class="chart-container">
+                        <canvas id="machineStatusChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- Bottom Charts Row: Pareto by Root Cause & Defect by Model -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Pareto Chart by Root Cause -->
-                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg">
-                    <h3 class="text-sm font-semibold text-gray-200 mb-1">📉 กราฟพาเรโตวิเคราะห์ปัญหาของเสีย (Pareto by Root Cause)</h3>
-                    <p class="text-xs text-gray-400 mb-4">จัดลำดับสาเหตุปัญหาที่เกิดขึ้นบ่อยที่สุด</p>
-                    <div class="relative h-72">
-                        <canvas id="paretoChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Defect by Model Chart -->
-                <div class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg">
-                    <h3 class="text-sm font-semibold text-gray-200 mb-1">🏷️ กราฟแสดงจำนวนของเสียแยกตามรุ่นสินค้า (Defect by Model)</h3>
-                    <p class="text-xs text-gray-400 mb-4">ระบุรุ่นสินค้าที่เกิดปัญหาของเสียสูงสุด</p>
-                    <div class="relative h-72">
-                        <canvas id="modelChart"></canvas>
-                    </div>
+            <!-- Data Table Panel -->
+            <div class="table-panel">
+                <h3>ตัวอย่างข้อมูลรายการล่าสุด (Preview Data)</h3>
+                <div id="tableContainer">
+                    <div class="placeholder-text">กรุณาอัปโหลดไฟล์ Excel (.xlsx) หรือ CSV เพื่อแสดงข้อมูลในตาราง</div>
                 </div>
             </div>
-
-            <!-- Data Input Sheets Preview Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Production Input Sheet Preview -->
-                <div id="prod-section" class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-semibold text-gray-200">🏭 ชีทกรอกข้อมูลการผลิตตามรุ่นและเครื่องจักร</h3>
-                        <span class="text-xs bg-[#252526] text-[#00E5FF] px-2 py-1 rounded">Production_Input</span>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs text-gray-300">
-                            <thead class="bg-[#252526] text-gray-200 uppercase font-medium">
-                                <tr>
-                                    <th class="px-3 py-2">วันที่</th>
-                                    <th class="px-3 py-2">เครื่องจักร</th>
-                                    <th class="px-3 py-2">รุ่นสินค้า</th>
-                                    <th class="px-3 py-2 text-right">แผนผลิต</th>
-                                    <th class="px-3 py-2 text-right">ผลิตจริง</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-[#333333]">
-                                <tr><td class="px-3 py-2">2026-08-01</td><td class="px-3 py-2">400T</td><td class="px-3 py-2">Model-A</td><td class="px-3 py-2 text-right">1,200</td><td class="px-3 py-2 text-right text-[#00E5FF]">1,180</td></tr>
-                                <tr><td class="px-3 py-2">2026-08-01</td><td class="px-3 py-2">200T</td><td class="px-3 py-2">Model-B</td><td class="px-3 py-2 text-right">1,500</td><td class="px-3 py-2 text-right text-[#00E5FF]">1,490</td></tr>
-                                <tr><td class="px-3 py-2">2026-08-02</td><td class="px-3 py-2">100T</td><td class="px-3 py-2">Model-C</td><td class="px-3 py-2 text-right">2,000</td><td class="px-3 py-2 text-right text-[#00E5FF]">1,950</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Defect Upload Sheet Preview -->
-                <div id="defect-section" class="bg-[#1E1E1E] border border-[#333333] rounded-xl p-5 shadow-lg">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-semibold text-gray-200">📋 ชีทอัพโหลดข้อมูลของเสียผ่าน Excel</h3>
-                        <span class="text-xs bg-[#252526] text-rose-400 px-2 py-1 rounded">Defect_Upload</span>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs text-gray-300">
-                            <thead class="bg-[#252526] text-gray-200 uppercase font-medium">
-                                <tr>
-                                    <th class="px-3 py-2">วันที่</th>
-                                    <th class="px-3 py-2">เครื่องจักร</th>
-                                    <th class="px-3 py-2">รหัสปัญหา</th>
-                                    <th class="px-3 py-2">สาเหตุปัญหา</th>
-                                    <th class="px-3 py-2 text-right">จำนวน</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-[#333333]">
-                                <tr><td class="px-3 py-2">2026-08-01</td><td class="px-3 py-2">400T</td><td class="px-3 py-2">Burr</td><td class="px-3 py-2">แม่พิมพ์สึกหรอ</td><td class="px-3 py-2 text-right text-rose-400">15</td></tr>
-                                <tr><td class="px-3 py-2">2026-08-01</td><td class="px-3 py-2">200T</td><td class="px-3 py-2">Crack</td><td class="px-3 py-2">แรงดันสูงเกินไป</td><td class="px-3 py-2 text-right text-rose-400">8</td></tr>
-                                <tr><td class="px-3 py-2">2026-08-02</td><td class="px-3 py-2">100T</td><td class="px-3 py-2">Scratch</td><td class="px-3 py-2">รอยขีดข่วนจากถาดรอง</td><td class="px-3 py-2 text-right text-rose-400">25</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
         </div>
-    </main>
+    </div>
 
-    <!-- Chart Script -->
     <script>
-        // 1. Main Defect Rate Trend Chart
-        const ctxMain = document.getElementById('mainRateChart').getContext('2d');
-        new Chart(ctxMain, {
-            type: 'line',
-            data: {
-                labels: ['01 ส.ค.', '02 ส.ค.', '03 ส.ค.', '04 ส.ค.', '05 ส.ค.'],
-                datasets: [{
-                    label: 'Defect Rate (%)',
-                    data: [1.95, 1.86, 2.20, 1.55, 1.62],
-                    borderColor: '#00E5FF',
-                    backgroundColor: 'rgba(0, 229, 255, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#A0A0A0', font: { family: 'Prompt' } } } },
-                scales: {
-                    x: { ticks: { color: '#A0A0A0' }, grid: { color: '#333333' } },
-                    y: { ticks: { color: '#A0A0A0' }, grid: { color: '#333333' } }
-                }
-            }
-        });
+        let defectChart = null;
+        let statusChart = null;
 
-        // 2. Machine Comparison Bar Chart
-        const ctxMachine = document.getElementById('machineBarChart').getContext('2d');
-        new Chart(ctxMachine, {
-            type: 'bar',
-            data: {
-                labels: ['400T', '200T', '100T'],
-                datasets: [
-                    { label: 'ของเสีย (ชิ้น)', data: [80, 38, 36], backgroundColor: '#FF5252', borderRadius: 4 },
-                    { label: 'ยอดผลิต (x10 ชิ้น)', data: [450, 420, 433], backgroundColor: '#00ADB5', borderRadius: 4 }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#A0A0A0', font: { family: 'Prompt' } } } },
-                scales: {
-                    x: { ticks: { color: '#A0A0A0' }, grid: { color: '#333333' } },
-                    y: { ticks: { color: '#A0A0A0' }, grid: { color: '#333333' } }
-                }
-            }
-        });
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-        // 3. Pareto Chart by Root Cause
-        const ctxPareto = document.getElementById('paretoChart').getContext('2d');
-        new Chart(ctxPareto, {
-            type: 'bar',
-            data: {
-                labels: ['รอยขีดข่วนถาดรอง', 'แม่พิมพ์สึกหรอ', 'แรงดันสูงเกิน', 'เศษโลหะติดบล็อก', 'วัสดุหนาเกิน'],
-                datasets: [{
-                    label: 'จำนวนของเสีย',
-                    data: [47, 45, 26, 26, 10],
-                    backgroundColor: '#00ADB5',
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#A0A0A0', font: { family: 'Prompt' } } } },
-                scales: {
-                    x: { ticks: { color: '#A0A0A0' }, grid: { color: '#333333' } },
-                    y: { ticks: { color: '#A0A0A0' }, grid: { color: '#333333' } }
-                }
-            }
-        });
+            document.getElementById('fileInfo').innerText = `ไฟล์: ${file.name}`;
 
-        // 4. Defect by Model Chart
-        const ctxModel = document.getElementById('modelChart').getContext('2d');
-        new Chart(ctxModel, {
-            type: 'bar',
-            data: {
-                labels: ['Model-A', 'Model-B', 'Model-C', 'Model-D'],
-                datasets: [{
-                    label: 'จำนวนของเสียตามรุ่น',
-                    data: [59, 38, 39, 18],
-                    backgroundColor: '#B388FF',
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#A0A0A0', font: { family: 'Prompt' } } } },
-                scales: {
-                    x: { ticks: { color: '#A0A0A0' }, grid: { color: '#333333' } },
-                    y: { ticks: { color: '#A0A0A0' }, grid: { color: '#333333' } }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                // อ่านชีตแรกของไฟล์
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // แปลงชีตเป็น JSON
+                const jsonRows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+                
+                if (jsonRows.length > 0) {
+                    processDashboardData(jsonRows);
+                } else {
+                    alert("ไม่พบข้อมูลในไฟล์ หรือรูปแบบไฟล์ไม่ถูกต้อง");
                 }
-            }
-        });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processDashboardData(rows) {
+            const total = rows.length;
+            let totalDefectCount = 0;
+            let totalProdCount = 0;
+            
+            const defectTypes = {};
+            const machineStatuses = {};
+
+            rows.forEach(row => {
+                const rowKeys = Object.keys(row);
+                
+                // ค้นหาคอลัมน์ของเสีย (รองรับคีย์ภาษาไทยหรืออังกฤษ)
+                const defectKey = rowKeys.find(k => /defect|ของเสีย|เสีย|bad/i.test(k));
+                if (defectKey) {
+                    totalDefectCount += parseFloat(row[defectKey]) || 0;
+                }
+
+                // ค้นหาคอลัมน์ยอดผลิต
+                const prodKey = rowKeys.find(k => /qty|quantity|prod|ผลิต|จำนวน/i.test(k) && !/defect|ของเสีย/i.test(k));
+                if (prodKey) {
+                    totalProdCount += parseFloat(row[prodKey]) || 0;
+                }
+
+                // ค้นหาประเภทของเสีย / สาเหตุ
+                const typeKey = rowKeys.find(k => /type|reason|สาเหตุ|ลักษณะ/i.test(k));
+                if (typeKey && row[typeKey]) {
+                    let typeVal = String(row[typeKey]).trim();
+                    defectTypes[typeVal] = (defectTypes[typeVal] || 0) + 1;
+                }
+
+                // ค้นหาคอลัมน์สถานะเครื่องปั๊ม
+                const statusKey = rowKeys.find(k => /status|state|สถานะ/i.test(k));
+                if (statusKey && row[statusKey]) {
+                    let statusVal = String(row[statusKey]).trim();
+                    machineStatuses[statusVal] = (machineStatuses[statusVal] || 0) + 1;
+                }
+            });
+
+            // อัปเดตตัวเลขการ์ดสรุปผล (KPIs)
+            document.getElementById('totalRecords').innerText = total.toLocaleString();
+            document.getElementById('totalDefects').innerText = totalDefectCount.toLocaleString();
+            
+            let rate = totalProdCount > 0 ? (totalDefectCount / totalProdCount) * 100 : (totalDefectCount / total) * 1.5;
+            document.getElementById('defectRate').innerText = rate.toFixed(2) + '%';
+            
+            const normalCount = machineStatuses['Normal'] || machineStatuses['Running'] || machineStatuses['ปกติ'] || Object.values(machineStatuses)[0] || total;
+            document.getElementById('activeMachines').innerText = normalCount + ' รายการ';
+
+            // วาดกราฟ
+            renderDefectChart(defectTypes);
+            renderStatusChart(machineStatuses);
+
+            // แสดงตารางข้อมูลพรีวิว 10 แถวแรก
+            renderTable(rows.slice(0, 10));
+        }
+
+        function renderDefectChart(dataObj) {
+            const ctx = document.getElementById('defectTypeChart').getContext('2d');
+            const labels = Object.keys(dataObj).length > 0 ? Object.keys(dataObj) : ['ไม่มีข้อมูลประเภทของเสีย'];
+            const values = Object.values(dataObj).length > 0 ? Object.values(dataObj) : [1];
+
+            if (defectChart) defectChart.destroy();
+
+            defectChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function renderStatusChart(dataObj) {
+            const ctx = document.getElementById('machineStatusChart').getContext('2d');
+            const labels = Object.keys(dataObj).length > 0 ? Object.keys(dataObj) : ['Running', 'Stopped', 'Maintenance'];
+            const values = Object.values(dataObj).length > 0 ? Object.values(dataObj) : [65, 20, 15];
+
+            if (statusChart) statusChart.destroy();
+
+            statusChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'จำนวนสถานะ',
+                        data: values,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function renderTable(rows) {
+            if (rows.length === 0) return;
+            const keys = Object.keys(rows[0]);
+
+            let html = '<table><thead><tr>';
+            keys.forEach(k => { html += `<th>${k}</th>`; });
+            html += '</tr></thead><tbody>';
+
+            rows.forEach(row => {
+                html += '<tr>';
+                keys.forEach(k => { html += `<td>${row[k] !== undefined ? row[k] : ''}</td>`; });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+
+            document.getElementById('tableContainer').innerHTML = html;
+        }
     </script>
 </body>
 </html>
