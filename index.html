@@ -1,141 +1,338 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stamping Defect Dashboard</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        darkBg: '#000000',
-                        darkCard: '#18181b',
-                        darkBorder: '#27272a',
-                        accentCyan: '#22d3ee',
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- SheetJS (xlsx) สำหรับอ่านไฟล์ Excel/CSV -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="FTR Door Line Dashboard - Door A, Door B, Door C" />
+  <title>FTR Door Line Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body class="bg-darkBg text-white font-sans antialiased min-h-screen p-6">
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">F</div>
+        <div>
+          <strong>FTR DOOR</strong>
+          <span>Quality Dashboard</span>
+        </div>
+      </div>
 
-    <!-- Header & Upload Section -->
-    <div class="max-w-7xl mx-auto space-y-6">
-        <header class="flex flex-col md:flex-row justify-between items-start md:items-center bg-darkCard border border-darkBorder p-6 rounded-2xl gap-4">
-            <div>
-                <h1 class="text-2xl font-bold flex items-center gap-3">
-                    <i class="fa-solid fa-industry text-accentCyan"></i> Stamping Defect Dashboard
-                </h1>
-                <p class="text-zinc-400 text-sm mt-1">อัปโหลดไฟล์ Excel (.xlsx) หรือ CSV ของข้อมูลของเสียเครื่องปั๊มเพื่อแสดงผลวิเคราะห์อัตโนมัติ</p>
-            </div>
-            <div>
-                <label for="excelFile" class="cursor-pointer bg-accentCyan text-black font-semibold px-5 py-2.5 rounded-xl hover:bg-cyan-300 transition flex items-center gap-2 text-sm">
-                    <i class="fa-solid fa-upload"></i> เลือกไฟล์ Excel / CSV
-                </label>
-                <input type="file" id="excelFile" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileUpload(event)">
-            </div>
-        </header>
+      <nav class="nav-menu">
+        <button class="nav-btn active" data-page="dashboard">
+          <span>▦</span> Dashboard
+        </button>
+        <button class="nav-btn" data-page="entry">
+          <span>＋</span> Data Entry
+        </button>
+        <button class="nav-btn" data-page="records">
+          <span>≡</span> Records
+        </button>
+      </nav>
 
-        <!-- Summary Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-darkCard border border-darkBorder p-5 rounded-2xl">
-                <p class="text-zinc-400 text-xs">จำนวนรายการทั้งหมด (Rows)</p>
-                <h3 id="totalRows" class="text-2xl font-bold mt-2">0</h3>
-            </div>
-            <div class="bg-darkCard border border-darkBorder p-5 rounded-2xl">
-                <p class="text-zinc-400 text-xs">ของเสียรวมทั้งหมด (Total Defects)</p>
-                <h3 id="totalDefects" class="text-2xl font-bold mt-2 text-red-500">0</h3>
-            </div>
-            <div class="bg-darkCard border border-darkBorder p-5 rounded-2xl">
-                <p class="text-zinc-400 text-xs">เครื่องจักรที่มีปัญหาสูงสุด</p>
-                <h3 id="topMachine" class="text-xl font-bold mt-2 text-accentCyan">-</h3>
-            </div>
-            <div class="bg-darkCard border border-darkBorder p-5 rounded-2xl">
-                <p class="text-zinc-400 text-xs">ประเภทของเสียพบบ่อยสุด</p>
-                <h3 id="topDefectType" class="text-xl font-bold mt-2 text-amber-400">-</h3>
-            </div>
+      <div class="sidebar-footer">
+        <span>Production Lines</span>
+        <div class="line-tags">
+          <span>A</span><span>B</span><span>C</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">PRODUCTION QUALITY PERFORMANCE</p>
+          <h1>FTR Door Line Dashboard</h1>
+          <p class="subtitle">Door A · Door B · Door C | 2 Production Shifts</p>
+        </div>
+        <div class="topbar-actions">
+          <div class="today-box">
+            <span>Today</span>
+            <strong id="todayText"></strong>
+          </div>
+        </div>
+      </header>
+
+      <!-- DASHBOARD -->
+      <section id="dashboard" class="page active">
+        <div class="filter-panel">
+          <div class="filter-group">
+            <label>Date From</label>
+            <input type="date" id="filterFrom">
+          </div>
+          <div class="filter-group">
+            <label>Date To</label>
+            <input type="date" id="filterTo">
+          </div>
+          <div class="filter-group">
+            <label>Line</label>
+            <select id="filterLine">
+              <option value="ALL">All Lines</option>
+              <option value="Door A">Door A</option>
+              <option value="Door B">Door B</option>
+              <option value="Door C">Door C</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Shift</label>
+            <select id="filterShift">
+              <option value="ALL">All Shifts</option>
+              <option value="A">Shift A</option>
+              <option value="B">Shift B</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Model</label>
+            <select id="filterModel">
+              <option value="ALL">All Models</option>
+            </select>
+          </div>
+          <button class="btn secondary" id="resetFilters">Reset</button>
         </div>
 
-        <!-- Data Table Section -->
-        <div class="bg-darkCard border border-darkBorder rounded-2xl p-6 overflow-hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h4 class="font-semibold text-base">รายละเอียดข้อมูลของเสีย (Data Preview)</h4>
-                <span id="fileNameDisplay" class="text-xs text-zinc-500">ยังไม่ได้อัปโหลดไฟล์</span>
+        <div class="kpi-grid">
+          <article class="kpi-card">
+            <div class="kpi-head">
+              <span>Total Production</span>
+              <span class="kpi-icon">▥</span>
             </div>
-            <div class="overflow-x-auto max-h-[500px]">
-                <table id="dataTable" class="w-full text-left text-xs text-zinc-300">
-                    <thead id="tableHeader" class="bg-zinc-900 sticky top-0 border-b border-darkBorder text-zinc-400">
-                        <!-- โหลดหัวตารางอัตโนมัติ -->
-                    </thead>
-                    <tbody id="tableBody" class="divide-y divide-zinc-800">
-                        <tr>
-                            <td colspan="100" class="text-center py-10 text-zinc-500">
-                                กรุณาอัปโหลดไฟล์ข้อมูล Excel หรือ CSV เพื่อเริ่มต้นใช้งาน
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <strong id="kpiProduction">0</strong>
+            <small>pcs</small>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-head">
+              <span>Total Defect</span>
+              <span class="kpi-icon">!</span>
             </div>
+            <strong id="kpiDefect">0</strong>
+            <small>pcs</small>
+          </article>
+
+          <article class="kpi-card primary">
+            <div class="kpi-head">
+              <span>FTR Defect Rate</span>
+              <span class="kpi-icon">%</span>
+            </div>
+            <strong id="kpiFtr">0.00%</strong>
+            <small>Defect ÷ Production × 100</small>
+          </article>
+
+          <article class="kpi-card">
+            <div class="kpi-head">
+              <span>Target Status</span>
+              <span class="kpi-icon">◎</span>
+            </div>
+            <strong id="kpiStatus" class="status-good">PASS</strong>
+            <small>Target ≤ <span id="targetText">5.00%</span></small>
+          </article>
         </div>
-    </div>
 
-    <!-- Script สำหรับประมวลผลไฟล์ Excel/CSV -->
-    <script>
-        function handleFileUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        <div class="chart-grid top">
+          <article class="panel wide">
+            <div class="panel-head">
+              <div>
+                <span class="section-label">DAILY PERFORMANCE</span>
+                <h2>Daily FTR Trend</h2>
+              </div>
+              <span class="legend-target">Target ≤ <b id="trendTargetText">5.00%</b></span>
+            </div>
+            <div class="chart-wrap large">
+              <canvas id="trendChart"></canvas>
+            </div>
+          </article>
 
-            document.getElementById('fileNameDisplay').innerText = `ไฟล์: ${file.name}`;
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <span class="section-label">LINE COMPARISON</span>
+                <h2>FTR by Line</h2>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="lineChart"></canvas>
+            </div>
+          </article>
+        </div>
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
+        <div class="chart-grid">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <span class="section-label">PARETO</span>
+                <h2>Top Defect</h2>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="defectChart"></canvas>
+            </div>
+          </article>
 
-                // ดึงข้อมูลจากชีตแรก
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                
-                // แปลงเป็น JSON
-                const jsonRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                
-                if (jsonRows.length === 0) return;
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <span class="section-label">SHIFT PERFORMANCE</span>
+                <h2>Shift A vs Shift B</h2>
+              </div>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="shiftChart"></canvas>
+            </div>
+          </article>
 
-                const headers = jsonRows[0];
-                const rows = jsonRows.slice(1).filter(row => row.length > 0);
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <span class="section-label">SUMMARY</span>
+                <h2>Production by Line</h2>
+              </div>
+            </div>
+            <div class="line-summary" id="lineSummary"></div>
+          </article>
+        </div>
+      </section>
 
-                renderDashboard(headers, rows);
-            };
-            reader.readAsArrayBuffer(file);
-        }
+      <!-- DATA ENTRY -->
+      <section id="entry" class="page">
+        <div class="page-title-row">
+          <div>
+            <p class="eyebrow">DAILY INPUT</p>
+            <h2>Daily Production & Defect Entry</h2>
+            <p>กรอกข้อมูลยอดผลิตและข้อบกพร่องรายวันของแต่ละ Line / Shift</p>
+          </div>
+        </div>
 
-        function renderDashboard(headers, rows) {
-            // อัปเดตสถิติตัวเลขเบื้องต้น
-            document.getElementById('totalRows').innerText = rows.length.toLocaleString();
+        <form id="entryForm" class="entry-card">
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Date *</label>
+              <input type="date" id="entryDate" required>
+            </div>
 
-            // แสดงผลตาราง
-            const headerHtml = `<tr>${headers.map(h => `<th class="p-3">${h}</th>`).join('')}</tr>`;
-            document.getElementById('tableHeader').innerHTML = headerHtml;
+            <div class="form-field">
+              <label>Shift *</label>
+              <select id="entryShift" required>
+                <option value="A">Shift A</option>
+                <option value="B">Shift B</option>
+              </select>
+            </div>
 
-            const bodyHtml = rows.slice(0, 100).map(row => {
-                return `<tr class="hover:bg-zinc-800/50">${headers.map((_, i) => `<td class="p-3">${row[i] !== undefined ? row[i] : ''}</td>`).join('')}</tr>`;
-            }).join('');
+            <div class="form-field">
+              <label>Line *</label>
+              <select id="entryLine" required>
+                <option value="Door A">Door A</option>
+                <option value="Door B">Door B</option>
+                <option value="Door C">Door C</option>
+              </select>
+            </div>
 
-            document.getElementById('tableBody').innerHTML = bodyHtml || `<tr><td colspan="${headers.length}" class="text-center py-6 text-zinc-500">ไม่พบข้อมูลในไฟล์</td></tr>`;
+            <div class="form-field">
+              <label>Model *</label>
+              <input type="text" id="entryModel" placeholder="e.g. TM19, FUF18S" required>
+            </div>
 
-            // ตัวอย่างจำลองการดึงค่าสรุป (สามารถปรับเปลี่ยนชื่อคอลัมน์ให้ตรงกับไฟล์จริงของคุณได้ เช่น 'Machine', 'Defect')
-            document.getElementById('totalDefects').innerText = rows.length * 3; // ตัวอย่างคำนวณจำลอง
-            document.getElementById('topMachine').innerText = "Press Line 02";
-            document.getElementById('topDefectType').innerText = "Surface Scratch";
-        }
-    </script>
+            <div class="form-field">
+              <label>Production Qty *</label>
+              <input type="number" id="entryProduction" min="0" step="1" placeholder="0" required>
+            </div>
+
+            <div class="form-field">
+              <label>Defect Name *</label>
+              <input type="text" id="entryDefectName" list="defectList" placeholder="Select or type defect" required>
+              <datalist id="defectList">
+                <option value="Foam Leak Display">
+                <option value="Magnet Not Attract">
+                <option value="Foam Leak Cover Water">
+                <option value="Foam Leak Door Cap">
+                <option value="Inner Door Swell">
+                <option value="Door Sheet Scratch">
+                <option value="Door Dent">
+                <option value="Cap Gap">
+                <option value="Color Peel">
+                <option value="Glue Stain">
+              </datalist>
+            </div>
+
+            <div class="form-field">
+              <label>Defect Qty *</label>
+              <input type="number" id="entryDefectQty" min="0" step="1" placeholder="0" required>
+            </div>
+
+            <div class="form-field span-2">
+              <label>Remark</label>
+              <input type="text" id="entryRemark" placeholder="Optional remark">
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="reset" class="btn secondary">Clear</button>
+            <button type="submit" class="btn primary">Save Record</button>
+          </div>
+        </form>
+
+        <div class="info-note">
+          <strong>หมายเหตุ:</strong>
+          ในเวอร์ชัน GitHub Pages นี้ ข้อมูลจะถูกบันทึกด้วย LocalStorage ของ Browser เครื่องที่ใช้งาน
+          หากต้องการให้หลายเครื่องใช้ฐานข้อมูลเดียวกัน สามารถเชื่อม Supabase / Neon / Firebase เพิ่มภายหลังได้
+        </div>
+      </section>
+
+      <!-- RECORDS -->
+      <section id="records" class="page">
+        <div class="page-title-row">
+          <div>
+            <p class="eyebrow">DATABASE</p>
+            <h2>Production Records</h2>
+            <p>ตรวจสอบ แก้ไข และส่งออกข้อมูลที่บันทึกไว้</p>
+          </div>
+          <div class="record-actions">
+            <button class="btn secondary" id="loadSampleBtn">Load Sample Data</button>
+            <button class="btn secondary" id="exportBtn">Export CSV</button>
+            <button class="btn danger" id="clearAllBtn">Clear All</button>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-meta">
+            <span>Total records</span>
+            <strong id="recordCount">0</strong>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Shift</th>
+                  <th>Line</th>
+                  <th>Model</th>
+                  <th>Production</th>
+                  <th>Defect</th>
+                  <th>Defect Qty</th>
+                  <th>FTR %</th>
+                  <th>Remark</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="recordsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        FTR Door Line Dashboard · Quality Performance Monitoring
+      </footer>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
 </body>
 </html>
