@@ -265,6 +265,31 @@ dialog.entry-dialog::backdrop{
 .stamping-form-actions .buttons{display:flex;gap:8px;flex-wrap:wrap}
 .stamping-help{color:#9db1c9;font-size:12px;line-height:1.6;margin:12px 0}
 @media(max-width:650px){.stamping-head-fields{grid-template-columns:1fr}.stamping-form-actions .field{max-width:none}}
+
+/* Stamping entry: fit within dialog without sideways scrolling */
+#stampingEntry .tablewrap{overflow:visible;max-height:none;width:100%}
+#stampingEntry .stamping-entry-table{min-width:0;width:100%;table-layout:fixed;white-space:normal;border-spacing:0 8px}
+#stampingEntry .stamping-entry-table th,#stampingEntry .stamping-entry-table td{min-width:0;overflow-wrap:anywhere;padding-left:3px;padding-right:3px}
+#stampingEntry .stamping-entry-table th:last-child,#stampingEntry .stamping-entry-table td:last-child{width:46px}
+#stampingEntry .stamping-entry-table input{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;height:42px;background:#0f1e30;color:#e5f1ff;border:1px solid #3a5775;border-radius:8px;padding:8px}
+#stampingEntry .stamping-entry-table input[name="partCode"],#stampingEntry .stamping-entry-table input[name="model"],#stampingEntry .stamping-entry-table input[name="quantity"]{min-width:0}
+#stampingEntry .stamping-entry-table input::placeholder{color:#90a4b9}
+@media(max-width:900px){
+ #stampingEntry .stamping-entry-table thead{display:none}
+ #stampingEntry .stamping-entry-table,#stampingEntry .stamping-entry-table tbody{display:block}
+ #stampingEntry .stamping-entry-table tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px;padding:12px;border:1px solid #344c67;border-radius:12px}
+ #stampingEntry .stamping-entry-table td{display:block;width:auto!important;padding:0}
+ #stampingEntry .stamping-entry-table td::before{display:block;color:#9db5ce;font-size:12px;margin-bottom:5px}
+ #stampingEntry .stamping-entry-table td:nth-child(1)::before{content:"Part Code *"}
+ #stampingEntry .stamping-entry-table td:nth-child(2)::before{content:"Model *"}
+ #stampingEntry .stamping-entry-table td:nth-child(3)::before{content:"จำนวนของเสีย *"}
+ #stampingEntry .stamping-entry-table td:nth-child(4)::before{content:"ปัญหา *"}
+ #stampingEntry .stamping-entry-table td:nth-child(5)::before{content:"สาเหตุ"}
+ #stampingEntry .stamping-entry-table td:nth-child(6)::before{content:"การแก้ไข"}
+ #stampingEntry .stamping-entry-table td:nth-child(7)::before{content:"แผนกที่รับผิดชอบ"}
+ #stampingEntry .stamping-entry-table td:last-child{align-self:end}
+}
+@media(max-width:500px){#stampingEntry .stamping-entry-table tr{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
