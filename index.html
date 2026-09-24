@@ -228,6 +228,25 @@ dialog.entry-dialog::backdrop{
 .panel{
   padding:15px}
 }
+
+/* Stamping analytics */
+#stampingAnalytics[hidden],#generalCharts[hidden]{display:none!important}
+.stamping-layout{display:grid;grid-template-columns:1.65fr 1fr;gap:15px;margin-bottom:16px}
+.stamping-title{margin:6px 0 15px;font-size:21px;letter-spacing:.02em}
+.stamping-title span{color:#80c8ff}
+.machine-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.machine-card{border:1px solid #2c4560;border-radius:13px;background:#0c1b2c;padding:14px}
+.machine-card strong{font-size:18px;color:#eff8ff}
+.machine-card .rate{color:#45dbba;font-size:24px;font-weight:800;margin:8px 0}
+.machine-card .small{font-size:12px;color:#9db5ca;line-height:1.7}
+.chart-note{font-size:12px;color:#8da9c2;margin-top:6px}
+.stamping-legend{display:flex;gap:16px;flex-wrap:wrap;color:#acc2d7;font-size:12px;margin-bottom:8px}
+.stamping-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.stamping-chart{height:275px;display:flex;align-items:center;justify-content:center}
+.stamping-chart svg{width:100%;height:100%;overflow:visible}
+.stamping-empty{color:#91aac2;text-align:center}
+@media(max-width:900px){.stamping-layout{grid-template-columns:1fr}}
+@media(max-width:620px){.machine-list{grid-template-columns:1fr}.stamping-chart{height:230px}}
 </style>
 </head>
 <body>
@@ -268,7 +287,41 @@ dialog.entry-dialog::backdrop{
 </div>
 <div class="metric">
 <small>จำนวนวันที่มีข้อมูล</small><strong id="days">0</strong><em>วัน</em>
-</div></section><section class="grid cols"><div class="panel">
+</div></section><section id="stampingAnalytics" hidden>
+<h2 class="stamping-title">SCRAP STAMPING <span>· วิเคราะห์รายเครื่องจักร</span>
+</h2>
+<div class="machine-list" id="machineCards"></div>
+<div class="stamping-layout">
+<div class="panel">
+<h2>ยอดผลิต · ของเสีย · Scrap Rate รายเครื่อง</h2>
+<div class="stamping-legend">
+<span><i style="background:#248de4"></i>ยอดผลิต</span><span><i style="background:#fa6b85"></i>จำนวนของเสีย</span><span><i style="background:#45dbba"></i>Scrap Rate (%)</span>
+</div>
+<div id="machineChart" class="stamping-chart"></div>
+<div class="chart-note">แท่งยอดผลิตและของเสียใช้แกนซ้าย · เส้นอัตราของเสียใช้แกนขวา</div>
+</div>
+<div class="panel">
+<h2>Pareto · ประเภทปัญหา</h2>
+<div class="stamping-legend">
+<span><i style="background:#fa6b85"></i>จำนวนของเสีย</span><span><i style="background:#ffca72"></i>สะสม (%)</span>
+</div>
+<div id="stampingPareto" class="stamping-chart"></div>
+<div class="chart-note">เรียงจากของเสียมากไปน้อย · อัตราสะสมเทียบกับของเสียทั้งหมด</div>
+</div>
+</div>
+<div class="panel" style="margin-bottom:16px">
+<h2>สรุปตามเครื่องจักร</h2>
+<div class="tablewrap"><table>
+<thead><tr>
+<th>เครื่อง</th>
+<th class="num">ยอดผลิต</th>
+<th class="num">จำนวนของเสีย</th>
+<th class="num">Scrap Rate</th>
+</tr></thead>
+<tbody id="machineRows"></tbody>
+</table></div>
+</div>
+</section><section class="grid cols" id="generalCharts"><div class="panel">
 <h2>แนวโน้มยอดผลิตและของเสีย</h2>
 <div class="legend">
 <span><i class="dot" style="background:#319cf4"></i>ยอดผลิต</span><span><i class="dot" style="background:#ff6c87"></i>ยอดของเสีย</span><span><i class="dot" style="background:#42d7ba"></i>อัตราของเสีย</span>
@@ -288,7 +341,7 @@ dialog.entry-dialog::backdrop{
 <label>วันที่ *</label><input type="date" name="date" required>
 </div>
 <div class="field">
-<label>ไลน์ / พื้นที่ *</label><input name="line" placeholder="Door A / Stamping 1" required>
+<label>ไลน์ / พื้นที่ *</label><input name="line" placeholder="Door A / Stamping 1" required list="stampingMachineOptions">
 </div>
 <div class="field">
 <label>รุ่น</label><input name="model" placeholder="Model">
@@ -311,6 +364,9 @@ dialog.entry-dialog::backdrop{
 <label>หมายเหตุ</label><input name="note" placeholder="รายละเอียดเพิ่มเติม">
 </div>
 <button class="btn primary" type="submit">บันทึกข้อมูล</button>
+<datalist id="stampingMachineOptions"><option value="400T"></option>
+<option value="200T"></option>
+<option value="100T"></option></datalist>
 </form>
 <p class="muted" style="font-size:12px">กรณีวันเดียวมีหลายประเภทของเสีย ให้บันทึกยอดผลิตเพียงแถวเดียว ส่วนแถวประเภทของเสียอื่นใส่ยอดผลิต 0 เพื่อไม่ให้ยอดผลิตซ้ำ</p></dialog><section class="panel"><div class="top">
 <h2>รายละเอียดตามช่วงเวลา</h2>
@@ -341,7 +397,7 @@ dialog.entry-dialog::backdrop{
 <th>จัดการ</th>
 </tr></thead>
 <tbody id="raw"></tbody>
-</table></div></section><p class="foot">ข้อมูลเก็บไว้ในเบราว์เซอร์เครื่องนี้ โปรดส่งออก CSV เพื่อสำรองข้อมูลและนำเข้าเมื่อเปลี่ยนเครื่อง · ไฟล์ CSV ใช้หัวคอลัมน์: page,date,shift,line,model,production,scrap,defect,note</p></main><script>
+</table></div></section><p class="foot">ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้ · ส่งออก CSV เพื่อสำรองหรือย้ายข้อมูลไปอีกเครื่อง</p></main><script>
 const KEY='scrap_dashboard_v1';
 let records=[];
 try{records=JSON.parse(localStorage.getItem(KEY)||'[]');
@@ -371,7 +427,44 @@ pts.push(`${x},${ry}`)});
 s+=`<polyline points="${pts.join(' ')}" fill="none" stroke="#42d7ba" stroke-width="3"/>`;
 pts.forEach(p=>{let [x,y]=p.split(',');
 s+=`<circle cx="${x}" cy="${y}" r="4" fill="#42d7ba"/>`});
-box.innerHTML=s+'</svg>'}function render(){options();
+box.innerHTML=s+'</svg>'}function machineName(value){
+ const found=String(value||'').toUpperCase().replace(/\s+/g,'').match(/(?:400T|200T|100T)/);
+ return found?found[0]:null
+}
+function renderStamping(rows){
+ const names=['400T','200T','100T'];
+ const machines=names.map(name=>({name,production:0,scrap:0}));
+ const byMachine=new Map(machines.map(m=>[m.name,m]));
+ for(const row of rows){const name=machineName(row.line);if(name){let m=byMachine.get(name);m.production+=row.production;m.scrap+=row.scrap}}
+ $('#machineCards').innerHTML=machines.map(m=>`<div class="machine-card"><strong>${m.name}</strong><div class="rate">${rate(m.scrap,m.production).toFixed(2)}%</div><div class="small">ยอดผลิต ${fmt(m.production)} ชิ้น<br>ของเสีย ${fmt(m.scrap)} ชิ้น</div></div>`).join('');
+ $('#machineRows').innerHTML=machines.map(m=>`<tr><td><b>${m.name}</b></td><td class="num">${fmt(m.production)}</td><td class="num">${fmt(m.scrap)}</td><td class="num">${rate(m.scrap,m.production).toFixed(2)}%</td></tr>`).join('');
+ if(!rows.length){$('#machineChart').innerHTML='<span class="stamping-empty">ยังไม่มีข้อมูลเครื่องจักรในช่วงที่เลือก</span>'}
+ else{
+ const W=670,H=275,L=55,R=48,T=24,B=42,iw=W-L-R,ih=H-T-B;
+ const maxQty=Math.max(1,...machines.map(m=>m.production),...machines.map(m=>m.scrap));
+ const maxRate=Math.max(1,...machines.map(m=>rate(m.scrap,m.production)));
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="ยอดผลิต ของเสีย และ Scrap Rate ของ 400T 200T 100T">`;
+ for(let j=0;j<=4;j++){let y=T+ih*j/4;svg+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#2c4058"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#9cb5c9" font-size="11">${fmt(Math.round(maxQty*(4-j)/4))}</text><text x="${W-R+7}" y="${y+4}" fill="#66d9be" font-size="11">${(maxRate*(4-j)/4).toFixed(1)}%</text>`}
+ const points=[];
+ machines.forEach((m,i)=>{let x=L+iw*(i+.5)/3,prodH=ih*m.production/maxQty,scrapH=ih*m.scrap/maxQty,yRate=T+ih-ih*rate(m.scrap,m.production)/maxRate;
+ svg+=`<rect x="${x-44}" y="${T+ih-prodH}" width="29" height="${prodH}" rx="3" fill="#248de4"/><rect x="${x+12}" y="${T+ih-scrapH}" width="29" height="${Math.max(scrapH,1)}" rx="3" fill="#fa6b85"/><text x="${x-30}" y="${Math.max(T+12,T+ih-prodH-6)}" text-anchor="middle" fill="#bed7ec" font-size="11">${fmt(m.production)}</text><text x="${x+27}" y="${Math.max(T+12,T+ih-scrapH-6)}" text-anchor="middle" fill="#ffc3d1" font-size="11">${fmt(m.scrap)}</text><text x="${x}" y="${H-10}" text-anchor="middle" fill="#d6e5f2" font-size="13">${m.name}</text>`;
+ points.push([x,yRate,rate(m.scrap,m.production)])});
+ svg+=`<polyline points="${points.map(p=>p[0]+','+p[1]).join(' ')}" fill="none" stroke="#45dbba" stroke-width="3"/>`;
+ points.forEach(p=>svg+=`<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="#45dbba"/><text x="${p[0]}" y="${Math.max(T+9,p[1]-11)}" text-anchor="middle" fill="#60eccd" font-size="11">${p[2].toFixed(2)}%</text>`);
+ $('#machineChart').innerHTML=svg+'</svg>'
+ }
+ let problem=group(rows,r=>r.defect?.trim()||'ไม่ระบุประเภท').filter(p=>p.scrap>0).sort((a,b)=>b.scrap-a.scrap),total=problem.reduce((n,p)=>n+p.scrap,0);
+ if(!problem.length){$('#stampingPareto').innerHTML='<span class="stamping-empty">ยังไม่มีข้อมูลของเสียในช่วงที่เลือก</span>';return}
+ let top=problem.slice(0,6);if(problem.length>6)top.push({key:'อื่น ๆ',scrap:problem.slice(6).reduce((n,p)=>n+p.scrap,0)});
+ const W=500,H=275,L=45,R=40,T=20,B=72,iw=W-L-R,ih=H-T-B,maxScrap=Math.max(...top.map(p=>p.scrap),1);
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="พาเรโตจำนวนของเสียตามประเภทปัญหาและเปอร์เซ็นต์สะสม">`,sum=0,points=[];
+ [0,25,50,75,100].forEach(n=>{let y=T+ih*(1-n/100);svg+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#2c4058"/><text x="${W-R+5}" y="${y+4}" fill="#ffcf78" font-size="10">${n}%</text>`});
+ top.forEach((p,i)=>{let x=L+iw*(i+.5)/top.length,h=ih*p.scrap/maxScrap;sum+=p.scrap;let y=T+ih-ih*sum/total;points.push([x,y]);svg+=`<rect x="${x-17}" y="${T+ih-h}" width="34" height="${h}" rx="3" fill="#fa6b85"/><text x="${x}" y="${Math.max(T+10,T+ih-h-6)}" text-anchor="middle" fill="#ffd0d8" font-size="10">${fmt(p.scrap)}</text><text transform="translate(${x-6},${H-62}) rotate(35)" fill="#a9bdd1" font-size="10">${esc(p.key.slice(0,16))}</text>`});
+ svg+=`<polyline points="${points.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#ffca72" stroke-width="3"/>`;
+ points.forEach(p=>svg+=`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="#ffca72"/>`);
+ $('#stampingPareto').innerHTML=svg+'</svg>'
+}
+function render(){options();
 let rows=filtered(),p=rows.reduce((a,r)=>a+r.production,0),s=rows.reduce((a,r)=>a+r.scrap,0);
 $('#production').textContent=fmt(p);
 $('#scrap').textContent=fmt(s);
@@ -399,7 +492,7 @@ $('#openEntry').onclick=()=>$('#entryDialog').showModal();
 $('#closeEntry').onclick=()=>$('#entryDialog').close();
 $('#entryDialog').onclick=e=>{if(e.target===$('#entryDialog'))$('#entryDialog').close()};
 $('#entry').onsubmit=e=>{e.preventDefault();
-let x=Object.fromEntries(new FormData(e.target)),production=Number(x.production),scrap=Number(x.scrap);
+let x=Object.fromEntries(new FormData(e.target)),production=Number(x.production),scrap=Number(x.scrap);if(page==='stamping'){let name=machineName(x.line);if(!name){$('#notice').textContent='เลือกเครื่อง 400T, 200T หรือ 100T';return}x.line=name}
 if(!Number.isInteger(production)||!Number.isInteger(scrap)||production<0||scrap<0||scrap>production&&production>0){$('#notice').textContent='ตรวจสอบยอดผลิตและยอดของเสียอีกครั้ง';
 return}records.push({...x,page,production,scrap,id:crypto.randomUUID?.()||String(Date.now()+Math.random())});
 save();
