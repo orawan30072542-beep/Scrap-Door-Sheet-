@@ -1,705 +1,419 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Scrap Analysis Dashboard</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: #081525;
-      color: #e8f1fc;
-      font-family: Arial, "Noto Sans Thai", sans-serif;
-    }
-    .container { max-width: 1350px; margin: auto; padding: 28px; }
-    h1 { margin: 8px 0; font-size: 32px; }
-    h2 { margin: 0 0 18px; font-size: 19px; }
-    .subtitle, .hint { color: #97abc3; }
-    .hint { font-size: 13px; line-height: 1.6; }
-    .header, .section-head {
-      display: flex; justify-content: space-between;
-      align-items: center; gap: 15px; flex-wrap: wrap;
-    }
-    .tabs, .periods, .actions { display: flex; gap: 9px; flex-wrap: wrap; }
-    .tabs { margin: 26px 0 18px; }
-    button, .file-button {
-      border: 1px solid #345574;
-      border-radius: 10px;
-      padding: 10px 15px;
-      background: #152b43;
-      color: white;
-      cursor: pointer;
-      font: inherit;
-    }
-    button:hover, .file-button:hover, button.active {
-      background: #1675bc;
-      border-color: #48b4ff;
-    }
-    .primary { background: #087ecb; }
-    .danger { color: #ff9baa; }
-    .card {
-      background: #102238;
-      border: 1px solid #28425d;
-      border-radius: 17px;
-      padding: 20px;
-      margin-bottom: 16px;
-    }
-    .filters, .form-grid, .metrics, .charts {
-      display: grid; gap: 15px;
-    }
-    .filters { grid-template-columns: repeat(4, 1fr); align-items: end; }
-    .form-grid { grid-template-columns: repeat(4, 1fr); align-items: end; }
-    .metrics { grid-template-columns: repeat(4, 1fr); }
-    .charts { grid-template-columns: 1.6fr 1fr; }
-    label { display: block; color: #afc1d6; font-size: 13px; margin-bottom: 7px; }
-    input, select {
-      width: 100%; min-height: 41px; padding: 9px 11px;
-      border: 1px solid #3b5773;
-      border-radius: 9px;
-      background: #09192b; color: white;
-      font: inherit;
-    }
-    .metric { border-top: 3px solid #309bf1; }
-    .metric:nth-child(2) { border-color: #ff6884; }
-    .metric:nth-child(3) { border-color: #48d3b6; }
-    .metric:nth-child(4) { border-color: #ffc170; }
-    .metric small { color: #aec0d4; }
-    .metric strong { display: block; font-size: 32px; margin: 10px 0 4px; }
-    .metric span { color: #8fa7be; font-size: 12px; }
-    .chart-area { min-height: 260px; display: flex; align-items: center; }
-    .chart-area svg { width: 100%; height: auto; }
-    .legend { color: #afc1d6; font-size: 12px; margin-bottom: 8px; }
-    .legend span { margin-right: 16px; }
-    .dot {
-      display: inline-block; width: 10px; height: 10px;
-      border-radius: 3px; margin-right: 5px;
-    }
-    .bar-row {
-      display: grid; grid-template-columns: 110px 1fr 55px;
-      gap: 10px; align-items: center;
-      margin: 15px 0; font-size: 13px;
-    }
-    .track { background: #263b53; height: 12px; border-radius: 8px; overflow: hidden; }
-    .fill { background: linear-gradient(90deg, #289bfa, #ff6c88); height: 100%; }
-    .table-wrap { overflow: auto; max-height: 420px; }
-    table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 13px; }
-    th, td { padding: 12px; border-bottom: 1px solid #294159; text-align: left; }
-    th { color: #afc1d6; }
-    .num { text-align: right; }
-    #message { color: #60dbb9; min-height: 20px; margin: 12px 0 0; font-size: 13px; }
-    @media (max-width: 900px) {
-      .filters, .form-grid, .metrics { grid-template-columns: repeat(2, 1fr); }
-      .charts { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 540px) {
-      .container { padding: 15px; }
-      .filters, .form-grid { grid-template-columns: 1fr; }
-      .metric strong { font-size: 25px; }
-      .bar-row { grid-template-columns: 85px 1fr 45px; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scrap Analysis Dashboard</title>
+<style>
+:root{
+  font-family:Inter,'Noto Sans Thai',system-ui,sans-serif;
+  color:#dce9fa;
+  background:#081322}
+*{
+  box-sizing:border-box}
+body{
+  margin:0}
+button,input,select{
+  font:inherit}
+button{
+  cursor:pointer}
+.wrap{
+  max-width:1450px;
+  margin:auto;
+  padding:28px}
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap}
+.eyebrow{
+  color:#6bbcff;
+  font-size:12px;
+  letter-spacing:.16em;
+  font-weight:800}
+h1{
+  margin:5px 0;
+  font-size:clamp(25px,3vw,38px)}
+.sub{
+  color:#8ea4be;
+  margin:0}
+.tabs,.periods,.actions{
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap}
+.tabs{
+  margin:28px 0 20px;
+  border-bottom:1px solid #29405d;
+  padding-bottom:16px}
+.btn{
+  border:1px solid #34506f;
+  background:#13283f;
+  color:#dce9fa;
+  padding:10px 15px;
+  border-radius:11px}
+.btn:hover,.btn.active{
+  background:#1767a8;
+  border-color:#49b7ff;
+  color:white}
+.btn.primary{
+  background:#0078c9;
+  border-color:#329ae4}
+.btn.danger{
+  color:#ffb3bd}
+.grid{
+  display:grid;
+  gap:15px}
+.filters{
+  grid-template-columns:repeat(5,minmax(130px,1fr));
+  align-items:end}
+.panel,.metric{
+  background:#101f32;
+  border:1px solid #243b56;
+  border-radius:17px;
+  padding:20px;
+  box-shadow:0 10px 32px #0002}
+.panel h2{
+  font-size:18px;
+  margin:0 0 16px}
+.field label{
+  display:block;
+  color:#9db1c9;
+  font-size:12px;
+  margin-bottom:7px}
+.field input,.field select{
+  background:#0b192b;
+  border:1px solid #334d69;
+  color:#ecf5ff;
+  border-radius:9px;
+  padding:10px;
+  width:100%;
+  min-height:42px}
+.field input:focus,.field select:focus{
+  outline:2px solid #388aca}
+.metrics{
+  grid-template-columns:repeat(4,1fr);
+  margin:17px 0}
+.metric{
+  border-top:3px solid #198ce0}
+.metric:nth-child(2){
+  border-color:#ff657f}
+.metric:nth-child(3){
+  border-color:#42d7ba}
+.metric:nth-child(4){
+  border-color:#ffbd69}
+.metric small{
+  color:#9db1c9}
+.metric strong{
+  display:block;
+  font-size:clamp(24px,2.8vw,36px);
+  margin-top:8px}
+.metric em{
+  font-size:12px;
+  color:#90a5bf;
+  font-style:normal}
+.cols{
+  grid-template-columns:1.6fr 1fr;
+  margin-bottom:16px}
+.chart{
+  height:290px;
+  display:flex;
+  align-items:center;
+  justify-content:center}
+.chart svg{
+  width:100%;
+  height:100%;
+  overflow:visible}
+.muted{
+  color:#8da2bb}
+.legend{
+  display:flex;
+  gap:18px;
+  flex-wrap:wrap;
+  font-size:12px;
+  color:#9fb1c9}
+.dot{
+  display:inline-block;
+  width:10px;
+  height:10px;
+  border-radius:3px;
+  margin-right:5px}
+.barrow{
+  display:grid;
+  grid-template-columns:minmax(90px,1fr) 2fr 60px;
+  gap:10px;
+  align-items:center;
+  margin:13px 0;
+  font-size:13px}
+.track{
+  height:11px;
+  background:#21374e;
+  border-radius:8px;
+  overflow:hidden}
+.fill{
+  height:100%;
+  background:linear-gradient(90deg,#1682d8,#ed6581);
+  border-radius:8px}
+.form{
+  grid-template-columns:repeat(6,minmax(115px,1fr));
+  align-items:end}
+.tablewrap{
+  overflow:auto;
+  max-height:430px}
+table{
+  width:100%;
+  border-collapse:collapse;
+  white-space:nowrap;
+  font-size:13px}
+th,td{
+  text-align:left;
+  border-bottom:1px solid #263b54;
+  padding:11px}
+th{
+  color:#9db5ce;
+  position:sticky;
+  top:0;
+  background:#101f32}
+td.num{
+  text-align:right}
+th.num{
+  text-align:right}
+.foot{
+  margin:18px 0 30px;
+  color:#8da2bb;
+  font-size:12px}
+dialog.entry-dialog{
+  width:min(960px,calc(100% - 24px));
+  max-height:calc(100vh - 36px);
+  overflow:auto;
+  color:#dce9fa;
+  border:1px solid #3e668c;
+  background:#101f32;
+  border-radius:18px;
+  padding:24px;
+  box-shadow:0 25px 80px #0009}
+dialog.entry-dialog::backdrop{
+  background:#04111ddd;
+  backdrop-filter:blur(4px)}
+.dialog-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:18px}
+.dialog-head h2{
+  margin:0}
+#openEntry{
+  margin-left:auto}
+.hidden{
+  display:none!important}
+.notice{
+  color:#80dabf;
+  font-size:12px;
+  min-height:18px;
+  margin-top:10px}
+@media(max-width:1050px){
+  .filters,.form{
+  grid-template-columns:repeat(3,1fr)}
+.cols{
+  grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  .wrap{
+  padding:15px}
+.filters,.form,.metrics{
+  grid-template-columns:repeat(2,minmax(0,1fr))}
+.chart{
+  height:230px}
+.panel{
+  padding:15px}
+}
+</style>
 </head>
 <body>
-  <main class="container">
-    <div class="header">
-      <div>
-        <div class="subtitle">QUALITY / PRODUCTION ANALYTICS</div>
-        <h1>Scrap Analysis Dashboard</h1>
-        <div class="subtitle">วิเคราะห์ของเสียรายวัน รายสัปดาห์ และรายเดือน</div>
-      </div>
-      <div class="actions">
-        <button id="downloadTemplate">ดาวน์โหลด CSV ตัวอย่าง</button>
-        <button id="exportCsv">ส่งออกข้อมูล CSV</button>
-        <label class="file-button primary" style="margin:0">
-          นำเข้า CSV
-          <input id="importCsv" type="file" accept=".csv" hidden>
-        </label>
-      </div>
-    </div>
-
-    <div class="tabs">
-      <button class="page active" data-page="foam">SCRAP DOOR FOAM</button>
-      <button class="page" data-page="stamping">SCRAP STAMPING</button>
-    </div>
-
-    <section class="card">
-      <div class="filters">
-        <div>
-          <label>มุมมอง</label>
-          <div class="periods">
-            <button class="period active" data-period="day">รายวัน</button>
-            <button class="period" data-period="week">รายสัปดาห์</button>
-            <button class="period" data-period="month">รายเดือน</button>
-          </div>
-        </div>
-        <div><label>ตั้งแต่วันที่</label><input id="startDate" type="date"></div>
-        <div><label>ถึงวันที่</label><input id="endDate" type="date"></div>
-        <div>
-          <label>ไลน์ / พื้นที่</label>
-          <select id="lineFilter"><option value="">ทั้งหมด</option></select>
-        </div>
-      </div>
-      <p id="message"></p>
-    </section>
-
-    <section class="metrics">
-      <div class="card metric">
-        <small>ยอดผลิตรวม</small>
-        <strong id="totalProduction">0</strong>
-        <span>ชิ้น</span>
-      </div>
-      <div class="card metric">
-        <small>ยอดของเสียรวม</small>
-        <strong id="totalScrap">0</strong>
-        <span>ชิ้น</span>
-      </div>
-      <div class="card metric">
-        <small>อัตราของเสีย</small>
-        <strong id="scrapRate">0.00%</strong>
-        <span>ของเสีย ÷ ยอดผลิต × 100</span>
-      </div>
-      <div class="card metric">
-        <small>จำนวนวันที่มีข้อมูล</small>
-        <strong id="totalDays">0</strong>
-        <span>วัน</span>
-      </div>
-    </section>
-
-    <section class="charts">
-      <div class="card">
-        <h2>แนวโน้มยอดผลิตและของเสีย</h2>
-        <div class="legend">
-          <span><i class="dot" style="background:#319cf4"></i>ยอดผลิต</span>
-          <span><i class="dot" style="background:#ff6c87"></i>ของเสีย</span>
-          <span><i class="dot" style="background:#48d3b6"></i>อัตราของเสีย</span>
-        </div>
-        <div id="trendChart" class="chart-area"></div>
-      </div>
-      <div class="card">
-        <h2>ประเภทของเสียสูงสุด</h2>
-        <div id="defectChart"></div>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>เพิ่มข้อมูลรายวัน: <span id="currentPage">SCRAP DOOR FOAM</span></h2>
-      <form id="dataForm" class="form-grid">
-        <div><label>วันที่ *</label><input name="date" type="date" required></div>
-        <div><label>กะ</label>
-          <select name="shift">
-            <option value="">ไม่ระบุ</option>
-            <option value="Day">Day</option>
-            <option value="Night">Night</option>
-          </select>
-        </div>
-        <div><label>ไลน์ / พื้นที่ *</label><input name="line" placeholder="Door A / Stamping 1" required></div>
-        <div><label>รุ่น</label><input name="model" placeholder="ชื่อรุ่น"></div>
-        <div><label>ยอดผลิต *</label><input name="production" type="number" min="0" step="1" required></div>
-        <div><label>ยอดของเสีย *</label><input name="scrap" type="number" min="0" step="1" required></div>
-        <div><label>ประเภทของเสีย</label><input name="defect" placeholder="เช่น Foam leak"></div>
-        <div><label>หมายเหตุ</label><input name="note" placeholder="รายละเอียดเพิ่มเติม"></div>
-        <button class="primary" type="submit">บันทึกข้อมูล</button>
-      </form>
-      <p class="hint">
-        หากวันเดียวกันมีของเสียหลายประเภท ให้ใส่ยอดผลิตในแถวแรกเพียงครั้งเดียว
-        และใส่ยอดผลิต 0 ในแถวประเภทของเสียอื่น เพื่อไม่ให้ยอดผลิตรวมซ้ำ
-      </p>
-    </section>
-
-    <section class="card">
-      <div class="section-head">
-        <h2>สรุปตามช่วงเวลา</h2>
-        <span id="recordCount" class="subtitle"></span>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>ช่วงเวลา</th><th>ไลน์ / พื้นที่</th>
-              <th class="num">ยอดผลิต</th><th class="num">ยอดของเสีย</th>
-              <th class="num">อัตราของเสีย</th>
-            </tr>
-          </thead>
-          <tbody id="summaryRows"></tbody>
-        </table>
-      </div>
-
-      <h2 style="margin-top:28px">รายการข้อมูลที่บันทึก</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>วันที่</th><th>กะ</th><th>ไลน์</th><th>รุ่น</th>
-              <th>ประเภทของเสีย</th><th class="num">ผลิต</th>
-              <th class="num">เสีย</th><th>จัดการ</th>
-            </tr>
-          </thead>
-          <tbody id="detailRows"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <p class="hint">
-      ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้ กรุณาส่งออก CSV เพื่อสำรองข้อมูล
-      หรือย้ายไปใช้งานเครื่องอื่น
-    </p>
-  </main>
-
-  <script>
-    const STORAGE_KEY = "scrap-analysis-dashboard-v1";
-    const columns = [
-      "page", "date", "shift", "line", "model",
-      "production", "scrap", "defect", "note"
-    ];
-
-    let records;
-    try {
-      records = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-      if (!Array.isArray(records)) records = [];
-    } catch {
-      records = [];
-    }
-
-    let activePage = "foam";
-    let activePeriod = "day";
-
-    const el = id => document.getElementById(id);
-    const number = value => new Intl.NumberFormat("th-TH").format(value);
-    const percent = (scrap, production) =>
-      production > 0 ? scrap / production * 100 : 0;
-
-    function safe(value) {
-      return String(value ?? "").replace(/[&<>"']/g, char => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;",
-        '"': "&quot;", "'": "&#39;"
-      })[char]);
-    }
-
-    function save() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-    }
-
-    // ใช้สัปดาห์แบบ ISO: เริ่มวันจันทร์
-    function isoWeek(dateText) {
-      const date = new Date(dateText + "T12:00:00Z");
-      const weekday = (date.getUTCDay() + 6) % 7;
-      date.setUTCDate(date.getUTCDate() - weekday + 3);
-
-      const year = date.getUTCFullYear();
-      const firstThursday = new Date(Date.UTC(year, 0, 4));
-      const firstWeekday = (firstThursday.getUTCDay() + 6) % 7;
-      const week = 1 + Math.round(
-        ((date - firstThursday) / 86400000 - 3 + firstWeekday) / 7
-      );
-
-      return `${year}-W${String(week).padStart(2, "0")}`;
-    }
-
-    function periodKey(date) {
-      if (activePeriod === "week") return isoWeek(date);
-      if (activePeriod === "month") return date.slice(0, 7);
-      return date;
-    }
-
-    function getFilteredRecords() {
-      const start = el("startDate").value;
-      const end = el("endDate").value;
-      const line = el("lineFilter").value;
-
-      return records.filter(row =>
-        row.page === activePage &&
-        (!start || row.date >= start) &&
-        (!end || row.date <= end) &&
-        (!line || row.line === line)
-      );
-    }
-
-    function groupBy(rows, keyFunction) {
-      const groups = new Map();
-
-      for (const row of rows) {
-        const key = keyFunction(row);
-        if (!groups.has(key)) {
-          groups.set(key, { key, production: 0, scrap: 0 });
-        }
-        const item = groups.get(key);
-        item.production += Number(row.production);
-        item.scrap += Number(row.scrap);
-      }
-
-      return [...groups.values()];
-    }
-
-    function updateLineFilter() {
-      const select = el("lineFilter");
-      const previous = select.value;
-      const lines = [...new Set(
-        records
-          .filter(row => row.page === activePage)
-          .map(row => row.line)
-          .filter(Boolean)
-      )].sort();
-
-      select.innerHTML = '<option value="">ทั้งหมด</option>' +
-        lines.map(line =>
-          `<option value="${safe(line)}">${safe(line)}</option>`
-        ).join("");
-
-      select.value = lines.includes(previous) ? previous : "";
-    }
-
-    function renderTrend(rows) {
-      const data = groupBy(rows, row => periodKey(row.date))
-        .sort((a, b) => a.key.localeCompare(b.key))
-        .slice(-12);
-
-      if (!data.length) {
-        el("trendChart").innerHTML =
-          '<span class="subtitle">ยังไม่มีข้อมูลในช่วงที่เลือก</span>';
-        return;
-      }
-
-      const width = 700, height = 260;
-      const left = 45, right = 48, top = 20, bottom = 45;
-      const chartWidth = width - left - right;
-      const chartHeight = height - top - bottom;
-      const maxProduction = Math.max(1, ...data.map(x => x.production));
-      const maxRate = Math.max(
-        1, ...data.map(x => percent(x.scrap, x.production))
-      );
-      const step = chartWidth / data.length;
-      const barWidth = Math.min(24, step * 0.22);
-
-      let svg = `<svg viewBox="0 0 ${width} ${height}"
-        role="img" aria-label="กราฟยอดผลิต ของเสีย และอัตราของเสีย">`;
-
-      for (let i = 0; i <= 4; i++) {
-        const y = top + chartHeight * i / 4;
-        svg += `
-          <line x1="${left}" x2="${width - right}"
-            y1="${y}" y2="${y}" stroke="#2b425c"/>
-          <text x="${left - 6}" y="${y + 4}" text-anchor="end"
-            fill="#9fb3ca" font-size="10">
-            ${number(Math.round(maxProduction * (4 - i) / 4))}
-          </text>
-          <text x="${width - right + 5}" y="${y + 4}"
-            fill="#70cbb2" font-size="10">
-            ${(maxRate * (4 - i) / 4).toFixed(1)}%
-          </text>`;
-      }
-
-      const points = [];
-
-      data.forEach((item, i) => {
-        const x = left + step * (i + 0.5);
-        const productionHeight = item.production / maxProduction * chartHeight;
-        const scrapHeight = item.scrap / maxProduction * chartHeight;
-        const rateY = top + chartHeight -
-          percent(item.scrap, item.production) / maxRate * chartHeight;
-
-        svg += `
-          <rect x="${x - barWidth - 2}"
-            y="${top + chartHeight - productionHeight}"
-            width="${barWidth}" height="${productionHeight}"
-            fill="#319cf4" rx="3"/>
-          <rect x="${x + 2}"
-            y="${top + chartHeight - scrapHeight}"
-            width="${barWidth}" height="${Math.max(1, scrapHeight)}"
-            fill="#ff6c87" rx="3"/>
-          <text x="${x}" y="${height - 13}" text-anchor="middle"
-            fill="#a9bad0" font-size="10">
-            ${safe(item.key.slice(5))}
-          </text>`;
-
-        points.push(`${x},${rateY}`);
-      });
-
-      svg += `<polyline points="${points.join(" ")}"
-        fill="none" stroke="#48d3b6" stroke-width="3"/>`;
-
-      for (const point of points) {
-        const [x, y] = point.split(",");
-        svg += `<circle cx="${x}" cy="${y}" r="4" fill="#48d3b6"/>`;
-      }
-
-      el("trendChart").innerHTML = svg + "</svg>";
-    }
-
-    function render() {
-      updateLineFilter();
-      const rows = getFilteredRecords();
-      const production = rows.reduce((sum, row) => sum + row.production, 0);
-      const scrap = rows.reduce((sum, row) => sum + row.scrap, 0);
-
-      el("totalProduction").textContent = number(production);
-      el("totalScrap").textContent = number(scrap);
-      el("scrapRate").textContent = percent(scrap, production).toFixed(2) + "%";
-      el("totalDays").textContent =
-        number(new Set(rows.map(row => row.date)).size);
-      el("recordCount").textContent = number(rows.length) + " รายการ";
-
-      renderTrend(rows);
-
-      const defects = groupBy(
-        rows, row => row.defect || "ไม่ระบุ"
-      ).sort((a, b) => b.scrap - a.scrap).slice(0, 7);
-
-      const maxDefect = Math.max(1, ...defects.map(item => item.scrap));
-      el("defectChart").innerHTML = defects.length
-        ? defects.map(item => `
-          <div class="bar-row">
-            <span>${safe(item.key)}</span>
-            <div class="track">
-              <div class="fill"
-                style="width:${item.scrap / maxDefect * 100}%"></div>
-            </div>
-            <b>${number(item.scrap)}</b>
-          </div>
-        `).join("")
-        : '<p class="subtitle">ยังไม่มีข้อมูลในช่วงที่เลือก</p>';
-
-      const summary = groupBy(
-        rows, row => periodKey(row.date) + "|" + row.line
-      ).sort((a, b) => b.key.localeCompare(a.key));
-
-      el("summaryRows").innerHTML = summary.length
-        ? summary.map(item => {
-          const separator = item.key.indexOf("|");
-          const date = item.key.slice(0, separator);
-          const line = item.key.slice(separator + 1);
-          return `<tr>
-            <td>${safe(date)}</td>
-            <td>${safe(line)}</td>
-            <td class="num">${number(item.production)}</td>
-            <td class="num">${number(item.scrap)}</td>
-            <td class="num">
-              ${percent(item.scrap, item.production).toFixed(2)}%
-            </td>
-          </tr>`;
-        }).join("")
-        : '<tr><td colspan="5">ยังไม่มีข้อมูล</td></tr>';
-
-      el("detailRows").innerHTML = rows.length
-        ? [...rows]
-          .sort((a, b) => b.date.localeCompare(a.date))
-          .slice(0, 200)
-          .map(row => `<tr>
-            <td>${safe(row.date)}</td>
-            <td>${safe(row.shift || "—")}</td>
-            <td>${safe(row.line)}</td>
-            <td>${safe(row.model || "—")}</td>
-            <td>${safe(row.defect || "—")}</td>
-            <td class="num">${number(row.production)}</td>
-            <td class="num">${number(row.scrap)}</td>
-            <td><button class="danger" data-delete="${safe(row.id)}">
-              ลบ
-            </button></td>
-          </tr>`).join("")
-        : '<tr><td colspan="8">ยังไม่มีข้อมูล</td></tr>';
-    }
-
-    document.querySelectorAll(".page").forEach(button => {
-      button.addEventListener("click", () => {
-        activePage = button.dataset.page;
-        document.querySelectorAll(".page").forEach(item =>
-          item.classList.toggle("active", item === button)
-        );
-        el("lineFilter").value = "";
-        el("currentPage").textContent = button.textContent;
-        render();
-      });
-    });
-
-    document.querySelectorAll(".period").forEach(button => {
-      button.addEventListener("click", () => {
-        activePeriod = button.dataset.period;
-        document.querySelectorAll(".period").forEach(item =>
-          item.classList.toggle("active", item === button)
-        );
-        render();
-      });
-    });
-
-    ["startDate", "endDate", "lineFilter"].forEach(id => {
-      el(id).addEventListener("change", render);
-    });
-
-    const form = el("dataForm");
-    form.elements.date.value = new Date().toLocaleDateString("en-CA");
-
-    form.addEventListener("submit", event => {
-      event.preventDefault();
-      const values = Object.fromEntries(new FormData(form));
-      const production = Number(values.production);
-      const scrap = Number(values.scrap);
-
-      if (scrap > production && production > 0) {
-        el("message").textContent =
-          "ยอดของเสียมากกว่ายอดผลิต กรุณาตรวจสอบข้อมูล";
-        return;
-      }
-
-      records.push({
-        ...values,
-        page: activePage,
-        production,
-        scrap,
-        id: crypto.randomUUID()
-      });
-
-      save();
-      form.reset();
-      form.elements.date.value = new Date().toLocaleDateString("en-CA");
-      el("message").textContent = "บันทึกข้อมูลแล้ว";
-      render();
-    });
-
-    el("detailRows").addEventListener("click", event => {
-      const id = event.target.dataset.delete;
-      if (!id || !confirm("ต้องการลบรายการนี้หรือไม่?")) return;
-      records = records.filter(row => row.id !== id);
-      save();
-      render();
-    });
-
-    function csvValue(value) {
-      const text = String(value ?? "");
-      return /[",\r\n]/.test(text)
-        ? '"' + text.replace(/"/g, '""') + '"'
-        : text;
-    }
-
-    function downloadCsv(rows, filename) {
-      const csv = "\uFEFF" + [
-        columns.join(","),
-        ...rows.map(row =>
-          columns.map(column => csvValue(row[column])).join(",")
-        )
-      ].join("\r\n");
-
-      const url = URL.createObjectURL(
-        new Blob([csv], { type: "text/csv;charset=utf-8" })
-      );
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }
-
-    el("exportCsv").addEventListener("click", () => {
-      downloadCsv(records, "scrap-data.csv");
-    });
-
-    el("downloadTemplate").addEventListener("click", () => {
-      downloadCsv([
-        {
-          page: "foam", date: "2026-09-24", shift: "Day",
-          line: "Door A", model: "Example",
-          production: 100, scrap: 2,
-          defect: "Foam leak", note: ""
-        },
-        {
-          page: "stamping", date: "2026-09-24", shift: "Day",
-          line: "Stamping 1", model: "Example",
-          production: 100, scrap: 1,
-          defect: "Scratch", note: ""
-        }
-      ], "scrap-template.csv");
-    });
-
-    function parseCsv(text) {
-      const output = [];
-      let row = [], cell = "", quoted = false;
-      text = text.replace(/^\uFEFF/, "");
-
-      for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-
-        if (quoted) {
-          if (char === '"' && text[i + 1] === '"') {
-            cell += '"';
-            i++;
-          } else if (char === '"') {
-            quoted = false;
-          } else {
-            cell += char;
-          }
-        } else if (char === '"') {
-          quoted = true;
-        } else if (char === ",") {
-          row.push(cell);
-          cell = "";
-        } else if (char === "\n" || char === "\r") {
-          row.push(cell);
-          if (row.some(value => value !== "")) output.push(row);
-          row = [];
-          cell = "";
-          if (char === "\r" && text[i + 1] === "\n") i++;
-        } else {
-          cell += char;
-        }
-      }
-
-      row.push(cell);
-      if (row.some(value => value !== "")) output.push(row);
-      if (quoted) throw new Error("รูปแบบเครื่องหมายคำพูดใน CSV ไม่ถูกต้อง");
-      return output;
-    }
-
-    el("importCsv").addEventListener("change", async event => {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      try {
-        const rows = parseCsv(await file.text());
-        const header = rows.shift().map(value => value.trim().toLowerCase());
-        const missing = columns.filter(column => !header.includes(column));
-
-        if (missing.length) {
-          throw new Error("ขาดคอลัมน์: " + missing.join(", "));
-        }
-
-        const imported = rows.map((values, index) => {
-          const row = Object.fromEntries(
-            columns.map(column => [
-              column, values[header.indexOf(column)] ?? ""
-            ])
-          );
-
-          row.production = Number(row.production);
-          row.scrap = Number(row.scrap);
-
-          if (
-            !["foam", "stamping"].includes(row.page) ||
-            !/^\d{4}-\d{2}-\d{2}$/.test(row.date) ||
-            !row.line ||
-            !Number.isInteger(row.production) ||
-            !Number.isInteger(row.scrap) ||
-            row.production < 0 ||
-            row.scrap < 0
-          ) {
-            throw new Error(`ข้อมูลแถวที่ ${index + 2} ไม่ถูกต้อง`);
-          }
-
-          row.id = crypto.randomUUID();
-          return row;
-        });
-
-        records.push(...imported);
-        save();
-        el("message").textContent =
-          `นำเข้าสำเร็จ ${imported.length} รายการ`;
-        render();
-      } catch (error) {
-        el("message").textContent = "นำเข้าไม่สำเร็จ: " + error.message;
-      }
-
-      event.target.value = "";
-    });
-
-    render();
-  </script>
+<main class="wrap"><header class="top"><div>
+<div class="eyebrow">QUALITY / PRODUCTION ANALYTICS</div>
+<h1>Scrap Analysis Dashboard</h1>
+<p class="sub">วิเคราะห์ยอดผลิต ยอดของเสีย และอัตราของเสียตามช่วงเวลา</p>
+</div>
+<div class="actions">
+<button class="btn" id="template">ดาวน์โหลด CSV ตัวอย่าง</button><button class="btn" id="export">ส่งออกข้อมูล CSV</button><label class="btn primary">นำเข้า CSV<input id="import" type="file" accept=".csv,text/csv" hidden></label>
+</div></header><nav class="tabs"><button class="btn active" data-page="foam">SCRAP DOOR FOAM</button><button class="btn" data-page="stamping">SCRAP STAMPING</button><button class="btn primary" id="openEntry" type="button">+ เพิ่มข้อมูลรายวัน</button></nav><section class="panel"><div class="grid filters">
+<div class="field">
+<label>มุมมอง</label><div class="periods">
+<button class="btn active" data-period="day">รายวัน</button><button class="btn" data-period="week">รายสัปดาห์</button><button class="btn" data-period="month">รายเดือน</button>
+</div>
+</div>
+<div class="field">
+<label>ตั้งแต่วันที่</label><input type="date" id="start">
+</div>
+<div class="field">
+<label>ถึงวันที่</label><input type="date" id="end">
+</div>
+<div class="field">
+<label>ไลน์ / พื้นที่</label><select id="line"><option value="">ทั้งหมด</option></select>
+</div>
+<div class="field">
+<label>รุ่น</label><select id="model"><option value="">ทั้งหมด</option></select>
+</div>
+</div>
+<div class="notice" id="notice"></div></section><section class="grid metrics"><div class="metric">
+<small>ยอดผลิตรวม</small><strong id="production">0</strong><em>ชิ้น</em>
+</div>
+<div class="metric">
+<small>ยอดของเสียรวม</small><strong id="scrap">0</strong><em>ชิ้น</em>
+</div>
+<div class="metric">
+<small>อัตราของเสีย</small><strong id="rate">0.00%</strong><em>ของเสีย ÷ ยอดผลิต × 100</em>
+</div>
+<div class="metric">
+<small>จำนวนวันที่มีข้อมูล</small><strong id="days">0</strong><em>วัน</em>
+</div></section><section class="grid cols"><div class="panel">
+<h2>แนวโน้มยอดผลิตและของเสีย</h2>
+<div class="legend">
+<span><i class="dot" style="background:#319cf4"></i>ยอดผลิต</span><span><i class="dot" style="background:#ff6c87"></i>ยอดของเสีย</span><span><i class="dot" style="background:#42d7ba"></i>อัตราของเสีย</span>
+</div>
+<div class="chart" id="trend"></div>
+</div>
+<div class="panel">
+<h2>ประเภทของเสียสูงสุด</h2>
+<div id="pareto"></div>
+</div></section><dialog id="entryDialog" class="entry-dialog"><div class="dialog-head">
+<h2>เพิ่มข้อมูลรายวัน · <span id="formPage">SCRAP DOOR FOAM</span>
+</h2>
+<button class="btn" id="closeEntry" type="button" aria-label="ปิดหน้าต่าง">✕ ปิด</button>
+</div>
+<form id="entry" class="grid form">
+<div class="field">
+<label>วันที่ *</label><input type="date" name="date" required>
+</div>
+<div class="field">
+<label>ไลน์ / พื้นที่ *</label><input name="line" placeholder="Door A / Stamping 1" required>
+</div>
+<div class="field">
+<label>รุ่น</label><input name="model" placeholder="Model">
+</div>
+<div class="field">
+<label>ยอดผลิต *</label><input name="production" type="number" min="0" step="1" required>
+</div>
+<div class="field">
+<label>ยอดของเสีย *</label><input name="scrap" type="number" min="0" step="1" required>
+</div>
+<div class="field">
+<label>ประเภทของเสีย</label><input name="defect" placeholder="เช่น Foam leak">
+</div>
+<div class="field">
+<label>กะ</label><select name="shift"><option value="">ไม่ระบุ</option>
+<option>Day</option>
+<option>Night</option></select>
+</div>
+<div class="field">
+<label>หมายเหตุ</label><input name="note" placeholder="รายละเอียดเพิ่มเติม">
+</div>
+<button class="btn primary" type="submit">บันทึกข้อมูล</button>
+</form>
+<p class="muted" style="font-size:12px">กรณีวันเดียวมีหลายประเภทของเสีย ให้บันทึกยอดผลิตเพียงแถวเดียว ส่วนแถวประเภทของเสียอื่นใส่ยอดผลิต 0 เพื่อไม่ให้ยอดผลิตซ้ำ</p></dialog><section class="panel"><div class="top">
+<h2>รายละเอียดตามช่วงเวลา</h2>
+<span class="muted" id="count"></span>
+</div>
+<div class="tablewrap"><table>
+<thead><tr>
+<th>ช่วงเวลา</th>
+<th>ไลน์ / พื้นที่</th>
+<th>รุ่น</th>
+<th>ประเภทของเสีย</th>
+<th class="num">ยอดผลิต</th>
+<th class="num">ของเสีย</th>
+<th class="num">อัตราของเสีย</th>
+</tr></thead>
+<tbody id="summary"></tbody>
+</table></div>
+<h2 style="margin-top:25px">รายการข้อมูลที่บันทึก</h2>
+<div class="tablewrap"><table>
+<thead><tr>
+<th>วันที่</th>
+<th>กะ</th>
+<th>ไลน์</th>
+<th>รุ่น</th>
+<th>ประเภท</th>
+<th class="num">ผลิต</th>
+<th class="num">เสีย</th>
+<th>จัดการ</th>
+</tr></thead>
+<tbody id="raw"></tbody>
+</table></div></section><p class="foot">ข้อมูลเก็บไว้ในเบราว์เซอร์เครื่องนี้ โปรดส่งออก CSV เพื่อสำรองข้อมูลและนำเข้าเมื่อเปลี่ยนเครื่อง · ไฟล์ CSV ใช้หัวคอลัมน์: page,date,shift,line,model,production,scrap,defect,note</p></main><script>
+const KEY='scrap_dashboard_v1';
+let records=[];
+try{records=JSON.parse(localStorage.getItem(KEY)||'[]');
+if(!Array.isArray(records))records=[]}catch{records=[]}let page='foam',period='day';
+const $=s=>document.querySelector(s),fmt=n=>new Intl.NumberFormat('th-TH').format(n),rate=(s,p)=>p>0?100*s/p:0,esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),save=()=>localStorage.setItem(KEY,JSON.stringify(records));
+$('input[name=date]').value=new Date().toLocaleDateString('en-CA');
+function weekKey(date){let d=new Date(date+'T12:00:00Z'),day=(d.getUTCDay()+6)%7;
+d.setUTCDate(d.getUTCDate()-day+3);
+let y=d.getUTCFullYear(),first=new Date(Date.UTC(y,0,4)),w=1+Math.round(((d-first)/86400000-3+(first.getUTCDay()+6)%7)/7);
+return `${y}-W${String(w).padStart(2,'0')}`}function key(d){return period==='month'?d.slice(0,7):period==='week'?weekKey(d):d}function filtered(){return records.filter(r=>r.page===page&&(!$('#start').value||r.date>=$('#start').value)&&(!$('#end').value||r.date<=$('#end').value)&&(!$('#line').value||r.line===$('#line').value)&&(!$('#model').value||r.model===$('#model').value))}function options(){for(let [id,field] of [['line','line'],['model','model']]){let el=$('#'+id),old=el.value,values=[...new Set(records.filter(r=>r.page===page).map(r=>r[field]).filter(Boolean))].sort();
+el.innerHTML='<option value="">ทั้งหมด</option>'+values.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+el.value=values.includes(old)?old:''}}function group(rows,by){let map=new Map;
+for(let r of rows){let k=by(r),v=map.get(k)||{key:k,production:0,scrap:0};
+v.production+=r.production;
+v.scrap+=r.scrap;
+map.set(k,v)}return [...map.values()]}function chart(rows){let a=group(rows,r=>key(r.date)).sort((x,y)=>x.key.localeCompare(y.key)).slice(-12),box=$('#trend');
+if(!a.length){box.innerHTML='<span class="muted">ยังไม่มีข้อมูลในช่วงที่เลือก</span>';
+return}let W=720,H=270,L=46,R=45,T=20,B=52,iw=W-L-R,ih=H-T-B,maxP=Math.max(1,...a.map(x=>x.production)),maxR=Math.max(1,...a.map(x=>rate(x.scrap,x.production))),bw=Math.min(26,iw/a.length*.22),step=iw/a.length;
+let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="กราฟยอดผลิต ของเสีย และอัตราของเสีย">`;
+for(let i=0;
+i<=4;
+i++){let y=T+ih*i/4;
+s+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#29405a"/><text x="${L-7}" y="${y+4}" text-anchor="end" fill="#8da7c1" font-size="10">${fmt(Math.round(maxP*(4-i)/4))}</text><text x="${W-R+6}" y="${y+4}" fill="#6cbea9" font-size="10">${(maxR*(4-i)/4).toFixed(1)}%</text>`}let pts=[];
+a.forEach((v,i)=>{let x=L+step*(i+.5),h1=v.production/maxP*ih,h2=v.scrap/maxP*ih,ry=T+ih-rate(v.scrap,v.production)/maxR*ih;
+s+=`<rect x="${x-bw-2}" y="${T+ih-h1}" width="${bw}" height="${h1}" rx="3" fill="#319cf4"/><rect x="${x+2}" y="${T+ih-h2}" width="${bw}" height="${Math.max(1,h2)}" rx="3" fill="#ff6c87"/><text x="${x}" y="${H-22}" text-anchor="middle" fill="#a7b9cb" font-size="10">${esc(v.key.slice(5))}</text>`;
+pts.push(`${x},${ry}`)});
+s+=`<polyline points="${pts.join(' ')}" fill="none" stroke="#42d7ba" stroke-width="3"/>`;
+pts.forEach(p=>{let [x,y]=p.split(',');
+s+=`<circle cx="${x}" cy="${y}" r="4" fill="#42d7ba"/>`});
+box.innerHTML=s+'</svg>'}function render(){options();
+let rows=filtered(),p=rows.reduce((a,r)=>a+r.production,0),s=rows.reduce((a,r)=>a+r.scrap,0);
+$('#production').textContent=fmt(p);
+$('#scrap').textContent=fmt(s);
+$('#rate').textContent=rate(s,p).toFixed(2)+'%';
+$('#days').textContent=fmt(new Set(rows.map(r=>r.date)).size);
+$('#count').textContent=fmt(rows.length)+' รายการ';
+chart(rows);
+let types=group(rows,r=>r.defect||'ไม่ระบุ').sort((a,b)=>b.scrap-a.scrap).slice(0,7),max=Math.max(1,...types.map(x=>x.scrap));
+$('#pareto').innerHTML=types.length?types.map(x=>`<div class="barrow"><span title="${esc(x.key)}">${esc(x.key)}</span><div class="track"><div class="fill" style="width:${x.scrap/max*100}%"></div></div><b>${fmt(x.scrap)}</b></div>`).join(''):'<p class="muted">ยังไม่มีข้อมูลในช่วงที่เลือก</p>';
+let summary=group(rows,r=>[key(r.date),r.line,r.model,r.defect].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
+$('#summary').innerHTML=summary.length?summary.map(v=>{let [d,l,m,t]=v.key.split('\u0001');
+return `<tr><td>${esc(d)}</td><td>${esc(l)}</td><td>${esc(m||'—')}</td><td>${esc(t||'—')}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rate(v.scrap,v.production).toFixed(2)}%</td></tr>`}).join(''):'<tr><td colspan="7" class="muted">ยังไม่มีข้อมูล</td></tr>';
+$('#raw').innerHTML=rows.length?[...rows].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,200).map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.shift||'—')}</td><td>${esc(r.line)}</td><td>${esc(r.model||'—')}</td><td>${esc(r.defect||'—')}</td><td class="num">${fmt(r.production)}</td><td class="num">${fmt(r.scrap)}</td><td><button class="btn danger" data-delete="${esc(r.id)}">ลบ</button></td></tr>`).join(''):'<tr><td colspan="8" class="muted">ยังไม่มีข้อมูล</td></tr>'}document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{page=b.dataset.page;
+document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x===b));
+$('#formPage').textContent=b.textContent;
+$('#entryDialog').close();
+$('#line').value='';
+$('#model').value='';
+render()});
+document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period=b.dataset.period;
+document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('active',x===b));
+render()});
+['start','end','line','model'].forEach(id=>$('#'+id).onchange=render);
+$('#openEntry').onclick=()=>$('#entryDialog').showModal();
+$('#closeEntry').onclick=()=>$('#entryDialog').close();
+$('#entryDialog').onclick=e=>{if(e.target===$('#entryDialog'))$('#entryDialog').close()};
+$('#entry').onsubmit=e=>{e.preventDefault();
+let x=Object.fromEntries(new FormData(e.target)),production=Number(x.production),scrap=Number(x.scrap);
+if(!Number.isInteger(production)||!Number.isInteger(scrap)||production<0||scrap<0||scrap>production&&production>0){$('#notice').textContent='ตรวจสอบยอดผลิตและยอดของเสียอีกครั้ง';
+return}records.push({...x,page,production,scrap,id:crypto.randomUUID?.()||String(Date.now()+Math.random())});
+save();
+$('#notice').textContent='บันทึกข้อมูลแล้ว';
+$('#entryDialog').close();
+e.target.reset();
+$('input[name=date]').value=new Date().toLocaleDateString('en-CA');
+render()};
+$('#raw').onclick=e=>{let id=e.target.dataset.delete;
+if(id&&confirm('ลบรายการนี้?')){records=records.filter(r=>r.id!==id);
+save();
+render()}};
+function csvCell(v){let s=String(v??'');
+return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}const headers=['page','date','shift','line','model','production','scrap','defect','note'];function download(rows,name){let body='\ufeff'+[headers.join(','),...rows.map(r=>headers.map(h=>csvCell(r[h])).join(','))].join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/csv;charset=utf-8'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}$('#template').onclick=()=>download([{page:'foam',date:'2026-09-24',shift:'Day',line:'Door A',model:'Example',production:100,scrap:2,defect:'Foam leak',note:''},{page:'stamping',date:'2026-09-24',shift:'Day',line:'Stamping 1',model:'Example',production:100,scrap:1,defect:'Scratch',note:''}],'scrap-template.csv');$('#export').onclick=()=>download(records,'scrap-data.csv');function parseCSV(txt){let out=[],row=[],cell='',quoted=false;txt=txt.replace(/^\ufeff/,'');for(let i=0;i<txt.length;i++){let c=txt[i];if(quoted){if(c==='"'&&txt[i+1]==='"'){cell+='"';i++}else if(c==='"')quoted=false;else cell+=c}else if(c==='"')quoted=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'||c==='\r'){row.push(cell);if(row.some(v=>v!==''))out.push(row);row=[];cell='';if(c==='\r'&&txt[i+1]==='\n')i++}else cell+=c}row.push(cell);if(row.some(v=>v!==''))out.push(row);if(quoted)throw Error('เครื่องหมายอัญประกาศใน CSV ไม่ครบ');return out}$('#import').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let rows=parseCSV(await file.text()),head=rows.shift().map(s=>s.trim().toLowerCase()),missing=headers.filter(h=>!head.includes(h));if(missing.length)throw Error('ขาดคอลัมน์ '+missing.join(', '));let added=[];for(let [i,values] of rows.entries()){let obj=Object.fromEntries(headers.map(h=>[h,values[head.indexOf(h)]??'']));obj.production=Number(obj.production);obj.scrap=Number(obj.scrap);if(!['foam','stamping'].includes(obj.page)||!/^\d{4}-\d{2}-\d{2}$/.test(obj.date)||Number.isNaN(new Date(obj.date+'T12:00:00Z').getTime())||!obj.line||!Number.isInteger(obj.production)||!Number.isInteger(obj.scrap)||obj.production<0||obj.scrap<0)throw Error(`แถว ${i+2} มีข้อมูลไม่ถูกต้อง`);obj.id=crypto.randomUUID?.()||String(Date.now()+Math.random());added.push(obj)}records.push(...added);save();$('#notice').textContent=`นำเข้าสำเร็จ ${added.length} รายการ`;render()}catch(err){$('#notice').textContent='นำเข้าไม่สำเร็จ: '+err.message}e.target.value=''};render();
+</script>
 </body>
 </html>
