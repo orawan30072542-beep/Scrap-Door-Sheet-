@@ -247,6 +247,24 @@ dialog.entry-dialog::backdrop{
 .stamping-empty{color:#91aac2;text-align:center}
 @media(max-width:900px){.stamping-layout{grid-template-columns:1fr}}
 @media(max-width:620px){.machine-list{grid-template-columns:1fr}.stamping-chart{height:230px}}
+
+/* Stamping multi-row entry */
+#stampingEntry[hidden],#foamEntryWrap[hidden]{display:none!important}
+.entry-dialog:has(#stampingEntry:not([hidden])){width:min(1160px,calc(100% - 24px))}
+.stamping-head-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.stamping-entry-table{width:100%;border-collapse:separate;border-spacing:0 8px;min-width:940px}
+.stamping-entry-table th{position:static;border:0;padding:3px 7px;font-size:12px}
+.stamping-entry-table td{border:0;padding:0 5px;vertical-align:top}
+.stamping-entry-table input{min-width:90px;height:42px}
+.stamping-entry-table input[name="partCode"]{min-width:120px}
+.stamping-entry-table input[name="model"]{min-width:125px}
+.stamping-entry-table input[name="quantity"]{min-width:85px}
+.stamping-entry-table button{min-width:42px;height:42px;padding:6px}
+.stamping-form-actions{display:flex;align-items:end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:18px}
+.stamping-form-actions .field{max-width:280px;flex:1}
+.stamping-form-actions .buttons{display:flex;gap:8px;flex-wrap:wrap}
+.stamping-help{color:#9db1c9;font-size:12px;line-height:1.6;margin:12px 0}
+@media(max-width:650px){.stamping-head-fields{grid-template-columns:1fr}.stamping-form-actions .field{max-width:none}}
 </style>
 </head>
 <body>
@@ -336,6 +354,7 @@ dialog.entry-dialog::backdrop{
 </h2>
 <button class="btn" id="closeEntry" type="button" aria-label="ปิดหน้าต่าง">✕ ปิด</button>
 </div>
+<div id="foamEntryWrap">
 <form id="entry" class="grid form">
 <div class="field">
 <label>วันที่ *</label><input type="date" name="date" required>
@@ -368,7 +387,48 @@ dialog.entry-dialog::backdrop{
 <option value="200T"></option>
 <option value="100T"></option></datalist>
 </form>
-<p class="muted" style="font-size:12px">กรณีวันเดียวมีหลายประเภทของเสีย ให้บันทึกยอดผลิตเพียงแถวเดียว ส่วนแถวประเภทของเสียอื่นใส่ยอดผลิต 0 เพื่อไม่ให้ยอดผลิตซ้ำ</p></dialog><section class="panel"><div class="top">
+<p class="muted" style="font-size:12px">กรณีวันเดียวมีหลายประเภทของเสีย ให้บันทึกยอดผลิตเพียงแถวเดียว ส่วนแถวประเภทของเสียอื่นใส่ยอดผลิต 0 เพื่อไม่ให้ยอดผลิตซ้ำ</p>
+</div>
+<form id="stampingEntry" hidden>
+<div class="stamping-head-fields">
+<div class="field">
+<label>วันที่ *</label><input type="date" name="date" required>
+</div>
+<div class="field">
+<label>กะการผลิต *</label><select name="shift" required><option value="">เลือกกะ</option>
+<option value="Day">กะกลางวัน</option>
+<option value="Night">กะกลางคืน</option></select>
+</div>
+<div class="field">
+<label>เครื่องจักร *</label><select name="line" required><option value="">เลือกเครื่อง</option>
+<option>400T</option>
+<option>200T</option>
+<option>100T</option></select>
+</div>
+</div>
+<div class="tablewrap" style="max-height:none"><table class="stamping-entry-table">
+<thead><tr>
+<th>Part Code *</th>
+<th>Model *</th>
+<th>จำนวนของเสีย *</th>
+<th>ปัญหา *</th>
+<th>สาเหตุ</th>
+<th>การแก้ไข</th>
+<th>แผนกที่รับผิดชอบ</th>
+<th></th>
+</tr></thead>
+<tbody id="stampingEntryRows"></tbody>
+</table></div>
+<p class="stamping-help">กรอกรหัส Part Code เป็นตัวเลข · รุ่นที่เคยบันทึกจะแสดงอัตโนมัติ · รหัสใหม่ให้กรอก Model ครั้งแรก</p>
+<div class="stamping-form-actions">
+<div class="field">
+<label>ยอดผลิตของเครื่อง (ใช้คำนวณ Scrap Rate)</label><input type="number" name="production" min="0" step="1" placeholder="กรอกยอดผลิตของวันและกะนี้">
+</div>
+<div class="buttons">
+<button class="btn" type="button" id="addStampRow">+ เพิ่มแถว</button><button class="btn primary" type="submit">บันทึกข้อมูล</button>
+</div>
+</div>
+</form></dialog><section class="panel"><div class="top">
 <h2>รายละเอียดตามช่วงเวลา</h2>
 <span class="muted" id="count"></span>
 </div>
@@ -391,7 +451,11 @@ dialog.entry-dialog::backdrop{
 <th>กะ</th>
 <th>ไลน์</th>
 <th>รุ่น</th>
+<th>Part Code</th>
 <th>ประเภท</th>
+<th>สาเหตุ</th>
+<th>การแก้ไข</th>
+<th>แผนกที่รับผิดชอบ</th>
 <th class="num">ผลิต</th>
 <th class="num">เสีย</th>
 <th>จัดการ</th>
@@ -401,7 +465,10 @@ dialog.entry-dialog::backdrop{
 const KEY='scrap_dashboard_v1';
 let records=[];
 try{records=JSON.parse(localStorage.getItem(KEY)||'[]');
-if(!Array.isArray(records))records=[]}catch{records=[]}let page='foam',period='day';
+if(!Array.isArray(records))records=[]}catch{records=[]}const PART_MAP_KEY='scrap_part_models_v1';
+let partModels={};try{partModels=JSON.parse(localStorage.getItem(PART_MAP_KEY)||'{}')}catch{partModels={}}
+for(const old of records)if(/^\d+$/.test(old.partCode||'')&&old.model)partModels[old.partCode]=old.model;
+let page='foam',period='day';
 const $=s=>document.querySelector(s),fmt=n=>new Intl.NumberFormat('th-TH').format(n),rate=(s,p)=>p>0?100*s/p:0,esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),save=()=>localStorage.setItem(KEY,JSON.stringify(records));
 $('input[name=date]').value=new Date().toLocaleDateString('en-CA');
 function weekKey(date){let d=new Date(date+'T12:00:00Z'),day=(d.getUTCDay()+6)%7;
@@ -427,7 +494,14 @@ pts.push(`${x},${ry}`)});
 s+=`<polyline points="${pts.join(' ')}" fill="none" stroke="#42d7ba" stroke-width="3"/>`;
 pts.forEach(p=>{let [x,y]=p.split(',');
 s+=`<circle cx="${x}" cy="${y}" r="4" fill="#42d7ba"/>`});
-box.innerHTML=s+'</svg>'}function machineName(value){
+box.innerHTML=s+'</svg>'}function addStampRow(value={}){
+ const tr=document.createElement('tr');
+ tr.innerHTML=`<td><input name="partCode" inputmode="numeric" pattern="[0-9]+" placeholder="ตัวเลข" required></td><td><input name="model" placeholder="รุ่น" required></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="department" placeholder="แผนก"></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td>`;
+ for(const name of ['partCode','model','quantity','defect','cause','action','department'])tr.querySelector(`[name="${name}"]`).value=value[name]||'';
+ $('#stampingEntryRows').append(tr)
+}
+function rateText(scrap,production){return production>0?rate(scrap,production).toFixed(2)+'%':'—'}
+function machineName(value){
  const found=String(value||'').toUpperCase().replace(/\s+/g,'').match(/(?:400T|200T|100T)/);
  return found?found[0]:null
 }
@@ -436,8 +510,8 @@ function renderStamping(rows){
  const machines=names.map(name=>({name,production:0,scrap:0}));
  const byMachine=new Map(machines.map(m=>[m.name,m]));
  for(const row of rows){const name=machineName(row.line);if(name){let m=byMachine.get(name);m.production+=row.production;m.scrap+=row.scrap}}
- $('#machineCards').innerHTML=machines.map(m=>`<div class="machine-card"><strong>${m.name}</strong><div class="rate">${rate(m.scrap,m.production).toFixed(2)}%</div><div class="small">ยอดผลิต ${fmt(m.production)} ชิ้น<br>ของเสีย ${fmt(m.scrap)} ชิ้น</div></div>`).join('');
- $('#machineRows').innerHTML=machines.map(m=>`<tr><td><b>${m.name}</b></td><td class="num">${fmt(m.production)}</td><td class="num">${fmt(m.scrap)}</td><td class="num">${rate(m.scrap,m.production).toFixed(2)}%</td></tr>`).join('');
+ $('#machineCards').innerHTML=machines.map(m=>`<div class="machine-card"><strong>${m.name}</strong><div class="rate">${rateText(m.scrap,m.production)}</div><div class="small">ยอดผลิต ${fmt(m.production)} ชิ้น<br>ของเสีย ${fmt(m.scrap)} ชิ้น</div></div>`).join('');
+ $('#machineRows').innerHTML=machines.map(m=>`<tr><td><b>${m.name}</b></td><td class="num">${fmt(m.production)}</td><td class="num">${fmt(m.scrap)}</td><td class="num">${rateText(m.scrap,m.production)}</td></tr>`).join('');
  if(!rows.length){$('#machineChart').innerHTML='<span class="stamping-empty">ยังไม่มีข้อมูลเครื่องจักรในช่วงที่เลือก</span>'}
  else{
  const W=670,H=275,L=55,R=48,T=24,B=42,iw=W-L-R,ih=H-T-B;
@@ -468,7 +542,7 @@ function render(){options();$('#stampingAnalytics').hidden=page!=='stamping';$('
 let rows=filtered(),p=rows.reduce((a,r)=>a+r.production,0),s=rows.reduce((a,r)=>a+r.scrap,0);
 $('#production').textContent=fmt(p);
 $('#scrap').textContent=fmt(s);
-$('#rate').textContent=rate(s,p).toFixed(2)+'%';
+$('#rate').textContent=rateText(s,p);
 $('#days').textContent=fmt(new Set(rows.map(r=>r.date)).size);
 $('#count').textContent=fmt(rows.length)+' รายการ';
 if(page==='stamping')renderStamping(rows);else chart(rows);
@@ -476,10 +550,11 @@ let types=group(rows,r=>r.defect||'ไม่ระบุ').sort((a,b)=>b.scrap-a
 $('#pareto').innerHTML=types.length?types.map(x=>`<div class="barrow"><span title="${esc(x.key)}">${esc(x.key)}</span><div class="track"><div class="fill" style="width:${x.scrap/max*100}%"></div></div><b>${fmt(x.scrap)}</b></div>`).join(''):'<p class="muted">ยังไม่มีข้อมูลในช่วงที่เลือก</p>';
 let summary=group(rows,r=>[key(r.date),r.line,r.model,r.defect].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
 $('#summary').innerHTML=summary.length?summary.map(v=>{let [d,l,m,t]=v.key.split('\u0001');
-return `<tr><td>${esc(d)}</td><td>${esc(l)}</td><td>${esc(m||'—')}</td><td>${esc(t||'—')}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rate(v.scrap,v.production).toFixed(2)}%</td></tr>`}).join(''):'<tr><td colspan="7" class="muted">ยังไม่มีข้อมูล</td></tr>';
-$('#raw').innerHTML=rows.length?[...rows].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,200).map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.shift||'—')}</td><td>${esc(r.line)}</td><td>${esc(r.model||'—')}</td><td>${esc(r.defect||'—')}</td><td class="num">${fmt(r.production)}</td><td class="num">${fmt(r.scrap)}</td><td><button class="btn danger" data-delete="${esc(r.id)}">ลบ</button></td></tr>`).join(''):'<tr><td colspan="8" class="muted">ยังไม่มีข้อมูล</td></tr>'}document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{page=b.dataset.page;
+return `<tr><td>${esc(d)}</td><td>${esc(l)}</td><td>${esc(m||'—')}</td><td>${esc(t||'—')}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td></tr>`}).join(''):'<tr><td colspan="7" class="muted">ยังไม่มีข้อมูล</td></tr>';
+$('#raw').innerHTML=rows.length?[...rows].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,200).map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.shift||'—')}</td><td>${esc(r.line)}</td><td>${esc(r.model||'—')}</td><td>${esc(r.partCode||'—')}</td><td>${esc(r.defect||'—')}</td><td>${esc(r.cause||'—')}</td><td>${esc(r.action||'—')}</td><td>${esc(r.department||'—')}</td><td class="num">${fmt(r.production)}</td><td class="num">${fmt(r.scrap)}</td><td><button class="btn danger" data-delete="${esc(r.id)}">ลบ</button></td></tr>`).join(''):'<tr><td colspan="12" class="muted">ยังไม่มีข้อมูล</td></tr>'}document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{page=b.dataset.page;
 document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x===b));
 $('#formPage').textContent=b.textContent;
+$('#foamEntryWrap').hidden=page==='stamping';$('#stampingEntry').hidden=page!=='stamping';
 let lineInput=$('input[name=line]');lineInput.placeholder=page==='stamping'?'400T / 200T / 100T':'Door A / Door B / Door C';lineInput.setAttribute('list',page==='stamping'?'stampingMachineOptions':'');
 $('#entryDialog').close();
 $('#line').value='';
@@ -489,11 +564,41 @@ document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period=b.da
 document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('active',x===b));
 render()});
 ['start','end','line','model'].forEach(id=>$('#'+id).onchange=render);
-$('#openEntry').onclick=()=>$('#entryDialog').showModal();
+$('#openEntry').onclick=()=>{if(page==='stamping'&&!$('#stampingEntryRows').children.length)addStampRow();$('#entryDialog').showModal()};
 $('#closeEntry').onclick=()=>$('#entryDialog').close();
 $('#entryDialog').onclick=e=>{if(e.target===$('#entryDialog'))$('#entryDialog').close()};
+$('#addStampRow').onclick=()=>addStampRow();
+$('#stampingEntryRows').oninput=e=>{
+ if(e.target.name!=='partCode')return;
+ const row=e.target.closest('tr'),code=e.target.value.trim(),model=row.querySelector('[name=model]');
+ if(partModels[code])model.value=partModels[code];else model.value=''
+};
+$('#stampingEntryRows').onclick=e=>{
+ if(!e.target.closest('.removeStampRow'))return;
+ if($('#stampingEntryRows').children.length>1)e.target.closest('tr').remove();
+ else{e.target.closest('tr').querySelectorAll('input').forEach(input=>input.value='')}
+};
+$('#stampingEntry').querySelector('[name=date]').value=new Date().toLocaleDateString('en-CA');
+$('#stampingEntry').onsubmit=e=>{
+ e.preventDefault();const form=e.target,meta=Object.fromEntries(new FormData(form)),partRows=[...$('#stampingEntryRows').children];
+ const production=meta.production===''?0:Number(meta.production);
+ if(!Number.isInteger(production)||production<0){$('#notice').textContent='ตรวจสอบยอดผลิตอีกครั้ง';return}
+ const issues=[];
+ for(const tr of partRows){let item=Object.fromEntries([...tr.querySelectorAll('input')].map(input=>[input.name,input.value.trim()]));
+  if(!/^\d+$/.test(item.partCode)||!item.model||!item.defect||!Number.isInteger(Number(item.quantity))||Number(item.quantity)<1){$('#notice').textContent='ตรวจสอบ Part Code, Model, จำนวน และปัญหาทุกแถว';return}
+  issues.push(item)
+ }
+ if(!issues.length){$('#notice').textContent='เพิ่มรายการของเสียอย่างน้อย 1 แถว';return}
+ const date=meta.date,shift=meta.shift,line=meta.line;
+ if(!date||!shift||!['400T','200T','100T'].includes(line)){$('#notice').textContent='กรุณากรอกวันที่ กะ และเครื่องจักร';return}
+ const previous=records.find(r=>r.page==='stamping'&&r.kind==='production'&&r.date===date&&r.shift===shift&&r.line===line);
+ if(previous && meta.production!==''){previous.production=production}else if(!previous && production>0)records.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'production',date,shift,line,production,scrap:0,model:'',defect:'',note:''});
+ for(const issue of issues){partModels[issue.partCode]=issue.model;records.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'scrap',date,shift,line,partCode:issue.partCode,model:issue.model,production:0,scrap:Number(issue.quantity),defect:issue.defect,cause:issue.cause,action:issue.action,department:issue.department,note:''})}
+ localStorage.setItem(PART_MAP_KEY,JSON.stringify(partModels));save();$('#notice').textContent=`บันทึก ${issues.length} รายการแล้ว`;
+ form.reset();form.querySelector('[name=date]').value=new Date().toLocaleDateString('en-CA');$('#stampingEntryRows').innerHTML='';addStampRow();$('#entryDialog').close();render()
+};
 $('#entry').onsubmit=e=>{e.preventDefault();
-let x=Object.fromEntries(new FormData(e.target)),production=Number(x.production),scrap=Number(x.scrap);if(page==='stamping'){let name=machineName(x.line);if(!name){$('#notice').textContent='เลือกเครื่อง 400T, 200T หรือ 100T';return}x.line=name}if(page==='stamping'){let name=machineName(x.line);if(!name){$('#notice').textContent='เลือกเครื่อง 400T, 200T หรือ 100T';return}x.line=name}
+let x=Object.fromEntries(new FormData(e.target)),production=Number(x.production),scrap=Number(x.scrap);
 if(!Number.isInteger(production)||!Number.isInteger(scrap)||production<0||scrap<0||scrap>production&&production>0){$('#notice').textContent='ตรวจสอบยอดผลิตและยอดของเสียอีกครั้ง';
 return}records.push({...x,page,production,scrap,id:crypto.randomUUID?.()||String(Date.now()+Math.random())});
 save();
@@ -507,7 +612,7 @@ if(id&&confirm('ลบรายการนี้?')){records=records.filter(r=>
 save();
 render()}};
 function csvCell(v){let s=String(v??'');
-return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}const headers=['page','date','shift','line','model','production','scrap','defect','note'];function download(rows,name){let body='\ufeff'+[headers.join(','),...rows.map(r=>headers.map(h=>csvCell(r[h])).join(','))].join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/csv;charset=utf-8'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}$('#template').onclick=()=>download([{page:'foam',date:'2026-09-24',shift:'Day',line:'Door A',model:'Example',production:100,scrap:2,defect:'Foam leak',note:''},{page:'stamping',date:'2026-09-24',shift:'Day',line:'Stamping 1',model:'Example',production:100,scrap:1,defect:'Scratch',note:''}],'scrap-template.csv');$('#export').onclick=()=>download(records,'scrap-data.csv');function parseCSV(txt){let out=[],row=[],cell='',quoted=false;txt=txt.replace(/^\ufeff/,'');for(let i=0;i<txt.length;i++){let c=txt[i];if(quoted){if(c==='"'&&txt[i+1]==='"'){cell+='"';i++}else if(c==='"')quoted=false;else cell+=c}else if(c==='"')quoted=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'||c==='\r'){row.push(cell);if(row.some(v=>v!==''))out.push(row);row=[];cell='';if(c==='\r'&&txt[i+1]==='\n')i++}else cell+=c}row.push(cell);if(row.some(v=>v!==''))out.push(row);if(quoted)throw Error('เครื่องหมายอัญประกาศใน CSV ไม่ครบ');return out}$('#import').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let rows=parseCSV(await file.text()),head=rows.shift().map(s=>s.trim().toLowerCase()),missing=headers.filter(h=>!head.includes(h));if(missing.length)throw Error('ขาดคอลัมน์ '+missing.join(', '));let added=[];for(let [i,values] of rows.entries()){let obj=Object.fromEntries(headers.map(h=>[h,values[head.indexOf(h)]??'']));obj.production=Number(obj.production);obj.scrap=Number(obj.scrap);if(!['foam','stamping'].includes(obj.page)||!/^\d{4}-\d{2}-\d{2}$/.test(obj.date)||Number.isNaN(new Date(obj.date+'T12:00:00Z').getTime())||!obj.line||!Number.isInteger(obj.production)||!Number.isInteger(obj.scrap)||obj.production<0||obj.scrap<0)throw Error(`แถว ${i+2} มีข้อมูลไม่ถูกต้อง`);obj.id=crypto.randomUUID?.()||String(Date.now()+Math.random());added.push(obj)}records.push(...added);save();$('#notice').textContent=`นำเข้าสำเร็จ ${added.length} รายการ`;render()}catch(err){$('#notice').textContent='นำเข้าไม่สำเร็จ: '+err.message}e.target.value=''};render();
+return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}const headers=['page','date','shift','line','model','production','scrap','defect','note','partCode','cause','action','department','kind'];function download(rows,name){let body='\ufeff'+[headers.join(','),...rows.map(r=>headers.map(h=>csvCell(r[h])).join(','))].join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/csv;charset=utf-8'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}$('#template').onclick=()=>download([{page:'foam',date:'2026-09-24',shift:'Day',line:'Door A',model:'Example',production:100,scrap:2,defect:'Foam leak',note:''},{page:'stamping',date:'2026-09-24',shift:'Day',line:'Stamping 1',model:'Example',production:100,scrap:1,defect:'Scratch',note:''}],'scrap-template.csv');$('#export').onclick=()=>download(records,'scrap-data.csv');function parseCSV(txt){let out=[],row=[],cell='',quoted=false;txt=txt.replace(/^\ufeff/,'');for(let i=0;i<txt.length;i++){let c=txt[i];if(quoted){if(c==='"'&&txt[i+1]==='"'){cell+='"';i++}else if(c==='"')quoted=false;else cell+=c}else if(c==='"')quoted=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'||c==='\r'){row.push(cell);if(row.some(v=>v!==''))out.push(row);row=[];cell='';if(c==='\r'&&txt[i+1]==='\n')i++}else cell+=c}row.push(cell);if(row.some(v=>v!==''))out.push(row);if(quoted)throw Error('เครื่องหมายอัญประกาศใน CSV ไม่ครบ');return out}$('#import').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let rows=parseCSV(await file.text()),head=rows.shift().map(s=>s.trim().toLowerCase()),missing=['page','date','shift','line','model','production','scrap','defect','note'].filter(h=>!head.includes(h));if(missing.length)throw Error('ขาดคอลัมน์ '+missing.join(', '));let added=[];for(let [i,values] of rows.entries()){let obj=Object.fromEntries(headers.map(h=>[h,head.indexOf(h)<0?'':values[head.indexOf(h)]??'']));obj.production=Number(obj.production);obj.scrap=Number(obj.scrap);if(!['foam','stamping'].includes(obj.page)||!/^\d{4}-\d{2}-\d{2}$/.test(obj.date)||Number.isNaN(new Date(obj.date+'T12:00:00Z').getTime())||!obj.line||!Number.isInteger(obj.production)||!Number.isInteger(obj.scrap)||obj.production<0||obj.scrap<0)throw Error(`แถว ${i+2} มีข้อมูลไม่ถูกต้อง`);obj.id=crypto.randomUUID?.()||String(Date.now()+Math.random());added.push(obj)}records.push(...added);for(const r of added)if(/^\d+$/.test(r.partCode||'')&&r.model)partModels[r.partCode]=r.model;localStorage.setItem(PART_MAP_KEY,JSON.stringify(partModels));save();$('#notice').textContent=`นำเข้าสำเร็จ ${added.length} รายการ`;render()}catch(err){$('#notice').textContent='นำเข้าไม่สำเร็จ: '+err.message}e.target.value=''};render();
 </script>
 </body>
 </html>
