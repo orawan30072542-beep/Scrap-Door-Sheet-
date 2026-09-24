@@ -1,338 +1,705 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="FTR Door Line Dashboard - Door A, Door B, Door C" />
-  <title>FTR Door Line Dashboard</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scrap Analysis Dashboard</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #081525;
+      color: #e8f1fc;
+      font-family: Arial, "Noto Sans Thai", sans-serif;
+    }
+    .container { max-width: 1350px; margin: auto; padding: 28px; }
+    h1 { margin: 8px 0; font-size: 32px; }
+    h2 { margin: 0 0 18px; font-size: 19px; }
+    .subtitle, .hint { color: #97abc3; }
+    .hint { font-size: 13px; line-height: 1.6; }
+    .header, .section-head {
+      display: flex; justify-content: space-between;
+      align-items: center; gap: 15px; flex-wrap: wrap;
+    }
+    .tabs, .periods, .actions { display: flex; gap: 9px; flex-wrap: wrap; }
+    .tabs { margin: 26px 0 18px; }
+    button, .file-button {
+      border: 1px solid #345574;
+      border-radius: 10px;
+      padding: 10px 15px;
+      background: #152b43;
+      color: white;
+      cursor: pointer;
+      font: inherit;
+    }
+    button:hover, .file-button:hover, button.active {
+      background: #1675bc;
+      border-color: #48b4ff;
+    }
+    .primary { background: #087ecb; }
+    .danger { color: #ff9baa; }
+    .card {
+      background: #102238;
+      border: 1px solid #28425d;
+      border-radius: 17px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .filters, .form-grid, .metrics, .charts {
+      display: grid; gap: 15px;
+    }
+    .filters { grid-template-columns: repeat(4, 1fr); align-items: end; }
+    .form-grid { grid-template-columns: repeat(4, 1fr); align-items: end; }
+    .metrics { grid-template-columns: repeat(4, 1fr); }
+    .charts { grid-template-columns: 1.6fr 1fr; }
+    label { display: block; color: #afc1d6; font-size: 13px; margin-bottom: 7px; }
+    input, select {
+      width: 100%; min-height: 41px; padding: 9px 11px;
+      border: 1px solid #3b5773;
+      border-radius: 9px;
+      background: #09192b; color: white;
+      font: inherit;
+    }
+    .metric { border-top: 3px solid #309bf1; }
+    .metric:nth-child(2) { border-color: #ff6884; }
+    .metric:nth-child(3) { border-color: #48d3b6; }
+    .metric:nth-child(4) { border-color: #ffc170; }
+    .metric small { color: #aec0d4; }
+    .metric strong { display: block; font-size: 32px; margin: 10px 0 4px; }
+    .metric span { color: #8fa7be; font-size: 12px; }
+    .chart-area { min-height: 260px; display: flex; align-items: center; }
+    .chart-area svg { width: 100%; height: auto; }
+    .legend { color: #afc1d6; font-size: 12px; margin-bottom: 8px; }
+    .legend span { margin-right: 16px; }
+    .dot {
+      display: inline-block; width: 10px; height: 10px;
+      border-radius: 3px; margin-right: 5px;
+    }
+    .bar-row {
+      display: grid; grid-template-columns: 110px 1fr 55px;
+      gap: 10px; align-items: center;
+      margin: 15px 0; font-size: 13px;
+    }
+    .track { background: #263b53; height: 12px; border-radius: 8px; overflow: hidden; }
+    .fill { background: linear-gradient(90deg, #289bfa, #ff6c88); height: 100%; }
+    .table-wrap { overflow: auto; max-height: 420px; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 13px; }
+    th, td { padding: 12px; border-bottom: 1px solid #294159; text-align: left; }
+    th { color: #afc1d6; }
+    .num { text-align: right; }
+    #message { color: #60dbb9; min-height: 20px; margin: 12px 0 0; font-size: 13px; }
+    @media (max-width: 900px) {
+      .filters, .form-grid, .metrics { grid-template-columns: repeat(2, 1fr); }
+      .charts { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 540px) {
+      .container { padding: 15px; }
+      .filters, .form-grid { grid-template-columns: 1fr; }
+      .metric strong { font-size: 25px; }
+      .bar-row { grid-template-columns: 85px 1fr 45px; }
+    }
+  </style>
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-icon">F</div>
+  <main class="container">
+    <div class="header">
+      <div>
+        <div class="subtitle">QUALITY / PRODUCTION ANALYTICS</div>
+        <h1>Scrap Analysis Dashboard</h1>
+        <div class="subtitle">วิเคราะห์ของเสียรายวัน รายสัปดาห์ และรายเดือน</div>
+      </div>
+      <div class="actions">
+        <button id="downloadTemplate">ดาวน์โหลด CSV ตัวอย่าง</button>
+        <button id="exportCsv">ส่งออกข้อมูล CSV</button>
+        <label class="file-button primary" style="margin:0">
+          นำเข้า CSV
+          <input id="importCsv" type="file" accept=".csv" hidden>
+        </label>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="page active" data-page="foam">SCRAP DOOR FOAM</button>
+      <button class="page" data-page="stamping">SCRAP STAMPING</button>
+    </div>
+
+    <section class="card">
+      <div class="filters">
         <div>
-          <strong>FTR DOOR</strong>
-          <span>Quality Dashboard</span>
+          <label>มุมมอง</label>
+          <div class="periods">
+            <button class="period active" data-period="day">รายวัน</button>
+            <button class="period" data-period="week">รายสัปดาห์</button>
+            <button class="period" data-period="month">รายเดือน</button>
+          </div>
+        </div>
+        <div><label>ตั้งแต่วันที่</label><input id="startDate" type="date"></div>
+        <div><label>ถึงวันที่</label><input id="endDate" type="date"></div>
+        <div>
+          <label>ไลน์ / พื้นที่</label>
+          <select id="lineFilter"><option value="">ทั้งหมด</option></select>
         </div>
       </div>
+      <p id="message"></p>
+    </section>
 
-      <nav class="nav-menu">
-        <button class="nav-btn active" data-page="dashboard">
-          <span>▦</span> Dashboard
-        </button>
-        <button class="nav-btn" data-page="entry">
-          <span>＋</span> Data Entry
-        </button>
-        <button class="nav-btn" data-page="records">
-          <span>≡</span> Records
-        </button>
-      </nav>
-
-      <div class="sidebar-footer">
-        <span>Production Lines</span>
-        <div class="line-tags">
-          <span>A</span><span>B</span><span>C</span>
-        </div>
+    <section class="metrics">
+      <div class="card metric">
+        <small>ยอดผลิตรวม</small>
+        <strong id="totalProduction">0</strong>
+        <span>ชิ้น</span>
       </div>
-    </aside>
+      <div class="card metric">
+        <small>ยอดของเสียรวม</small>
+        <strong id="totalScrap">0</strong>
+        <span>ชิ้น</span>
+      </div>
+      <div class="card metric">
+        <small>อัตราของเสีย</small>
+        <strong id="scrapRate">0.00%</strong>
+        <span>ของเสีย ÷ ยอดผลิต × 100</span>
+      </div>
+      <div class="card metric">
+        <small>จำนวนวันที่มีข้อมูล</small>
+        <strong id="totalDays">0</strong>
+        <span>วัน</span>
+      </div>
+    </section>
 
-    <main class="main-content">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">PRODUCTION QUALITY PERFORMANCE</p>
-          <h1>FTR Door Line Dashboard</h1>
-          <p class="subtitle">Door A · Door B · Door C | 2 Production Shifts</p>
+    <section class="charts">
+      <div class="card">
+        <h2>แนวโน้มยอดผลิตและของเสีย</h2>
+        <div class="legend">
+          <span><i class="dot" style="background:#319cf4"></i>ยอดผลิต</span>
+          <span><i class="dot" style="background:#ff6c87"></i>ของเสีย</span>
+          <span><i class="dot" style="background:#48d3b6"></i>อัตราของเสีย</span>
         </div>
-        <div class="topbar-actions">
-          <div class="today-box">
-            <span>Today</span>
-            <strong id="todayText"></strong>
-          </div>
+        <div id="trendChart" class="chart-area"></div>
+      </div>
+      <div class="card">
+        <h2>ประเภทของเสียสูงสุด</h2>
+        <div id="defectChart"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>เพิ่มข้อมูลรายวัน: <span id="currentPage">SCRAP DOOR FOAM</span></h2>
+      <form id="dataForm" class="form-grid">
+        <div><label>วันที่ *</label><input name="date" type="date" required></div>
+        <div><label>กะ</label>
+          <select name="shift">
+            <option value="">ไม่ระบุ</option>
+            <option value="Day">Day</option>
+            <option value="Night">Night</option>
+          </select>
         </div>
-      </header>
+        <div><label>ไลน์ / พื้นที่ *</label><input name="line" placeholder="Door A / Stamping 1" required></div>
+        <div><label>รุ่น</label><input name="model" placeholder="ชื่อรุ่น"></div>
+        <div><label>ยอดผลิต *</label><input name="production" type="number" min="0" step="1" required></div>
+        <div><label>ยอดของเสีย *</label><input name="scrap" type="number" min="0" step="1" required></div>
+        <div><label>ประเภทของเสีย</label><input name="defect" placeholder="เช่น Foam leak"></div>
+        <div><label>หมายเหตุ</label><input name="note" placeholder="รายละเอียดเพิ่มเติม"></div>
+        <button class="primary" type="submit">บันทึกข้อมูล</button>
+      </form>
+      <p class="hint">
+        หากวันเดียวกันมีของเสียหลายประเภท ให้ใส่ยอดผลิตในแถวแรกเพียงครั้งเดียว
+        และใส่ยอดผลิต 0 ในแถวประเภทของเสียอื่น เพื่อไม่ให้ยอดผลิตรวมซ้ำ
+      </p>
+    </section>
 
-      <!-- DASHBOARD -->
-      <section id="dashboard" class="page active">
-        <div class="filter-panel">
-          <div class="filter-group">
-            <label>Date From</label>
-            <input type="date" id="filterFrom">
+    <section class="card">
+      <div class="section-head">
+        <h2>สรุปตามช่วงเวลา</h2>
+        <span id="recordCount" class="subtitle"></span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ช่วงเวลา</th><th>ไลน์ / พื้นที่</th>
+              <th class="num">ยอดผลิต</th><th class="num">ยอดของเสีย</th>
+              <th class="num">อัตราของเสีย</th>
+            </tr>
+          </thead>
+          <tbody id="summaryRows"></tbody>
+        </table>
+      </div>
+
+      <h2 style="margin-top:28px">รายการข้อมูลที่บันทึก</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>วันที่</th><th>กะ</th><th>ไลน์</th><th>รุ่น</th>
+              <th>ประเภทของเสีย</th><th class="num">ผลิต</th>
+              <th class="num">เสีย</th><th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="detailRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="hint">
+      ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้ กรุณาส่งออก CSV เพื่อสำรองข้อมูล
+      หรือย้ายไปใช้งานเครื่องอื่น
+    </p>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "scrap-analysis-dashboard-v1";
+    const columns = [
+      "page", "date", "shift", "line", "model",
+      "production", "scrap", "defect", "note"
+    ];
+
+    let records;
+    try {
+      records = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      if (!Array.isArray(records)) records = [];
+    } catch {
+      records = [];
+    }
+
+    let activePage = "foam";
+    let activePeriod = "day";
+
+    const el = id => document.getElementById(id);
+    const number = value => new Intl.NumberFormat("th-TH").format(value);
+    const percent = (scrap, production) =>
+      production > 0 ? scrap / production * 100 : 0;
+
+    function safe(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;",
+        '"': "&quot;", "'": "&#39;"
+      })[char]);
+    }
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    }
+
+    // ใช้สัปดาห์แบบ ISO: เริ่มวันจันทร์
+    function isoWeek(dateText) {
+      const date = new Date(dateText + "T12:00:00Z");
+      const weekday = (date.getUTCDay() + 6) % 7;
+      date.setUTCDate(date.getUTCDate() - weekday + 3);
+
+      const year = date.getUTCFullYear();
+      const firstThursday = new Date(Date.UTC(year, 0, 4));
+      const firstWeekday = (firstThursday.getUTCDay() + 6) % 7;
+      const week = 1 + Math.round(
+        ((date - firstThursday) / 86400000 - 3 + firstWeekday) / 7
+      );
+
+      return `${year}-W${String(week).padStart(2, "0")}`;
+    }
+
+    function periodKey(date) {
+      if (activePeriod === "week") return isoWeek(date);
+      if (activePeriod === "month") return date.slice(0, 7);
+      return date;
+    }
+
+    function getFilteredRecords() {
+      const start = el("startDate").value;
+      const end = el("endDate").value;
+      const line = el("lineFilter").value;
+
+      return records.filter(row =>
+        row.page === activePage &&
+        (!start || row.date >= start) &&
+        (!end || row.date <= end) &&
+        (!line || row.line === line)
+      );
+    }
+
+    function groupBy(rows, keyFunction) {
+      const groups = new Map();
+
+      for (const row of rows) {
+        const key = keyFunction(row);
+        if (!groups.has(key)) {
+          groups.set(key, { key, production: 0, scrap: 0 });
+        }
+        const item = groups.get(key);
+        item.production += Number(row.production);
+        item.scrap += Number(row.scrap);
+      }
+
+      return [...groups.values()];
+    }
+
+    function updateLineFilter() {
+      const select = el("lineFilter");
+      const previous = select.value;
+      const lines = [...new Set(
+        records
+          .filter(row => row.page === activePage)
+          .map(row => row.line)
+          .filter(Boolean)
+      )].sort();
+
+      select.innerHTML = '<option value="">ทั้งหมด</option>' +
+        lines.map(line =>
+          `<option value="${safe(line)}">${safe(line)}</option>`
+        ).join("");
+
+      select.value = lines.includes(previous) ? previous : "";
+    }
+
+    function renderTrend(rows) {
+      const data = groupBy(rows, row => periodKey(row.date))
+        .sort((a, b) => a.key.localeCompare(b.key))
+        .slice(-12);
+
+      if (!data.length) {
+        el("trendChart").innerHTML =
+          '<span class="subtitle">ยังไม่มีข้อมูลในช่วงที่เลือก</span>';
+        return;
+      }
+
+      const width = 700, height = 260;
+      const left = 45, right = 48, top = 20, bottom = 45;
+      const chartWidth = width - left - right;
+      const chartHeight = height - top - bottom;
+      const maxProduction = Math.max(1, ...data.map(x => x.production));
+      const maxRate = Math.max(
+        1, ...data.map(x => percent(x.scrap, x.production))
+      );
+      const step = chartWidth / data.length;
+      const barWidth = Math.min(24, step * 0.22);
+
+      let svg = `<svg viewBox="0 0 ${width} ${height}"
+        role="img" aria-label="กราฟยอดผลิต ของเสีย และอัตราของเสีย">`;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = top + chartHeight * i / 4;
+        svg += `
+          <line x1="${left}" x2="${width - right}"
+            y1="${y}" y2="${y}" stroke="#2b425c"/>
+          <text x="${left - 6}" y="${y + 4}" text-anchor="end"
+            fill="#9fb3ca" font-size="10">
+            ${number(Math.round(maxProduction * (4 - i) / 4))}
+          </text>
+          <text x="${width - right + 5}" y="${y + 4}"
+            fill="#70cbb2" font-size="10">
+            ${(maxRate * (4 - i) / 4).toFixed(1)}%
+          </text>`;
+      }
+
+      const points = [];
+
+      data.forEach((item, i) => {
+        const x = left + step * (i + 0.5);
+        const productionHeight = item.production / maxProduction * chartHeight;
+        const scrapHeight = item.scrap / maxProduction * chartHeight;
+        const rateY = top + chartHeight -
+          percent(item.scrap, item.production) / maxRate * chartHeight;
+
+        svg += `
+          <rect x="${x - barWidth - 2}"
+            y="${top + chartHeight - productionHeight}"
+            width="${barWidth}" height="${productionHeight}"
+            fill="#319cf4" rx="3"/>
+          <rect x="${x + 2}"
+            y="${top + chartHeight - scrapHeight}"
+            width="${barWidth}" height="${Math.max(1, scrapHeight)}"
+            fill="#ff6c87" rx="3"/>
+          <text x="${x}" y="${height - 13}" text-anchor="middle"
+            fill="#a9bad0" font-size="10">
+            ${safe(item.key.slice(5))}
+          </text>`;
+
+        points.push(`${x},${rateY}`);
+      });
+
+      svg += `<polyline points="${points.join(" ")}"
+        fill="none" stroke="#48d3b6" stroke-width="3"/>`;
+
+      for (const point of points) {
+        const [x, y] = point.split(",");
+        svg += `<circle cx="${x}" cy="${y}" r="4" fill="#48d3b6"/>`;
+      }
+
+      el("trendChart").innerHTML = svg + "</svg>";
+    }
+
+    function render() {
+      updateLineFilter();
+      const rows = getFilteredRecords();
+      const production = rows.reduce((sum, row) => sum + row.production, 0);
+      const scrap = rows.reduce((sum, row) => sum + row.scrap, 0);
+
+      el("totalProduction").textContent = number(production);
+      el("totalScrap").textContent = number(scrap);
+      el("scrapRate").textContent = percent(scrap, production).toFixed(2) + "%";
+      el("totalDays").textContent =
+        number(new Set(rows.map(row => row.date)).size);
+      el("recordCount").textContent = number(rows.length) + " รายการ";
+
+      renderTrend(rows);
+
+      const defects = groupBy(
+        rows, row => row.defect || "ไม่ระบุ"
+      ).sort((a, b) => b.scrap - a.scrap).slice(0, 7);
+
+      const maxDefect = Math.max(1, ...defects.map(item => item.scrap));
+      el("defectChart").innerHTML = defects.length
+        ? defects.map(item => `
+          <div class="bar-row">
+            <span>${safe(item.key)}</span>
+            <div class="track">
+              <div class="fill"
+                style="width:${item.scrap / maxDefect * 100}%"></div>
+            </div>
+            <b>${number(item.scrap)}</b>
           </div>
-          <div class="filter-group">
-            <label>Date To</label>
-            <input type="date" id="filterTo">
-          </div>
-          <div class="filter-group">
-            <label>Line</label>
-            <select id="filterLine">
-              <option value="ALL">All Lines</option>
-              <option value="Door A">Door A</option>
-              <option value="Door B">Door B</option>
-              <option value="Door C">Door C</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label>Shift</label>
-            <select id="filterShift">
-              <option value="ALL">All Shifts</option>
-              <option value="A">Shift A</option>
-              <option value="B">Shift B</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label>Model</label>
-            <select id="filterModel">
-              <option value="ALL">All Models</option>
-            </select>
-          </div>
-          <button class="btn secondary" id="resetFilters">Reset</button>
-        </div>
+        `).join("")
+        : '<p class="subtitle">ยังไม่มีข้อมูลในช่วงที่เลือก</p>';
 
-        <div class="kpi-grid">
-          <article class="kpi-card">
-            <div class="kpi-head">
-              <span>Total Production</span>
-              <span class="kpi-icon">▥</span>
-            </div>
-            <strong id="kpiProduction">0</strong>
-            <small>pcs</small>
-          </article>
+      const summary = groupBy(
+        rows, row => periodKey(row.date) + "|" + row.line
+      ).sort((a, b) => b.key.localeCompare(a.key));
 
-          <article class="kpi-card">
-            <div class="kpi-head">
-              <span>Total Defect</span>
-              <span class="kpi-icon">!</span>
-            </div>
-            <strong id="kpiDefect">0</strong>
-            <small>pcs</small>
-          </article>
+      el("summaryRows").innerHTML = summary.length
+        ? summary.map(item => {
+          const separator = item.key.indexOf("|");
+          const date = item.key.slice(0, separator);
+          const line = item.key.slice(separator + 1);
+          return `<tr>
+            <td>${safe(date)}</td>
+            <td>${safe(line)}</td>
+            <td class="num">${number(item.production)}</td>
+            <td class="num">${number(item.scrap)}</td>
+            <td class="num">
+              ${percent(item.scrap, item.production).toFixed(2)}%
+            </td>
+          </tr>`;
+        }).join("")
+        : '<tr><td colspan="5">ยังไม่มีข้อมูล</td></tr>';
 
-          <article class="kpi-card primary">
-            <div class="kpi-head">
-              <span>FTR Defect Rate</span>
-              <span class="kpi-icon">%</span>
-            </div>
-            <strong id="kpiFtr">0.00%</strong>
-            <small>Defect ÷ Production × 100</small>
-          </article>
+      el("detailRows").innerHTML = rows.length
+        ? [...rows]
+          .sort((a, b) => b.date.localeCompare(a.date))
+          .slice(0, 200)
+          .map(row => `<tr>
+            <td>${safe(row.date)}</td>
+            <td>${safe(row.shift || "—")}</td>
+            <td>${safe(row.line)}</td>
+            <td>${safe(row.model || "—")}</td>
+            <td>${safe(row.defect || "—")}</td>
+            <td class="num">${number(row.production)}</td>
+            <td class="num">${number(row.scrap)}</td>
+            <td><button class="danger" data-delete="${safe(row.id)}">
+              ลบ
+            </button></td>
+          </tr>`).join("")
+        : '<tr><td colspan="8">ยังไม่มีข้อมูล</td></tr>';
+    }
 
-          <article class="kpi-card">
-            <div class="kpi-head">
-              <span>Target Status</span>
-              <span class="kpi-icon">◎</span>
-            </div>
-            <strong id="kpiStatus" class="status-good">PASS</strong>
-            <small>Target ≤ <span id="targetText">5.00%</span></small>
-          </article>
-        </div>
+    document.querySelectorAll(".page").forEach(button => {
+      button.addEventListener("click", () => {
+        activePage = button.dataset.page;
+        document.querySelectorAll(".page").forEach(item =>
+          item.classList.toggle("active", item === button)
+        );
+        el("lineFilter").value = "";
+        el("currentPage").textContent = button.textContent;
+        render();
+      });
+    });
 
-        <div class="chart-grid top">
-          <article class="panel wide">
-            <div class="panel-head">
-              <div>
-                <span class="section-label">DAILY PERFORMANCE</span>
-                <h2>Daily FTR Trend</h2>
-              </div>
-              <span class="legend-target">Target ≤ <b id="trendTargetText">5.00%</b></span>
-            </div>
-            <div class="chart-wrap large">
-              <canvas id="trendChart"></canvas>
-            </div>
-          </article>
+    document.querySelectorAll(".period").forEach(button => {
+      button.addEventListener("click", () => {
+        activePeriod = button.dataset.period;
+        document.querySelectorAll(".period").forEach(item =>
+          item.classList.toggle("active", item === button)
+        );
+        render();
+      });
+    });
 
-          <article class="panel">
-            <div class="panel-head">
-              <div>
-                <span class="section-label">LINE COMPARISON</span>
-                <h2>FTR by Line</h2>
-              </div>
-            </div>
-            <div class="chart-wrap">
-              <canvas id="lineChart"></canvas>
-            </div>
-          </article>
-        </div>
+    ["startDate", "endDate", "lineFilter"].forEach(id => {
+      el(id).addEventListener("change", render);
+    });
 
-        <div class="chart-grid">
-          <article class="panel">
-            <div class="panel-head">
-              <div>
-                <span class="section-label">PARETO</span>
-                <h2>Top Defect</h2>
-              </div>
-            </div>
-            <div class="chart-wrap">
-              <canvas id="defectChart"></canvas>
-            </div>
-          </article>
+    const form = el("dataForm");
+    form.elements.date.value = new Date().toLocaleDateString("en-CA");
 
-          <article class="panel">
-            <div class="panel-head">
-              <div>
-                <span class="section-label">SHIFT PERFORMANCE</span>
-                <h2>Shift A vs Shift B</h2>
-              </div>
-            </div>
-            <div class="chart-wrap">
-              <canvas id="shiftChart"></canvas>
-            </div>
-          </article>
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      const values = Object.fromEntries(new FormData(form));
+      const production = Number(values.production);
+      const scrap = Number(values.scrap);
 
-          <article class="panel">
-            <div class="panel-head">
-              <div>
-                <span class="section-label">SUMMARY</span>
-                <h2>Production by Line</h2>
-              </div>
-            </div>
-            <div class="line-summary" id="lineSummary"></div>
-          </article>
-        </div>
-      </section>
+      if (scrap > production && production > 0) {
+        el("message").textContent =
+          "ยอดของเสียมากกว่ายอดผลิต กรุณาตรวจสอบข้อมูล";
+        return;
+      }
 
-      <!-- DATA ENTRY -->
-      <section id="entry" class="page">
-        <div class="page-title-row">
-          <div>
-            <p class="eyebrow">DAILY INPUT</p>
-            <h2>Daily Production & Defect Entry</h2>
-            <p>กรอกข้อมูลยอดผลิตและข้อบกพร่องรายวันของแต่ละ Line / Shift</p>
-          </div>
-        </div>
+      records.push({
+        ...values,
+        page: activePage,
+        production,
+        scrap,
+        id: crypto.randomUUID()
+      });
 
-        <form id="entryForm" class="entry-card">
-          <div class="form-grid">
-            <div class="form-field">
-              <label>Date *</label>
-              <input type="date" id="entryDate" required>
-            </div>
+      save();
+      form.reset();
+      form.elements.date.value = new Date().toLocaleDateString("en-CA");
+      el("message").textContent = "บันทึกข้อมูลแล้ว";
+      render();
+    });
 
-            <div class="form-field">
-              <label>Shift *</label>
-              <select id="entryShift" required>
-                <option value="A">Shift A</option>
-                <option value="B">Shift B</option>
-              </select>
-            </div>
+    el("detailRows").addEventListener("click", event => {
+      const id = event.target.dataset.delete;
+      if (!id || !confirm("ต้องการลบรายการนี้หรือไม่?")) return;
+      records = records.filter(row => row.id !== id);
+      save();
+      render();
+    });
 
-            <div class="form-field">
-              <label>Line *</label>
-              <select id="entryLine" required>
-                <option value="Door A">Door A</option>
-                <option value="Door B">Door B</option>
-                <option value="Door C">Door C</option>
-              </select>
-            </div>
+    function csvValue(value) {
+      const text = String(value ?? "");
+      return /[",\r\n]/.test(text)
+        ? '"' + text.replace(/"/g, '""') + '"'
+        : text;
+    }
 
-            <div class="form-field">
-              <label>Model *</label>
-              <input type="text" id="entryModel" placeholder="e.g. TM19, FUF18S" required>
-            </div>
+    function downloadCsv(rows, filename) {
+      const csv = "\uFEFF" + [
+        columns.join(","),
+        ...rows.map(row =>
+          columns.map(column => csvValue(row[column])).join(",")
+        )
+      ].join("\r\n");
 
-            <div class="form-field">
-              <label>Production Qty *</label>
-              <input type="number" id="entryProduction" min="0" step="1" placeholder="0" required>
-            </div>
+      const url = URL.createObjectURL(
+        new Blob([csv], { type: "text/csv;charset=utf-8" })
+      );
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
 
-            <div class="form-field">
-              <label>Defect Name *</label>
-              <input type="text" id="entryDefectName" list="defectList" placeholder="Select or type defect" required>
-              <datalist id="defectList">
-                <option value="Foam Leak Display">
-                <option value="Magnet Not Attract">
-                <option value="Foam Leak Cover Water">
-                <option value="Foam Leak Door Cap">
-                <option value="Inner Door Swell">
-                <option value="Door Sheet Scratch">
-                <option value="Door Dent">
-                <option value="Cap Gap">
-                <option value="Color Peel">
-                <option value="Glue Stain">
-              </datalist>
-            </div>
+    el("exportCsv").addEventListener("click", () => {
+      downloadCsv(records, "scrap-data.csv");
+    });
 
-            <div class="form-field">
-              <label>Defect Qty *</label>
-              <input type="number" id="entryDefectQty" min="0" step="1" placeholder="0" required>
-            </div>
+    el("downloadTemplate").addEventListener("click", () => {
+      downloadCsv([
+        {
+          page: "foam", date: "2026-09-24", shift: "Day",
+          line: "Door A", model: "Example",
+          production: 100, scrap: 2,
+          defect: "Foam leak", note: ""
+        },
+        {
+          page: "stamping", date: "2026-09-24", shift: "Day",
+          line: "Stamping 1", model: "Example",
+          production: 100, scrap: 1,
+          defect: "Scratch", note: ""
+        }
+      ], "scrap-template.csv");
+    });
 
-            <div class="form-field span-2">
-              <label>Remark</label>
-              <input type="text" id="entryRemark" placeholder="Optional remark">
-            </div>
-          </div>
+    function parseCsv(text) {
+      const output = [];
+      let row = [], cell = "", quoted = false;
+      text = text.replace(/^\uFEFF/, "");
 
-          <div class="form-actions">
-            <button type="reset" class="btn secondary">Clear</button>
-            <button type="submit" class="btn primary">Save Record</button>
-          </div>
-        </form>
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
 
-        <div class="info-note">
-          <strong>หมายเหตุ:</strong>
-          ในเวอร์ชัน GitHub Pages นี้ ข้อมูลจะถูกบันทึกด้วย LocalStorage ของ Browser เครื่องที่ใช้งาน
-          หากต้องการให้หลายเครื่องใช้ฐานข้อมูลเดียวกัน สามารถเชื่อม Supabase / Neon / Firebase เพิ่มภายหลังได้
-        </div>
-      </section>
+        if (quoted) {
+          if (char === '"' && text[i + 1] === '"') {
+            cell += '"';
+            i++;
+          } else if (char === '"') {
+            quoted = false;
+          } else {
+            cell += char;
+          }
+        } else if (char === '"') {
+          quoted = true;
+        } else if (char === ",") {
+          row.push(cell);
+          cell = "";
+        } else if (char === "\n" || char === "\r") {
+          row.push(cell);
+          if (row.some(value => value !== "")) output.push(row);
+          row = [];
+          cell = "";
+          if (char === "\r" && text[i + 1] === "\n") i++;
+        } else {
+          cell += char;
+        }
+      }
 
-      <!-- RECORDS -->
-      <section id="records" class="page">
-        <div class="page-title-row">
-          <div>
-            <p class="eyebrow">DATABASE</p>
-            <h2>Production Records</h2>
-            <p>ตรวจสอบ แก้ไข และส่งออกข้อมูลที่บันทึกไว้</p>
-          </div>
-          <div class="record-actions">
-            <button class="btn secondary" id="loadSampleBtn">Load Sample Data</button>
-            <button class="btn secondary" id="exportBtn">Export CSV</button>
-            <button class="btn danger" id="clearAllBtn">Clear All</button>
-          </div>
-        </div>
+      row.push(cell);
+      if (row.some(value => value !== "")) output.push(row);
+      if (quoted) throw new Error("รูปแบบเครื่องหมายคำพูดใน CSV ไม่ถูกต้อง");
+      return output;
+    }
 
-        <div class="table-card">
-          <div class="table-meta">
-            <span>Total records</span>
-            <strong id="recordCount">0</strong>
-          </div>
-          <div class="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Shift</th>
-                  <th>Line</th>
-                  <th>Model</th>
-                  <th>Production</th>
-                  <th>Defect</th>
-                  <th>Defect Qty</th>
-                  <th>FTR %</th>
-                  <th>Remark</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="recordsBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+    el("importCsv").addEventListener("change", async event => {
+      const file = event.target.files[0];
+      if (!file) return;
 
-      <footer>
-        FTR Door Line Dashboard · Quality Performance Monitoring
-      </footer>
-    </main>
-  </div>
+      try {
+        const rows = parseCsv(await file.text());
+        const header = rows.shift().map(value => value.trim().toLowerCase());
+        const missing = columns.filter(column => !header.includes(column));
 
-  <div id="toast" class="toast"></div>
+        if (missing.length) {
+          throw new Error("ขาดคอลัมน์: " + missing.join(", "));
+        }
 
-  <script src="app.js"></script>
+        const imported = rows.map((values, index) => {
+          const row = Object.fromEntries(
+            columns.map(column => [
+              column, values[header.indexOf(column)] ?? ""
+            ])
+          );
+
+          row.production = Number(row.production);
+          row.scrap = Number(row.scrap);
+
+          if (
+            !["foam", "stamping"].includes(row.page) ||
+            !/^\d{4}-\d{2}-\d{2}$/.test(row.date) ||
+            !row.line ||
+            !Number.isInteger(row.production) ||
+            !Number.isInteger(row.scrap) ||
+            row.production < 0 ||
+            row.scrap < 0
+          ) {
+            throw new Error(`ข้อมูลแถวที่ ${index + 2} ไม่ถูกต้อง`);
+          }
+
+          row.id = crypto.randomUUID();
+          return row;
+        });
+
+        records.push(...imported);
+        save();
+        el("message").textContent =
+          `นำเข้าสำเร็จ ${imported.length} รายการ`;
+        render();
+      } catch (error) {
+        el("message").textContent = "นำเข้าไม่สำเร็จ: " + error.message;
+      }
+
+      event.target.value = "";
+    });
+
+    render();
+  </script>
 </body>
 </html>
