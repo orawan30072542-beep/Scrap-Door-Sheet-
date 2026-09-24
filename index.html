@@ -286,13 +286,13 @@ dialog.entry-dialog::backdrop{
  #stampingEntry .stamping-entry-table td:nth-child(4)::before{content:"ปัญหา *"}
  #stampingEntry .stamping-entry-table td:nth-child(5)::before{content:"สาเหตุ"}
  #stampingEntry .stamping-entry-table td:nth-child(6)::before{content:"การแก้ไข"}
- #stampingEntry .stamping-entry-table td:nth-child(7)::before{content:"Leader"}
+ #stampingEntry .stamping-entry-table td:nth-child(7)::before{content:"ชื่อ"}
  #stampingEntry .stamping-entry-table td:last-child{align-self:end}
 }
 @media(max-width:500px){#stampingEntry .stamping-entry-table tr{grid-template-columns:1fr}}
 
 
-/* Wider entry form for the Leader field. */
+/* Wider entry form for the name field. */
 .entry-dialog:has(#stampingEntry:not([hidden])){width:min(1480px,calc(100% - 24px))}
 #stampingEntry .stamping-entry-table th:nth-last-child(2),#stampingEntry .stamping-entry-table td:nth-last-child(2){width:17%}
 @media(max-width:1399px){
@@ -455,10 +455,10 @@ dialog.entry-dialog::backdrop{
 <th>ปัญหา *</th>
 <th>สาเหตุ</th>
 <th>การแก้ไข</th>
-<th>Leader</th>
+<th>ชื่อ</th>
 <th></th>
 </tr></thead>
-<tbody id="stampingEntryRows"><tr><td><input name="partCode" inputmode="text" placeholder="เช่น 0060134560BT" required></td><td><input name="model" placeholder="รุ่น" required></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="employeeId" placeholder="รหัส Leader"></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td></tr></tbody>
+<tbody id="stampingEntryRows"><tr><td><input name="partCode" inputmode="text" placeholder="เช่น 0060134560BT" required></td><td><input name="model" placeholder="รุ่น" required></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="responsibleName" placeholder="กรอกชื่อ"></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td></tr></tbody>
 </table></div>
 <p class="stamping-help">กรอก Part Code ได้ทั้งตัวเลขและตัวอักษร · รุ่นที่เคยบันทึกจะแสดงอัตโนมัติ · รหัสใหม่ให้กรอก Model ครั้งแรก</p>
 <div class="stamping-form-actions">
@@ -496,7 +496,7 @@ dialog.entry-dialog::backdrop{
 <th>ประเภท</th>
 <th>สาเหตุ</th>
 <th>การแก้ไข</th>
-<th>Leader</th>
+<th>ชื่อ</th>
 <th class="num">ผลิต</th>
 <th class="num">เสีย</th>
 <th>จัดการ</th>
@@ -537,8 +537,8 @@ pts.forEach(p=>{let [x,y]=p.split(',');
 s+=`<circle cx="${x}" cy="${y}" r="4" fill="#42d7ba"/>`});
 box.innerHTML=s+'</svg>'}function addStampRow(value={}){
  const tr=document.createElement('tr');
- tr.innerHTML=`<td><input name="partCode" inputmode="text" placeholder="เช่น 0060134560BT" required></td><td><input name="model" placeholder="รุ่น" required></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="employeeId" placeholder="รหัส Leader"></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td>`;
- for(const name of ['partCode','model','quantity','defect','cause','action','employeeId'])tr.querySelector(`[name="${name}"]`).value=value[name]||'';
+ tr.innerHTML=`<td><input name="partCode" inputmode="text" placeholder="เช่น 0060134560BT" required></td><td><input name="model" placeholder="รุ่น" required></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="responsibleName" placeholder="กรอกชื่อ"></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td>`;
+ for(const name of ['partCode','model','quantity','defect','cause','action','responsibleName'])tr.querySelector(`[name="${name}"]`).value=value[name]||'';
  $('#stampingEntryRows').append(tr)
 }
 function rateText(scrap,production){return production>0?rate(scrap,production).toFixed(2)+'%':'—'}
@@ -592,7 +592,7 @@ $('#pareto').innerHTML=types.length?types.map(x=>`<div class="barrow"><span titl
 let summary=group(rows,r=>[key(r.date),r.line,r.model,r.defect].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
 $('#summary').innerHTML=summary.length?summary.map(v=>{let [d,l,m,t]=v.key.split('\u0001');
 return `<tr><td>${esc(d)}</td><td>${esc(l)}</td><td>${esc(m||'—')}</td><td>${esc(t||'—')}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td></tr>`}).join(''):'<tr><td colspan="7" class="muted">ยังไม่มีข้อมูล</td></tr>';
-$('#raw').innerHTML=rows.length?[...rows].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,200).map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.shift||'—')}</td><td>${esc(r.line)}</td><td>${esc(r.model||'—')}</td><td>${esc(r.partCode||'—')}</td><td>${esc(r.defect||'—')}</td><td>${esc(r.cause||'—')}</td><td>${esc(r.action||'—')}</td><td>${esc(r.employeeId||r.department||'—')}</td><td class="num">${fmt(r.production)}</td><td class="num">${fmt(r.scrap)}</td><td><button class="btn danger" data-delete="${esc(r.id)}">ลบ</button></td></tr>`).join(''):'<tr><td colspan="12" class="muted">ยังไม่มีข้อมูล</td></tr>'}document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{page=b.dataset.page;
+$('#raw').innerHTML=rows.length?[...rows].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,200).map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.shift||'—')}</td><td>${esc(r.line)}</td><td>${esc(r.model||'—')}</td><td>${esc(r.partCode||'—')}</td><td>${esc(r.defect||'—')}</td><td>${esc(r.cause||'—')}</td><td>${esc(r.action||'—')}</td><td>${esc(r.responsibleName||r.employeeId||r.department||'—')}</td><td class="num">${fmt(r.production)}</td><td class="num">${fmt(r.scrap)}</td><td><button class="btn danger" data-delete="${esc(r.id)}">ลบ</button></td></tr>`).join(''):'<tr><td colspan="12" class="muted">ยังไม่มีข้อมูล</td></tr>'}document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{page=b.dataset.page;
 document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x===b));
 $('#formPage').textContent=b.textContent;$('#openEntry').textContent=page==='stamping'?'+ เพิ่มข้อมูลรายวัน · SCRAP STAMPING':'+ เพิ่มข้อมูลรายวัน · SCRAP DOOR FOAM';
 $('#foamEntryWrap').hidden=page==='stamping';$('#stampingEntry').hidden=page!=='stamping';
@@ -637,7 +637,7 @@ $('#stampingEntry').onsubmit=e=>{
  if(!date||!shift||!['400T','200T','100T'].includes(line)){$('#stampFormNotice').textContent='กรุณากรอกวันที่ กะ และเครื่องจักร';return}
  const previous=records.find(r=>r.page==='stamping'&&r.kind==='production'&&r.date===date&&r.shift===shift&&r.line===line);
  if(previous && meta.production!==''){previous.production=production}else if(!previous && production>0)records.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'production',date,shift,line,production,scrap:0,model:'',defect:'',note:''});
- for(const issue of issues){partModels[issue.partCode]=issue.model;records.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'scrap',date,shift,line,partCode:issue.partCode,model:issue.model,production:0,scrap:Number(issue.quantity),defect:issue.defect,cause:issue.cause,action:issue.action,employeeId:issue.employeeId,note:''})}
+ for(const issue of issues){partModels[issue.partCode]=issue.model;records.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'scrap',date,shift,line,partCode:issue.partCode,model:issue.model,production:0,scrap:Number(issue.quantity),defect:issue.defect,cause:issue.cause,action:issue.action,responsibleName:issue.responsibleName,note:''})}
  localStorage.setItem(PART_MAP_KEY,JSON.stringify(partModels));save();$('#notice').textContent=`บันทึก ${issues.length} รายการแล้ว`;
  form.reset();form.querySelector('[name=date]').value=new Date().toLocaleDateString('en-CA');$('#stampingEntryRows').innerHTML='';addStampRow();$('#entryDialog').close();render()
 };
@@ -656,7 +656,7 @@ if(id&&confirm('ลบรายการนี้?')){records=records.filter(r=>
 save();
 render()}};
 function csvCell(v){let s=String(v??'');
-return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}const headers=['page','date','shift','line','model','production','scrap','defect','note','partCode','cause','action','employeeId','kind'];function download(rows,name){let body='\ufeff'+[headers.join(','),...rows.map(r=>headers.map(h=>csvCell(h==='employeeId'?(r.employeeId||r.department):r[h])).join(','))].join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/csv;charset=utf-8'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}$('#template').onclick=()=>download([{page:'foam',date:'2026-09-24',shift:'Day',line:'Door A',model:'Example',production:100,scrap:2,defect:'Foam leak',note:''},{page:'stamping',date:'2026-09-24',shift:'Day',line:'Stamping 1',model:'Example',production:100,scrap:1,defect:'Scratch',note:''}],'scrap-template.csv');$('#export').onclick=()=>download(records,'scrap-data.csv');function parseCSV(txt){let out=[],row=[],cell='',quoted=false;txt=txt.replace(/^\ufeff/,'');for(let i=0;i<txt.length;i++){let c=txt[i];if(quoted){if(c==='"'&&txt[i+1]==='"'){cell+='"';i++}else if(c==='"')quoted=false;else cell+=c}else if(c==='"')quoted=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'||c==='\r'){row.push(cell);if(row.some(v=>v!==''))out.push(row);row=[];cell='';if(c==='\r'&&txt[i+1]==='\n')i++}else cell+=c}row.push(cell);if(row.some(v=>v!==''))out.push(row);if(quoted)throw Error('เครื่องหมายอัญประกาศใน CSV ไม่ครบ');return out}$('#import').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let rows=parseCSV(await file.text()),head=rows.shift().map(s=>s.trim().toLowerCase()),missing=['page','date','shift','line','model','production','scrap','defect','note'].filter(h=>!head.includes(h));if(missing.length)throw Error('ขาดคอลัมน์ '+missing.join(', '));let added=[];for(let [i,values] of rows.entries()){let obj=Object.fromEntries(headers.map(h=>[h,head.indexOf(h)<0?'':values[head.indexOf(h)]??'']));if(!obj.employeeId&&head.includes('department'))obj.employeeId=values[head.indexOf('department')]||'';obj.production=Number(obj.production);obj.scrap=Number(obj.scrap);if(!['foam','stamping'].includes(obj.page)||!/^\d{4}-\d{2}-\d{2}$/.test(obj.date)||Number.isNaN(new Date(obj.date+'T12:00:00Z').getTime())||!obj.line||!Number.isInteger(obj.production)||!Number.isInteger(obj.scrap)||obj.production<0||obj.scrap<0)throw Error(`แถว ${i+2} มีข้อมูลไม่ถูกต้อง`);obj.id=crypto.randomUUID?.()||String(Date.now()+Math.random());added.push(obj)}records.push(...added);for(const r of added)if(r.partCode&&r.model)partModels[String(r.partCode).trim().toUpperCase()]=r.model;localStorage.setItem(PART_MAP_KEY,JSON.stringify(partModels));save();$('#notice').textContent=`นำเข้าสำเร็จ ${added.length} รายการ`;render()}catch(err){$('#notice').textContent='นำเข้าไม่สำเร็จ: '+err.message}e.target.value=''};render();
+return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}const headers=['page','date','shift','line','model','production','scrap','defect','note','partCode','cause','action','responsibleName','kind'];function download(rows,name){let body='\ufeff'+[headers.join(','),...rows.map(r=>headers.map(h=>csvCell(h==='responsibleName'?(r.responsibleName||r.employeeId||r.department):r[h])).join(','))].join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/csv;charset=utf-8'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}$('#template').onclick=()=>download([{page:'foam',date:'2026-09-24',shift:'Day',line:'Door A',model:'Example',production:100,scrap:2,defect:'Foam leak',note:''},{page:'stamping',date:'2026-09-24',shift:'Day',line:'Stamping 1',model:'Example',production:100,scrap:1,defect:'Scratch',note:''}],'scrap-template.csv');$('#export').onclick=()=>download(records,'scrap-data.csv');function parseCSV(txt){let out=[],row=[],cell='',quoted=false;txt=txt.replace(/^\ufeff/,'');for(let i=0;i<txt.length;i++){let c=txt[i];if(quoted){if(c==='"'&&txt[i+1]==='"'){cell+='"';i++}else if(c==='"')quoted=false;else cell+=c}else if(c==='"')quoted=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'||c==='\r'){row.push(cell);if(row.some(v=>v!==''))out.push(row);row=[];cell='';if(c==='\r'&&txt[i+1]==='\n')i++}else cell+=c}row.push(cell);if(row.some(v=>v!==''))out.push(row);if(quoted)throw Error('เครื่องหมายอัญประกาศใน CSV ไม่ครบ');return out}$('#import').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let rows=parseCSV(await file.text()),head=rows.shift().map(s=>s.trim().toLowerCase()),missing=['page','date','shift','line','model','production','scrap','defect','note'].filter(h=>!head.includes(h));if(missing.length)throw Error('ขาดคอลัมน์ '+missing.join(', '));let added=[];for(let [i,values] of rows.entries()){let obj=Object.fromEntries(headers.map(h=>[h,head.indexOf(h)<0?'':values[head.indexOf(h)]??'']));if(!obj.responsibleName){let previous=head.indexOf('employeeid');if(previous<0)previous=head.indexOf('department');if(previous>=0)obj.responsibleName=values[previous]||'';}obj.production=Number(obj.production);obj.scrap=Number(obj.scrap);if(!['foam','stamping'].includes(obj.page)||!/^\d{4}-\d{2}-\d{2}$/.test(obj.date)||Number.isNaN(new Date(obj.date+'T12:00:00Z').getTime())||!obj.line||!Number.isInteger(obj.production)||!Number.isInteger(obj.scrap)||obj.production<0||obj.scrap<0)throw Error(`แถว ${i+2} มีข้อมูลไม่ถูกต้อง`);obj.id=crypto.randomUUID?.()||String(Date.now()+Math.random());added.push(obj)}records.push(...added);for(const r of added)if(r.partCode&&r.model)partModels[String(r.partCode).trim().toUpperCase()]=r.model;localStorage.setItem(PART_MAP_KEY,JSON.stringify(partModels));save();$('#notice').textContent=`นำเข้าสำเร็จ ${added.length} รายการ`;render()}catch(err){$('#notice').textContent='นำเข้าไม่สำเร็จ: '+err.message}e.target.value=''};render();
 </script>
 </body>
 </html>
