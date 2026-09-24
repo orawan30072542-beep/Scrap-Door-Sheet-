@@ -464,14 +464,14 @@ function renderStamping(rows){
  points.forEach(p=>svg+=`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="#ffca72"/>`);
  $('#stampingPareto').innerHTML=svg+'</svg>'
 }
-function render(){options();
+function render(){options();$('#stampingAnalytics').hidden=page!=='stamping';$('#generalCharts').hidden=page==='stamping';
 let rows=filtered(),p=rows.reduce((a,r)=>a+r.production,0),s=rows.reduce((a,r)=>a+r.scrap,0);
 $('#production').textContent=fmt(p);
 $('#scrap').textContent=fmt(s);
 $('#rate').textContent=rate(s,p).toFixed(2)+'%';
 $('#days').textContent=fmt(new Set(rows.map(r=>r.date)).size);
 $('#count').textContent=fmt(rows.length)+' รายการ';
-chart(rows);
+if(page==='stamping')renderStamping(rows);else chart(rows);
 let types=group(rows,r=>r.defect||'ไม่ระบุ').sort((a,b)=>b.scrap-a.scrap).slice(0,7),max=Math.max(1,...types.map(x=>x.scrap));
 $('#pareto').innerHTML=types.length?types.map(x=>`<div class="barrow"><span title="${esc(x.key)}">${esc(x.key)}</span><div class="track"><div class="fill" style="width:${x.scrap/max*100}%"></div></div><b>${fmt(x.scrap)}</b></div>`).join(''):'<p class="muted">ยังไม่มีข้อมูลในช่วงที่เลือก</p>';
 let summary=group(rows,r=>[key(r.date),r.line,r.model,r.defect].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
@@ -480,6 +480,7 @@ return `<tr><td>${esc(d)}</td><td>${esc(l)}</td><td>${esc(m||'—')}</td><td>${e
 $('#raw').innerHTML=rows.length?[...rows].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,200).map(r=>`<tr><td>${esc(r.date)}</td><td>${esc(r.shift||'—')}</td><td>${esc(r.line)}</td><td>${esc(r.model||'—')}</td><td>${esc(r.defect||'—')}</td><td class="num">${fmt(r.production)}</td><td class="num">${fmt(r.scrap)}</td><td><button class="btn danger" data-delete="${esc(r.id)}">ลบ</button></td></tr>`).join(''):'<tr><td colspan="8" class="muted">ยังไม่มีข้อมูล</td></tr>'}document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{page=b.dataset.page;
 document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x===b));
 $('#formPage').textContent=b.textContent;
+let lineInput=$('input[name=line]');lineInput.placeholder=page==='stamping'?'400T / 200T / 100T':'Door A / Door B / Door C';lineInput.setAttribute('list',page==='stamping'?'stampingMachineOptions':'');
 $('#entryDialog').close();
 $('#line').value='';
 $('#model').value='';
@@ -492,7 +493,7 @@ $('#openEntry').onclick=()=>$('#entryDialog').showModal();
 $('#closeEntry').onclick=()=>$('#entryDialog').close();
 $('#entryDialog').onclick=e=>{if(e.target===$('#entryDialog'))$('#entryDialog').close()};
 $('#entry').onsubmit=e=>{e.preventDefault();
-let x=Object.fromEntries(new FormData(e.target)),production=Number(x.production),scrap=Number(x.scrap);if(page==='stamping'){let name=machineName(x.line);if(!name){$('#notice').textContent='เลือกเครื่อง 400T, 200T หรือ 100T';return}x.line=name}
+let x=Object.fromEntries(new FormData(e.target)),production=Number(x.production),scrap=Number(x.scrap);if(page==='stamping'){let name=machineName(x.line);if(!name){$('#notice').textContent='เลือกเครื่อง 400T, 200T หรือ 100T';return}x.line=name}if(page==='stamping'){let name=machineName(x.line);if(!name){$('#notice').textContent='เลือกเครื่อง 400T, 200T หรือ 100T';return}x.line=name}
 if(!Number.isInteger(production)||!Number.isInteger(scrap)||production<0||scrap<0||scrap>production&&production>0){$('#notice').textContent='ตรวจสอบยอดผลิตและยอดของเสียอีกครั้ง';
 return}records.push({...x,page,production,scrap,id:crypto.randomUUID?.()||String(Date.now()+Math.random())});
 save();
