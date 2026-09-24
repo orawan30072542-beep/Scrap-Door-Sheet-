@@ -290,6 +290,14 @@ dialog.entry-dialog::backdrop{
  #stampingEntry .stamping-entry-table td:last-child{align-self:end}
 }
 @media(max-width:500px){#stampingEntry .stamping-entry-table tr{grid-template-columns:1fr}}
+
+.stamping-pdf-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 16px}
+.stamp-pdf-review{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,0.65fr);gap:14px;margin:0 0 18px}
+#stampPdfPages{max-height:340px;overflow:auto;border:1px solid #334d6b;border-radius:9px}
+#stampPdfPages canvas{display:block;width:100%;height:auto;margin-bottom:8px}
+#stampPdfText{width:100%;box-sizing:border-box;min-height:260px;resize:vertical;background:#0f1e30;color:#e5f1ff;border:1px solid #3a5775;border-radius:8px;padding:10px}
+#stampPdfStatus{font-size:12px}
+@media(max-width:700px){.stamp-pdf-review{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -414,8 +422,8 @@ dialog.entry-dialog::backdrop{
 </form>
 <p class="muted" style="font-size:12px">กรณีวันเดียวมีหลายประเภทของเสีย ให้บันทึกยอดผลิตเพียงแถวเดียว ส่วนแถวประเภทของเสียอื่นใส่ยอดผลิต 0 เพื่อไม่ให้ยอดผลิตซ้ำ</p>
 </div>
-<form id="stampingEntry" hidden>
-<div class="stamping-head-fields">
+<form id="stampingEntry" hidden novalidate>
+<div class="stamping-pdf-actions"><label class="btn" for="stampPdfFile">📄 เลือก PDF เพื่ออ่านข้อมูล</label><input id="stampPdfFile" type="file" accept="application/pdf,.pdf" hidden><span id="stampPdfStatus" class="muted">อ่านเฉพาะตารางรายการ ไม่อ่านหมายเลข Job · โปรดตรวจลายมือก่อนบันทึก</span></div><div id="stampPdfReview" hidden><div class="stamp-pdf-review"><div><strong>ภาพรายงาน</strong><div id="stampPdfPages"></div></div><div><strong>ข้อความจากตารางรายการ (ไม่รวม Job)</strong><textarea id="stampPdfText" rows="15" placeholder="ข้อความจาก PDF จะปรากฏที่นี่"></textarea><button class="btn" type="button" id="stampPdfAutofill">เติมข้อมูลทีละบรรทัด</button><p class="muted">ลายมือในไฟล์ตัวอย่างอ่านผิดได้ กรุณาตรวจทุกช่องเทียบกับภาพก่อนบันทึก</p></div></div></div><div class="stamping-head-fields">
 <div class="field">
 <label>วันที่ *</label><input type="date" name="date" required>
 </div>
@@ -442,9 +450,9 @@ dialog.entry-dialog::backdrop{
 <th>แผนกที่รับผิดชอบ</th>
 <th></th>
 </tr></thead>
-<tbody id="stampingEntryRows"><tr><td><input name="partCode" inputmode="numeric" pattern="[0-9]+" placeholder="ตัวเลข" required></td><td><input name="model" placeholder="รุ่น" required></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="department" placeholder="แผนก"></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td></tr></tbody>
+<tbody id="stampingEntryRows"><tr><td><input name="partCode" inputmode="text" placeholder="เช่น 0060134560BT" required></td><td><input name="model" placeholder="รุ่น" required></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="department" placeholder="แผนก"></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td></tr></tbody>
 </table></div>
-<p class="stamping-help">กรอกรหัส Part Code เป็นตัวเลข · รุ่นที่เคยบันทึกจะแสดงอัตโนมัติ · รหัสใหม่ให้กรอก Model ครั้งแรก</p>
+<p class="stamping-help">กรอก Part Code ได้ทั้งตัวเลขและตัวอักษร · รุ่นที่เคยบันทึกจะแสดงอัตโนมัติ · รหัสใหม่ให้กรอก Model ครั้งแรก</p>
 <div class="stamping-form-actions">
 <div class="field">
 <label>ยอดผลิตของเครื่อง (ใช้คำนวณ Scrap Rate)</label><input type="number" name="production" min="0" step="1" placeholder="กรอกยอดผลิตของวันและกะนี้">
@@ -453,7 +461,7 @@ dialog.entry-dialog::backdrop{
 <button class="btn" type="button" id="addStampRow">+ เพิ่มแถว</button><button class="btn primary" type="submit">บันทึกข้อมูล</button>
 </div>
 </div>
-</form></dialog><section class="panel"><div class="top">
+<p id="stampFormNotice" role="alert" style="color:#ffcb83;font-size:13px;margin:10px 0 0"></p></form></dialog><section class="panel"><div class="top">
 <h2>รายละเอียดตามช่วงเวลา</h2>
 <span class="muted" id="count"></span>
 </div>
@@ -492,7 +500,7 @@ let records=[];
 try{records=JSON.parse(localStorage.getItem(KEY)||'[]');
 if(!Array.isArray(records))records=[]}catch{records=[]}const PART_MAP_KEY='scrap_part_models_v1';
 let partModels={};try{partModels=JSON.parse(localStorage.getItem(PART_MAP_KEY)||'{}')}catch{partModels={}}
-for(const old of records)if(/^\d+$/.test(old.partCode||'')&&old.model)partModels[old.partCode]=old.model;
+for(const old of records)if(old.partCode&&old.model)partModels[String(old.partCode).trim().toUpperCase()]=old.model;
 let page='foam',period='day';
 const $=s=>document.querySelector(s),fmt=n=>new Intl.NumberFormat('th-TH').format(n),rate=(s,p)=>p>0?100*s/p:0,esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),save=()=>localStorage.setItem(KEY,JSON.stringify(records));
 $('input[name=date]').value=new Date().toLocaleDateString('en-CA');
@@ -521,7 +529,7 @@ pts.forEach(p=>{let [x,y]=p.split(',');
 s+=`<circle cx="${x}" cy="${y}" r="4" fill="#42d7ba"/>`});
 box.innerHTML=s+'</svg>'}function addStampRow(value={}){
  const tr=document.createElement('tr');
- tr.innerHTML=`<td><input name="partCode" inputmode="numeric" pattern="[0-9]+" placeholder="ตัวเลข" required></td><td><input name="model" placeholder="รุ่น" required></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="department" placeholder="แผนก"></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td>`;
+ tr.innerHTML=`<td><input name="partCode" inputmode="text" placeholder="เช่น 0060134560BT" required></td><td><input name="model" placeholder="รุ่น" required></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="department" placeholder="แผนก"></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td>`;
  for(const name of ['partCode','model','quantity','defect','cause','action','department'])tr.querySelector(`[name="${name}"]`).value=value[name]||'';
  $('#stampingEntryRows').append(tr)
 }
@@ -596,7 +604,7 @@ $('#entryDialog').onclick=e=>{if(e.target===$('#entryDialog'))$('#entryDialog').
 $('#addStampRow').onclick=()=>addStampRow();
 $('#stampingEntryRows').oninput=e=>{
  if(e.target.name!=='partCode')return;
- const row=e.target.closest('tr'),code=e.target.value.trim(),model=row.querySelector('[name=model]');
+ const row=e.target.closest('tr'),code=e.target.value.trim().toUpperCase(),model=row.querySelector('[name=model]');
  if(partModels[code])model.value=partModels[code];else model.value=''
 };
 $('#stampingEntryRows').onclick=e=>{
@@ -604,19 +612,85 @@ $('#stampingEntryRows').onclick=e=>{
  if($('#stampingEntryRows').children.length>1)e.target.closest('tr').remove();
  else{e.target.closest('tr').querySelectorAll('input').forEach(input=>input.value='')}
 };
+// The source form is a scanned image. OCR only creates a draft and never writes records.
+function loadStampScript(url,globalName){if(window[globalName])return Promise.resolve();return new Promise((resolve,reject)=>{let tag=document.createElement('script');tag.src=url;tag.onload=resolve;tag.onerror=()=>reject(new Error('โหลดเครื่องมืออ่าน PDF ไม่สำเร็จ กรุณาตรวจการเชื่อมต่ออินเทอร์เน็ต'));document.head.append(tag)})}
+$('#stampPdfFile').onchange=async e=>{
+ const file=e.target.files?.[0];if(!file)return;
+ const status=$('#stampPdfStatus'),button=$('#stampPdfAutofill');button.disabled=true;status.textContent='กำลังเปิด PDF…';
+ try{
+  await loadStampScript('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js','pdfjsLib');
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  const documentPdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
+  if(documentPdf.numPages>10)throw Error('รองรับสูงสุด 10 หน้า/ไฟล์');
+  $('#stampPdfPages').replaceChildren();$('#stampPdfReview').hidden=false;
+  const texts=[];const imagePages=[];
+  for(let n=1;n<=documentPdf.numPages;n++){
+   const pg=await documentPdf.getPage(n),viewport=pg.getViewport({scale:2}),canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
+   await pg.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+   $('#stampPdfPages').append(canvas);imagePages.push(canvas);
+   const content=await pg.getTextContent();texts.push(content.items.map(item=>item.str).join(' ').trim());
+  }
+  status.textContent='กำลังโหลด OCR เพื่ออ่านเฉพาะตารางรายการ…';
+  await loadStampScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js','Tesseract');
+  const worker=await Tesseract.createWorker('tha+eng');
+  window.stampPdfDraft=[];
+  try{for(let i=0;i<imagePages.length;i++){
+   status.textContent=`กำลังอ่านตารางหน้า ${i+1}/${imagePages.length}…`;
+   const source=imagePages[i],crop=document.createElement('canvas');
+   const box={x:.15,y:.26,w:.75,h:.37};crop.width=Math.round(source.width*box.w);crop.height=Math.round(source.height*box.h);
+   crop.getContext('2d').drawImage(source,source.width*box.x,source.height*box.y,crop.width,crop.height,0,0,crop.width,crop.height);
+   const result=await worker.recognize(crop);texts[i]=result.data.text;
+   const words=result.data.words||[];
+   for(let row=0;row<10;row++){
+    const centerY=.279+row*.0357;
+    const cells={partCode:[],model:[],quantity:[],machine:[],defect:[],action:[],department:[]};
+    for(const word of words){
+     const y=box.y+((word.bbox.y0+word.bbox.y1)/2)/crop.height*box.h;
+     if(Math.abs(y-centerY)>.017)continue;
+     const x=box.x+((word.bbox.x0+word.bbox.x1)/2)/crop.width*box.w;
+     const field=x<.22?'partCode':x<.36?'model':x<.425?'quantity':x<.49?'machine':x<.63?'defect':x<.765?'action':x<.835?null:x<.9?'department':null;
+     if(field)cells[field].push(word.text)
+    }
+    const get=name=>cells[name].join(' ').trim();
+    const code=get('partCode').replace(/\s+/g,'').toUpperCase(),qty=get('quantity').replace(/[^0-9]/g,'');
+    const draft={partCode:/^[0-9A-Z_-]{6,20}$/.test(code)?code:'',model:get('model'),quantity:/^\d{1,4}$/.test(qty)?qty:'',defect:get('defect'),action:get('action'),department:get('department')};
+    window.stampPdfDraft.push(draft);
+    const machine=get('machine').match(/(400T|200T|100T)/i);if(machine)$('#stampingEntry').querySelector('[name=line]').value=machine[1].toUpperCase();
+   }
+  }}finally{await worker.terminate()}
+  $('#stampPdfText').value=texts.map((t,i)=>'ตารางหน้า '+(i+1)+'\n'+t).join('\n\n');
+  status.textContent='อ่านเฉพาะตารางรายการแล้ว (ข้าม Job) · ข้อมูลลายมือต้องตรวจทีละบรรทัด';
+  button.disabled=false;
+ }catch(err){status.textContent='อ่าน PDF ไม่สำเร็จ: '+err.message}
+ e.target.value=''
+};
+$('#stampPdfAutofill').onclick=()=>{
+ const rows=window.stampPdfDraft||[];
+ if(!rows.length){$('#stampPdfStatus').textContent='ยังไม่มีตารางจาก PDF ให้นำเข้า';return}
+ const current=[...$('#stampingEntryRows').children];
+ if(current.length===1&&[...current[0].querySelectorAll('input')].every(input=>!input.value))$('#stampingEntryRows').replaceChildren();
+ for(const row of rows){
+  // Preserve a row even when handwriting could not be recognized, so it can be filled from the image.
+  if(row.partCode&&partModels[row.partCode])row.model=partModels[row.partCode];
+  addStampRow(row)
+ }
+ $('#stampPdfStatus').textContent=`เติม ${rows.length} บรรทัดตามตารางแล้ว · ไม่มีหมายเลข Job · ตรวจ Part Code, Model, จำนวน และข้อความทุกแถวก่อนบันทึก`;
+};
 $('#stampingEntry').querySelector('[name=date]').value=new Date().toLocaleDateString('en-CA');
 $('#stampingEntry').onsubmit=e=>{
  e.preventDefault();const form=e.target,meta=Object.fromEntries(new FormData(form)),partRows=[...$('#stampingEntryRows').children];
- const production=meta.production===''?0:Number(meta.production);
- if(!Number.isInteger(production)||production<0){$('#notice').textContent='ตรวจสอบยอดผลิตอีกครั้ง';return}
+ $('#stampFormNotice').textContent='';const production=meta.production===''?0:Number(meta.production);
+ if(!Number.isInteger(production)||production<0){$('#stampFormNotice').textContent='ตรวจสอบยอดผลิตอีกครั้ง';return}
  const issues=[];
  for(const tr of partRows){let item=Object.fromEntries([...tr.querySelectorAll('input')].map(input=>[input.name,input.value.trim()]));
-  if(!/^\d+$/.test(item.partCode)||!item.model||!item.defect||!Number.isInteger(Number(item.quantity))||Number(item.quantity)<1){$('#notice').textContent='ตรวจสอบ Part Code, Model, จำนวน และปัญหาทุกแถว';return}
+  if(Object.values(item).every(value=>!value))continue;
+  item.partCode=item.partCode.toUpperCase();
+  if(!/^[A-Z0-9_-]+$/.test(item.partCode)||!item.model||!item.defect||!Number.isInteger(Number(item.quantity))||Number(item.quantity)<1){$('#stampFormNotice').textContent='ตรวจสอบ Part Code, Model, จำนวน และปัญหาของแถวที่กรอก';return}
   issues.push(item)
  }
- if(!issues.length){$('#notice').textContent='เพิ่มรายการของเสียอย่างน้อย 1 แถว';return}
+ if(!issues.length){$('#stampFormNotice').textContent='เพิ่มรายการของเสียอย่างน้อย 1 แถว';return}
  const date=meta.date,shift=meta.shift,line=meta.line;
- if(!date||!shift||!['400T','200T','100T'].includes(line)){$('#notice').textContent='กรุณากรอกวันที่ กะ และเครื่องจักร';return}
+ if(!date||!shift||!['400T','200T','100T'].includes(line)){$('#stampFormNotice').textContent='กรุณากรอกวันที่ กะ และเครื่องจักร';return}
  const previous=records.find(r=>r.page==='stamping'&&r.kind==='production'&&r.date===date&&r.shift===shift&&r.line===line);
  if(previous && meta.production!==''){previous.production=production}else if(!previous && production>0)records.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'production',date,shift,line,production,scrap:0,model:'',defect:'',note:''});
  for(const issue of issues){partModels[issue.partCode]=issue.model;records.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'scrap',date,shift,line,partCode:issue.partCode,model:issue.model,production:0,scrap:Number(issue.quantity),defect:issue.defect,cause:issue.cause,action:issue.action,department:issue.department,note:''})}
@@ -638,7 +712,7 @@ if(id&&confirm('ลบรายการนี้?')){records=records.filter(r=>
 save();
 render()}};
 function csvCell(v){let s=String(v??'');
-return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}const headers=['page','date','shift','line','model','production','scrap','defect','note','partCode','cause','action','department','kind'];function download(rows,name){let body='\ufeff'+[headers.join(','),...rows.map(r=>headers.map(h=>csvCell(r[h])).join(','))].join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/csv;charset=utf-8'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}$('#template').onclick=()=>download([{page:'foam',date:'2026-09-24',shift:'Day',line:'Door A',model:'Example',production:100,scrap:2,defect:'Foam leak',note:''},{page:'stamping',date:'2026-09-24',shift:'Day',line:'Stamping 1',model:'Example',production:100,scrap:1,defect:'Scratch',note:''}],'scrap-template.csv');$('#export').onclick=()=>download(records,'scrap-data.csv');function parseCSV(txt){let out=[],row=[],cell='',quoted=false;txt=txt.replace(/^\ufeff/,'');for(let i=0;i<txt.length;i++){let c=txt[i];if(quoted){if(c==='"'&&txt[i+1]==='"'){cell+='"';i++}else if(c==='"')quoted=false;else cell+=c}else if(c==='"')quoted=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'||c==='\r'){row.push(cell);if(row.some(v=>v!==''))out.push(row);row=[];cell='';if(c==='\r'&&txt[i+1]==='\n')i++}else cell+=c}row.push(cell);if(row.some(v=>v!==''))out.push(row);if(quoted)throw Error('เครื่องหมายอัญประกาศใน CSV ไม่ครบ');return out}$('#import').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let rows=parseCSV(await file.text()),head=rows.shift().map(s=>s.trim().toLowerCase()),missing=['page','date','shift','line','model','production','scrap','defect','note'].filter(h=>!head.includes(h));if(missing.length)throw Error('ขาดคอลัมน์ '+missing.join(', '));let added=[];for(let [i,values] of rows.entries()){let obj=Object.fromEntries(headers.map(h=>[h,head.indexOf(h)<0?'':values[head.indexOf(h)]??'']));obj.production=Number(obj.production);obj.scrap=Number(obj.scrap);if(!['foam','stamping'].includes(obj.page)||!/^\d{4}-\d{2}-\d{2}$/.test(obj.date)||Number.isNaN(new Date(obj.date+'T12:00:00Z').getTime())||!obj.line||!Number.isInteger(obj.production)||!Number.isInteger(obj.scrap)||obj.production<0||obj.scrap<0)throw Error(`แถว ${i+2} มีข้อมูลไม่ถูกต้อง`);obj.id=crypto.randomUUID?.()||String(Date.now()+Math.random());added.push(obj)}records.push(...added);for(const r of added)if(/^\d+$/.test(r.partCode||'')&&r.model)partModels[r.partCode]=r.model;localStorage.setItem(PART_MAP_KEY,JSON.stringify(partModels));save();$('#notice').textContent=`นำเข้าสำเร็จ ${added.length} รายการ`;render()}catch(err){$('#notice').textContent='นำเข้าไม่สำเร็จ: '+err.message}e.target.value=''};render();
+return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}const headers=['page','date','shift','line','model','production','scrap','defect','note','partCode','cause','action','department','kind'];function download(rows,name){let body='\ufeff'+[headers.join(','),...rows.map(r=>headers.map(h=>csvCell(r[h])).join(','))].join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/csv;charset=utf-8'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}$('#template').onclick=()=>download([{page:'foam',date:'2026-09-24',shift:'Day',line:'Door A',model:'Example',production:100,scrap:2,defect:'Foam leak',note:''},{page:'stamping',date:'2026-09-24',shift:'Day',line:'Stamping 1',model:'Example',production:100,scrap:1,defect:'Scratch',note:''}],'scrap-template.csv');$('#export').onclick=()=>download(records,'scrap-data.csv');function parseCSV(txt){let out=[],row=[],cell='',quoted=false;txt=txt.replace(/^\ufeff/,'');for(let i=0;i<txt.length;i++){let c=txt[i];if(quoted){if(c==='"'&&txt[i+1]==='"'){cell+='"';i++}else if(c==='"')quoted=false;else cell+=c}else if(c==='"')quoted=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'||c==='\r'){row.push(cell);if(row.some(v=>v!==''))out.push(row);row=[];cell='';if(c==='\r'&&txt[i+1]==='\n')i++}else cell+=c}row.push(cell);if(row.some(v=>v!==''))out.push(row);if(quoted)throw Error('เครื่องหมายอัญประกาศใน CSV ไม่ครบ');return out}$('#import').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let rows=parseCSV(await file.text()),head=rows.shift().map(s=>s.trim().toLowerCase()),missing=['page','date','shift','line','model','production','scrap','defect','note'].filter(h=>!head.includes(h));if(missing.length)throw Error('ขาดคอลัมน์ '+missing.join(', '));let added=[];for(let [i,values] of rows.entries()){let obj=Object.fromEntries(headers.map(h=>[h,head.indexOf(h)<0?'':values[head.indexOf(h)]??'']));obj.production=Number(obj.production);obj.scrap=Number(obj.scrap);if(!['foam','stamping'].includes(obj.page)||!/^\d{4}-\d{2}-\d{2}$/.test(obj.date)||Number.isNaN(new Date(obj.date+'T12:00:00Z').getTime())||!obj.line||!Number.isInteger(obj.production)||!Number.isInteger(obj.scrap)||obj.production<0||obj.scrap<0)throw Error(`แถว ${i+2} มีข้อมูลไม่ถูกต้อง`);obj.id=crypto.randomUUID?.()||String(Date.now()+Math.random());added.push(obj)}records.push(...added);for(const r of added)if(r.partCode&&r.model)partModels[String(r.partCode).trim().toUpperCase()]=r.model;localStorage.setItem(PART_MAP_KEY,JSON.stringify(partModels));save();$('#notice').textContent=`นำเข้าสำเร็จ ${added.length} รายการ`;render()}catch(err){$('#notice').textContent='นำเข้าไม่สำเร็จ: '+err.message}e.target.value=''};render();
 </script>
 </body>
 </html>
