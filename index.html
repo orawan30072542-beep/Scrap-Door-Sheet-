@@ -517,14 +517,14 @@ async function loadSupabase(){
  const status=document.querySelector('#supabaseStatus'),button=document.querySelector('#loadSupabase');button.disabled=true;status.textContent='กำลังดึงข้อมูล...';
  try{
   const found=[];for(let offset=0;;offset+=1000){
-   const url=SUPABASE_URL+'/rest/v1/scrap_stamping?select=*&order=id.asc&limit=1000&offset='+offset;
-   const response=await fetch(url,{headers:{apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+SUPABASE_ANON_KEY}});
+   const url=SUPABASE_URL+'/rest/v1/rpc/scrap_stamping_dashboard';
+   const response=await fetch(url,{method:'POST',headers:{apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'},body:JSON.stringify({p_offset:offset})});
    if(!response.ok){let body=await response.json().catch(()=>({}));throw Error(body.message||body.error||'HTTP '+response.status)}
    const batch=await response.json();if(!Array.isArray(batch))throw Error('รูปแบบข้อมูลไม่ถูกต้อง');found.push(...batch);if(batch.length<1000)break;
   }
-  remoteRecords=found.map(r=>({id:'supabase:'+r.id,remote:true,page:'stamping',kind:'scrap',date:String(r['วันที่']||r.Date||''),shift:String(r.Shift||''),line:String(r['เครื่องจักร']||r['เครื่อง']||''),partCode:String(r['Part code']||''),model:String(r.Model||''),production:0,scrap:Number(r.Quantity)||0,defect:String(r.Problem||r['ปัญหา']||'ไม่ระบุ'),cause:String(r.Cause||''),action:String(r.Action||''),employeeId:String(r['Emp. Ld']||''),responsibleName:String(r.Pic||'')}));
+  remoteRecords=found.map(r=>({id:'supabase:'+r.id,remote:true,page:'stamping',kind:'scrap',date:String(r.date||''),shift:String(r.shift||''),line:String(r.machine||''),partCode:'',model:String(r.model||''),production:0,scrap:Number(r.quantity)||0,defect:String(r.problem||'ไม่ระบุ'),cause:'',action:'',employeeId:'',responsibleName:''}));
   status.textContent='ดึงจาก Supabase สำเร็จ '+remoteRecords.length+' รายการ · ข้อมูลจาก Supabase อ่านอย่างเดียว';render();
- }catch(err){status.textContent='ดึงข้อมูลไม่ได้: '+err.message+' · ตรวจสิทธิ์ SELECT/RLS ของตาราง scrap_stamping';}
+ }catch(err){status.textContent='ดึงข้อมูลไม่ได้: '+err.message+' · รันไฟล์ SQL สำหรับหน้าแดชบอร์ดก่อน';}
  finally{button.disabled=false}
 }
 const $=s=>document.querySelector(s),fmt=n=>new Intl.NumberFormat('th-TH').format(n),rate=(s,p)=>p>0?100*s/p:0,esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),save=()=>localStorage.setItem(KEY,JSON.stringify(records));
