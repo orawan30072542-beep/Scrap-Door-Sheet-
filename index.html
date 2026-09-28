@@ -351,6 +351,11 @@ dialog.entry-dialog::backdrop{
 <h2 class="stamping-title">SCRAP STAMPING <span>· วิเคราะห์รายเครื่องจักร</span> <button class="btn primary" type="button" id="openStampEntry">+ เพิ่มข้อมูลรายวัน STAMPING</button> <button class="btn" type="button" id="openStampProduction">+ บันทึกยอดผลิต</button> <button class="btn" type="button" id="loadSupabase">↻ ดึงข้อมูล Supabase</button> <small id="supabaseStatus" role="status" style="display:block;font-size:12px;color:#9db1c9;margin-top:8px"></small>
 </h2>
 <div class="machine-list" id="machineCards"></div>
+<section class="panel" style="margin-bottom:16px" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
+<div class="top"><h2 id="stampingTrendTitle">แนวโน้มยอดของเสีย · SCRAP STAMPING</h2><div class="periods" aria-label="เลือกช่วงเวลาของกราฟ"><button class="btn active" type="button" data-scrap-period="day">รายวัน</button><button class="btn" type="button" data-scrap-period="month">รายเดือน</button></div></div>
+<div class="periods" style="margin-bottom:10px" aria-label="เลือกข้อมูลในกราฟ"><button class="btn" type="button" data-trend-metric="production">ยอดผลิต</button><button class="btn active" type="button" data-trend-metric="scrap">ยอดของเสีย</button><button class="btn" type="button" data-trend-metric="rate">Percent Rate</button></div>
+<div id="stampingScrapTrend" class="stamping-chart" style="height:310px"></div><div class="chart-note" id="stampingTrendNote">แสดงสูงสุด 21 วันหรือ 12 เดือนล่าสุดตามตัวกรองด้านบน</div>
+</section>
 <div class="stamping-layout">
 <div class="panel">
 <h2>ยอดผลิต · ของเสีย · Scrap Rate รายเครื่อง</h2>
@@ -509,7 +514,7 @@ try{records=JSON.parse(localStorage.getItem(KEY)||'[]');
 if(!Array.isArray(records))records=[]}catch{records=[]}const PART_MAP_KEY='scrap_part_models_v1';
 let partModels={};try{partModels=JSON.parse(localStorage.getItem(PART_MAP_KEY)||'{}')}catch{partModels={}}
 for(const old of records)if(old.partCode&&old.model)partModels[String(old.partCode).trim().toUpperCase()]=old.model;
-let page='foam',period='day',remoteRecords=[];
+let page='foam',period='day',scrapPeriod='day',trendMetric='scrap',remoteRecords=[];
 const SUPABASE_URL='https://kzuwcymjpybwxsddlmcy.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6dXdjeW1qcHlid3hzZGRsbWN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAyMzYwOTgsImV4cCI6MjEwNTgxMjA5OH0.9sNM2QT1A4l2c2yswaTGC_ElIv3xWMzsiXHTqyY4GuQ';
 const allRecords=()=>[...records,...remoteRecords];
@@ -563,7 +568,24 @@ function machineName(value){
  const found=String(value||'').toUpperCase().replace(/\s+/g,'').match(/(?:400T|200T|100T)/);
  return found?found[0]:null
 }
+function renderScrapTrend(rows){
+ const box=$('#stampingScrapTrend'),titles={production:'ยอดผลิต',scrap:'ยอดของเสีย',rate:'Percent Rate'};
+ $('#stampingTrendTitle').textContent='แนวโน้ม'+titles[trendMetric]+' · SCRAP STAMPING';
+ const totals=new Map();
+ for(const r of rows){if(!/^\d{4}-\d{2}-\d{2}$/.test(r.date))continue;const k=scrapPeriod==='month'?r.date.slice(0,7):r.date,v=totals.get(k)||{production:0,scrap:0};v.production+=Number(r.production)||0;v.scrap+=Number(r.scrap)||0;totals.set(k,v)}
+ const periods=[...totals].sort((a,b)=>a[0].localeCompare(b[0])).slice(scrapPeriod==='month'?-12:-21);
+ const values=periods.map(([label,v])=>({label,amount:trendMetric==='rate'?(v.production>0?rate(v.scrap,v.production):null):v[trendMetric]}));
+ const missing=values.filter(v=>v.amount===null).length;
+ $('#stampingTrendNote').textContent='แสดงสูงสุด 21 วันหรือ 12 เดือนล่าสุดตามตัวกรองด้านบน'+(trendMetric==='rate'&&missing?' · '+missing+' ช่วงไม่มีข้อมูลยอดผลิต จึงไม่คำนวณ Percent Rate':'');
+ if(!values.length||values.every(v=>v.amount===null)){box.innerHTML='<span class="stamping-empty">'+(trendMetric==='rate'?'ยังไม่มียอดผลิตสำหรับคำนวณ Percent Rate':'ยังไม่มีข้อมูล'+titles[trendMetric]+'ในช่วงที่เลือก')+'</span>';return}
+ const W=900,H=300,L=65,R=20,T=34,B=65,iw=W-L-R,ih=H-T-B,max=Math.max(1,...values.map(v=>v.amount??0)),step=iw/values.length,width=Math.min(34,step*.65),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#45dbba':'#fa6b85';
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${titles[trendMetric]}${scrapPeriod==='month'?'รายเดือน':'รายวัน'}">`;
+ for(let n=0;n<=4;n++){const y=T+ih*n/4,scale=max*(4-n)/4;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#2c4058"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#9db5ca" font-size="11">${trendMetric==='rate'?scale.toFixed(1)+'%':fmt(Math.round(scale))}</text>`}
+ values.forEach(({label,amount},i)=>{const x=L+step*(i+.5),short=scrapPeriod==='month'?label.slice(5)+'/'+label.slice(2,4):label.slice(8)+'/'+label.slice(5,7);if(amount!==null){const h=amount/max*ih,display=trendMetric==='rate'?amount.toFixed(2)+'%':fmt(amount);svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${Math.max(h,1)}" rx="4" fill="${color}"><title>${esc(label)}: ${display}</title></rect><text x="${x}" y="${Math.max(T+12,T+ih-h-7)}" text-anchor="middle" fill="#dce9fa" font-size="10">${display}</text>`}else svg+=`<text x="${x}" y="${T+ih-8}" text-anchor="middle" fill="#9db5ca" font-size="13">—</text>`;svg+=`<text x="${x}" y="${H-30}" text-anchor="middle" fill="#a9bdd1" font-size="11">${short}</text>`});
+ box.innerHTML=svg+'</svg>'
+}
 function renderStamping(rows){
+ renderScrapTrend(rows);
  const names=['400T','200T','100T'];
  const machines=names.map(name=>({name,production:0,scrap:0}));
  const byMachine=new Map(machines.map(m=>[m.name,m]));
@@ -621,6 +643,8 @@ render()});
 document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period=b.dataset.period;
 document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('active',x===b));
 render()});
+document.querySelectorAll('[data-scrap-period]').forEach(b=>b.onclick=()=>{scrapPeriod=b.dataset.scrapPeriod;document.querySelectorAll('[data-scrap-period]').forEach(x=>x.classList.toggle('active',x===b));render()});
+document.querySelectorAll('[data-trend-metric]').forEach(b=>b.onclick=()=>{trendMetric=b.dataset.trendMetric;document.querySelectorAll('[data-trend-metric]').forEach(x=>x.classList.toggle('active',x===b));render()});
 ['start','end','line','model'].forEach(id=>$('#'+id).onchange=render);
 $('#openEntry').onclick=()=>{if(page==='stamping'&&!$('#stampingEntryRows').children.length)addStampRow();$('#entryDialog').showModal()};
 $('#openStampEntry').onclick=()=>{page='stamping';$('#formPage').textContent='SCRAP STAMPING';$('#foamEntryWrap').hidden=true;$('#stampingEntry').hidden=false;if(!$('#stampingEntryRows').children.length)addStampRow();$('#entryDialog').showModal()};
