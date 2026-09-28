@@ -468,6 +468,7 @@ dialog.entry-dialog::backdrop{
 <tbody id="stampingEntryRows"><tr><td><input name="partCode" inputmode="text" placeholder="เช่น 0060134560BT" required></td><td><input name="model" placeholder="รุ่น" required></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="employeeId" placeholder="กรอกรหัส Leader"></td><td><input name="responsibleName" placeholder="กรอกชื่อ"></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td></tr></tbody>
 </table></div>
 <p class="stamping-help">กรอก Part Code ได้ทั้งตัวเลขและตัวอักษร · รุ่นที่เคยบันทึกจะแสดงอัตโนมัติ · รหัสใหม่ให้กรอก Model ครั้งแรก</p>
+<div class="stamping-help"><button class="btn" type="button" id="loadHrNames">ดึงรายชื่อจาก HRPortal (037, 039, 329)</button> <label class="btn" style="display:inline-block;cursor:pointer">นำเข้าไฟล์รายชื่อ<input id="hrNamesFile" type="file" accept=".csv,.html,.htm,text/csv,text/html" multiple hidden></label><span id="hrNamesNotice" role="status" style="display:block;margin-top:6px">กรอกรหัส Leader เพื่อค้นหาชื่อ · หากอ่านเว็บภายในไม่ได้ ให้บันทึกหน้าเว็บเป็น HTML หรือส่งออกรายชื่อเป็น CSV แล้วนำเข้าไฟล์</span></div>
 <div class="stamping-form-actions">
 <div class="buttons">
 <button class="btn" type="button" id="addStampRow">+ เพิ่มแถว</button><button class="btn primary" type="submit">บันทึกรายการของเสีย</button>
@@ -480,6 +481,7 @@ dialog.entry-dialog::backdrop{
 <div class="tablewrap"><table>
 <thead><tr>
 <th>ช่วงเวลา</th>
+<th>กะ</th>
 <th>ไลน์ / พื้นที่</th>
 <th>รุ่น</th>
 <th>ประเภทของเสีย</th>
@@ -490,6 +492,7 @@ dialog.entry-dialog::backdrop{
 <tbody id="summary"></tbody>
 </table></div></section><p class="foot">ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้ · กรุณาเก็บไฟล์ต้นฉบับไว้สำรอง</p></main><script>
 const KEY='scrap_dashboard_v1';
+const HR_NAMES_KEY='scrap_hr_names_v1';let hrNames={};try{hrNames=JSON.parse(localStorage.getItem(HR_NAMES_KEY)||'{}')||{}}catch{hrNames={}}
 let records=[];
 try{records=JSON.parse(localStorage.getItem(KEY)||'[]');
 if(!Array.isArray(records))records=[]}catch{records=[]}const PART_MAP_KEY='scrap_part_models_v1';
@@ -525,8 +528,17 @@ box.innerHTML=s+'</svg>'}function addStampRow(value={}){
  const tr=document.createElement('tr');
  tr.innerHTML=`<td><input name="partCode" inputmode="text" placeholder="เช่น 0060134560BT" required></td><td><input name="model" placeholder="รุ่น" required></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="employeeId" placeholder="กรอกรหัส Leader"></td><td><input name="responsibleName" placeholder="กรอกชื่อ"></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td>`;
  for(const name of ['partCode','model','quantity','defect','cause','action','employeeId','responsibleName'])tr.querySelector(`[name="${name}"]`).value=value[name]||'';
- $('#stampingEntryRows').append(tr)
+ $('#stampingEntryRows').append(tr);fillLeaderName(tr)
 }
+function fillLeaderName(tr){const id=tr.querySelector('[name="employeeId"]')?.value.trim(),name=tr.querySelector('[name="responsibleName"]');if(name&&id&&hrNames[id])name.value=hrNames[id]}
+function importHrNames(text,isHtml){const doc=isHtml?new DOMParser().parseFromString(text,'text/html'):null;
+ const rows=isHtml?[...doc.querySelectorAll('tr')].map(tr=>[...tr.querySelectorAll('td,th')].map(td=>td.textContent.trim())):parseCSV(text);
+ let count=0;for(const row of rows){const cells=row.map(s=>String(s||'').trim());const id=cells.find(c=>/^\d{5,12}$/.test(c));if(!id)continue;const name=cells.find(c=>c!==id&&/[ก-๙A-Za-z]/.test(c)&&!/^\s*(?:name|รหัส|employee|เลขที่|ลำดับ|department|แผนก)\s*$/i.test(c)&&c.length>=3&&c.length<=100);if(name){hrNames[id]=name;count++}}
+ if(!count)throw Error('ไม่พบคู่รหัสพนักงานกับชื่อในตาราง กรุณาใช้ CSV ที่มีคอลัมน์รหัสและชื่อ');localStorage.setItem(HR_NAMES_KEY,JSON.stringify(hrNames));document.querySelectorAll('#stampingEntryRows tr').forEach(fillLeaderName);return count}
+$('#loadHrNames').onclick=async()=>{const notice=$('#hrNamesNotice');notice.textContent='กำลังอ่าน HRPortal...';const date=$('#stampingEntry [name="date"]').value.replace(/-/g,'')||new Date().toLocaleDateString('en-CA').replace(/-/g,'');let loaded=0,failed=[];
+ for(const ps of ['037','039','329']){try{const response=await fetch(`http://190.7.10.27/HRPortal/processDetail.php?tim=${date}&Ps=${ps}`,{credentials:'include',signal:AbortSignal.timeout(8000)});if(!response.ok)throw Error('HTTP '+response.status);loaded+=importHrNames(await response.text(),true)}catch(e){failed.push(ps)}}
+ notice.textContent=loaded?`บันทึกรายชื่อ ${loaded} รายการแล้ว${failed.length?' · อ่านหน้า '+failed.join(', ')+' ไม่ได้':''}`:'อ่าน HRPortal ไม่ได้จากเบราว์เซอร์นี้ (เว็บภายในหรือ CORS) · เปิดแต่ละลิงก์บนเครื่องที่เข้าถึงได้ บันทึกเป็น HTML แล้วกด “นำเข้าไฟล์รายชื่อ”';};
+$('#hrNamesFile').onchange=async e=>{const files=[...e.target.files];e.target.value='';let total=0;try{for(const file of files)total+=importHrNames(await file.text(),/\.html?$/i.test(file.name));$('#hrNamesNotice').textContent=`บันทึกรายชื่อ ${total} รายการแล้ว · กรอกรหัส Leader เพื่อแสดงชื่ออัตโนมัติ`}catch(error){$('#hrNamesNotice').textContent='นำเข้าไม่ได้: '+error.message}};
 function rateText(scrap,production){return production>0?rate(scrap,production).toFixed(2)+'%':'—'}
 function machineName(value){
  const found=String(value||'').toUpperCase().replace(/\s+/g,'').match(/(?:400T|200T|100T)/);
@@ -592,9 +604,9 @@ $('#count').textContent=fmt(rows.length)+' รายการ';
 if(page==='stamping')renderStamping(rows);else chart(rows);
 let types=group(rows,r=>r.defect||'ไม่ระบุ').sort((a,b)=>b.scrap-a.scrap).slice(0,7),max=Math.max(1,...types.map(x=>x.scrap));
 $('#pareto').innerHTML=types.length?types.map(x=>`<div class="barrow"><span title="${esc(x.key)}">${esc(x.key)}</span><div class="track"><div class="fill" style="width:${x.scrap/max*100}%"></div></div><b>${fmt(x.scrap)}</b></div>`).join(''):'<p class="muted">ยังไม่มีข้อมูลในช่วงที่เลือก</p>';
-let summary=group(rows,r=>[key(r.date),r.line,r.model,r.defect].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
-$('#summary').innerHTML=summary.length?summary.map(v=>{let [d,l,m,t]=v.key.split('\u0001');
-return `<tr><td>${esc(d)}</td><td>${esc(l)}</td><td>${esc(m||'—')}</td><td>${esc(t||'—')}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td></tr>`}).join(''):'<tr><td colspan="7" class="muted">ยังไม่มีข้อมูล</td></tr>';
+let summary=group(rows,r=>[key(r.date),r.shift||'',r.line,r.model,r.defect].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
+$('#summary').innerHTML=summary.length?summary.map(v=>{let [d,shift,l,m,t]=v.key.split('\u0001');
+return `<tr><td>${esc(d)}</td><td>${esc(shift||'—')}</td><td>${esc(l)}</td><td>${esc(m||'—')}</td><td>${esc(t||'—')}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td></tr>`}).join(''):'<tr><td colspan="8" class="muted">ยังไม่มีข้อมูล</td></tr>';
 }document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{page=b.dataset.page;
 document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x===b));
 $('#formPage').textContent=b.textContent;$('#openEntry').textContent=page==='stamping'?'+ เพิ่มข้อมูลรายวัน · SCRAP STAMPING':'+ เพิ่มข้อมูลรายวัน · SCRAP DOOR FOAM';
@@ -624,6 +636,7 @@ $('#closeEntry').onclick=()=>$('#entryDialog').close();
 $('#entryDialog').onclick=e=>{if(e.target===$('#entryDialog'))$('#entryDialog').close()};
 $('#addStampRow').onclick=()=>addStampRow();
 $('#stampingEntryRows').oninput=e=>{
+ if(e.target.name==='employeeId'){const tr=e.target.closest('tr');tr.querySelector('[name="responsibleName"]').value=hrNames[e.target.value.trim()]||'';return}
  if(e.target.name!=='partCode')return;
  const row=e.target.closest('tr'),code=e.target.value.trim().toUpperCase(),model=row.querySelector('[name=model]');
  if(partModels[code])model.value=partModels[code];else model.value=''
