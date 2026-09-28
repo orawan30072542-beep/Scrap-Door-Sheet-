@@ -468,7 +468,7 @@ dialog.entry-dialog::backdrop{
 <tbody id="stampingEntryRows"><tr><td><input name="partCode" inputmode="text" placeholder="เช่น 0060134560BT" required></td><td><input name="model" placeholder="รุ่น" required></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="employeeId" placeholder="กรอกรหัส Leader"></td><td><input name="responsibleName" placeholder="กรอกชื่อ"></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td></tr></tbody>
 </table></div>
 <p class="stamping-help">กรอก Part Code ได้ทั้งตัวเลขและตัวอักษร · รุ่นที่เคยบันทึกจะแสดงอัตโนมัติ · รหัสใหม่ให้กรอก Model ครั้งแรก</p>
-<div class="stamping-help"><button class="btn" type="button" id="loadHrNames">ดึงรายชื่อจาก HRPortal (037, 039, 329)</button> <label class="btn" style="display:inline-block;cursor:pointer">นำเข้าไฟล์รายชื่อ<input id="hrNamesFile" type="file" accept=".csv,.html,.htm,text/csv,text/html" multiple hidden></label><span id="hrNamesNotice" role="status" style="display:block;margin-top:6px">กรอกรหัส Leader เพื่อค้นหาชื่อ · หากอ่านเว็บภายในไม่ได้ ให้บันทึกหน้าเว็บเป็น HTML หรือส่งออกรายชื่อเป็น CSV แล้วนำเข้าไฟล์</span></div>
+<div class="stamping-help"><button class="btn" type="button" id="loadHrNames">ดึงรายชื่อจาก HRPortal (037, 039, 329)</button> <label class="btn" style="display:inline-block;cursor:pointer">นำเข้าไฟล์รายชื่อ<input id="hrNamesFile" type="file" accept=".csv,.html,.htm,text/csv,text/html" multiple hidden></label><span id="hrNamesNotice" role="status" style="display:block;margin-top:6px"></span></div>
 <div class="stamping-form-actions">
 <div class="buttons">
 <button class="btn" type="button" id="addStampRow">+ เพิ่มแถว</button><button class="btn primary" type="submit">บันทึกรายการของเสีย</button>
@@ -493,6 +493,8 @@ dialog.entry-dialog::backdrop{
 </table></div></section><p class="foot">ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้ · กรุณาเก็บไฟล์ต้นฉบับไว้สำรอง</p></main><script>
 const KEY='scrap_dashboard_v1';
 const HR_NAMES_KEY='scrap_hr_names_v1';let hrNames={};try{hrNames=JSON.parse(localStorage.getItem(HR_NAMES_KEY)||'{}')||{}}catch{hrNames={}}
+function rosterStatus(){const n=Object.keys(hrNames).length;return n?`มีรายชื่อพร้อมค้นหา ${n} รหัส · กรอก Leader เพื่อแสดงชื่อ`:'ยังไม่มีรายชื่อในระบบ · กด “ดึงรายชื่อจาก HRPortal” หรือ “นำเข้าไฟล์รายชื่อ” ก่อนกรอกรหัส Leader'}
+document.querySelector('#hrNamesNotice').textContent=rosterStatus();
 let records=[];
 try{records=JSON.parse(localStorage.getItem(KEY)||'[]');
 if(!Array.isArray(records))records=[]}catch{records=[]}const PART_MAP_KEY='scrap_part_models_v1';
@@ -623,7 +625,8 @@ document.querySelectorAll('[data-scrap-period]').forEach(b=>b.onclick=()=>{scrap
 document.querySelectorAll('[data-trend-metric]').forEach(b=>b.onclick=()=>{trendMetric=b.dataset.trendMetric;document.querySelectorAll('[data-trend-metric]').forEach(x=>x.classList.toggle('active',x===b));render()});
 ['start','end','line','model'].forEach(id=>$('#'+id).onchange=render);
 $('#openEntry').onclick=()=>{if(page==='stamping'&&!$('#stampingEntryRows').children.length)addStampRow();$('#entryDialog').showModal()};
-$('#openStampEntry').onclick=()=>{page='stamping';$('#formPage').textContent='SCRAP STAMPING';$('#foamEntryWrap').hidden=true;$('#stampingEntry').hidden=false;if(!$('#stampingEntryRows').children.length)addStampRow();$('#entryDialog').showModal()};
+let hrAutoTried=false;
+$('#openStampEntry').onclick=()=>{page='stamping';$('#formPage').textContent='SCRAP STAMPING';$('#foamEntryWrap').hidden=true;$('#stampingEntry').hidden=false;if(!$('#stampingEntryRows').children.length)addStampRow();$('#hrNamesNotice').textContent=rosterStatus();$('#entryDialog').showModal();if(!Object.keys(hrNames).length&&!hrAutoTried){hrAutoTried=true;$('#loadHrNames').click()}};
 let pendingStampFile=null;
 function stampDate(raw){const value=String(raw||'').trim();let y,m,d;if(/^\d{4}-\d{2}-\d{2}$/.test(value)){[y,m,d]=value.split('-').map(Number)}else{const match=value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(!match)throw Error('รูปแบบวันที่ '+value+' ไม่ถูกต้อง');[,d,m,y]=match.map(Number)}const date=new Date(Date.UTC(y,m-1,d));if(date.getUTCFullYear()!==y||date.getUTCMonth()!==m-1||date.getUTCDate()!==d)throw Error('วันที่ '+value+' ไม่ถูกต้อง');return [y,String(m).padStart(2,'0'),String(d).padStart(2,'0')].join('-')}
 function readStampScrapCSV(text,fileName){const data=parseCSV(text);if(data.length<2)throw Error('ไฟล์ไม่มีรายการของเสีย');const header=data.shift().map(v=>v.trim().toLowerCase()),col=(...names)=>names.map(n=>header.indexOf(n.toLowerCase())).find(i=>i>=0),get=(row,...names)=>{const i=col(...names);return i===undefined?'':String(row[i]??'').trim()};for(const names of [['shift'],['เครื่องจักร','เครื่อง'],['date','วันที่'],['part code'],['model'],['quantity'],['problem','ปัญหา']])if(col(...names)===undefined)throw Error('ขาดคอลัมน์ '+names[0]);let rows=[];for(const [i,row] of data.entries()){if(row.every(v=>!String(v).trim()))continue;try{const date=stampDate(get(row,'Date','วันที่')),shift=get(row,'Shift'),line=get(row,'เครื่องจักร','เครื่อง').toUpperCase().replace(/\s+/g,''),partCode=get(row,'Part code'),model=get(row,'Model'),defect=get(row,'Problem','ปัญหา'),quantity=Number(get(row,'Quantity'));if(!shift||!['400T','200T','100T'].includes(line)||!partCode||!model||!defect||!Number.isInteger(quantity)||quantity<1)throw Error('ตรวจวันที่ กะ เครื่อง Part Code Model ปัญหา และจำนวน');rows.push({page:'stamping',kind:'scrap',date,shift,line,partCode,model,production:0,scrap:quantity,defect,cause:get(row,'Cause'),action:get(row,'Action'),employeeId:get(row,'Emp. Id','Emp. Ld'),responsibleName:get(row,'Pic'),note:'',price:get(row,'Price')})}catch(err){throw Error('แถว '+(i+2)+': '+err.message)}}if(!rows.length)throw Error('ไม่พบรายการของเสีย');let hash=2166136261;for(let i=0;i<text.length;i++)hash=Math.imul(hash^text.charCodeAt(i),16777619);const sourceTag='stamp-csv:'+hash.toString(16)+':'+text.length;return {rows,sourceTag,fileName}}
@@ -636,7 +639,7 @@ $('#closeEntry').onclick=()=>$('#entryDialog').close();
 $('#entryDialog').onclick=e=>{if(e.target===$('#entryDialog'))$('#entryDialog').close()};
 $('#addStampRow').onclick=()=>addStampRow();
 $('#stampingEntryRows').oninput=e=>{
- if(e.target.name==='employeeId'){const tr=e.target.closest('tr');tr.querySelector('[name="responsibleName"]').value=hrNames[e.target.value.trim()]||'';return}
+ if(e.target.name==='employeeId'){const tr=e.target.closest('tr'),id=e.target.value.trim(),name=hrNames[id];tr.querySelector('[name="responsibleName"]').value=name||'';$('#hrNamesNotice').textContent=!id?rosterStatus():name?`พบรหัส ${id} · ${name}`:Object.keys(hrNames).length?`ไม่พบรหัส ${id} ในรายชื่อที่นำเข้า · ตรวจรหัสหรือเพิ่มไฟล์รายชื่อ`:'ยังไม่มีรายชื่อให้ค้นหา · กด “ดึงรายชื่อจาก HRPortal” หรือ “นำเข้าไฟล์รายชื่อ”';return}
  if(e.target.name!=='partCode')return;
  const row=e.target.closest('tr'),code=e.target.value.trim().toUpperCase(),model=row.querySelector('[name=model]');
  if(partModels[code])model.value=partModels[code];else model.value=''
