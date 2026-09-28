@@ -317,7 +317,9 @@ dialog.entry-dialog::backdrop{
 </div>
 <div class="actions">
 <button class="btn" id="template">ดาวน์โหลด CSV ตัวอย่าง</button><button class="btn" id="export">ส่งออกข้อมูล CSV</button><label class="btn primary">นำเข้า CSV<input id="import" type="file" accept=".csv,text/csv" hidden></label>
-</div></header><nav class="tabs"><button class="btn active" data-page="foam">SCRAP DOOR FOAM</button><button class="btn" data-page="stamping">SCRAP STAMPING</button><button class="btn primary" id="openEntry" type="button">+ เพิ่มข้อมูลรายวัน</button></nav><section class="panel"><div class="grid filters">
+</div></header><nav class="tabs"><button class="btn active" data-page="foam">SCRAP DOOR FOAM</button><button class="btn" data-page="stamping">SCRAP STAMPING</button><button class="btn primary" id="openEntry" type="button">+ เพิ่มข้อมูลรายวัน</button></nav>
+<h2 class="stamping-title" id="stampingToolbar" hidden>SCRAP STAMPING <span>· วิเคราะห์รายเครื่องจักร</span> <button class="btn primary" type="button" id="openStampEntry">+ เพิ่มข้อมูลรายวัน STAMPING</button> <button class="btn" type="button" id="openStampProduction">+ บันทึกยอดผลิต</button> <label class="btn" style="display:inline-block;cursor:pointer">+ เพิ่มไฟล์ยอดของเสีย<input id="stampScrapFile" type="file" accept=".csv,text/csv" hidden></label></h2>
+<section class="panel"><div class="grid filters">
 <div class="field">
 <label>มุมมอง</label><div class="periods">
 <button class="btn active" data-period="day">รายวัน</button><button class="btn" data-period="week">รายสัปดาห์</button><button class="btn" data-period="month">รายเดือน</button>
@@ -348,8 +350,6 @@ dialog.entry-dialog::backdrop{
 <div class="metric">
 <small>จำนวนวันที่มีข้อมูล</small><strong id="days">0</strong><em>วัน</em>
 </div></section><section id="stampingAnalytics" hidden>
-<h2 class="stamping-title">SCRAP STAMPING <span>· วิเคราะห์รายเครื่องจักร</span> <button class="btn primary" type="button" id="openStampEntry">+ เพิ่มข้อมูลรายวัน STAMPING</button> <button class="btn" type="button" id="openStampProduction">+ บันทึกยอดผลิต</button> <label class="btn" style="display:inline-block;cursor:pointer">+ เพิ่มไฟล์ยอดของเสีย<input id="stampScrapFile" type="file" accept=".csv,text/csv" hidden></label>
-</h2>
 <div class="machine-list" id="machineCards"></div>
 <section class="panel" style="margin-bottom:16px" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
 <div class="top"><h2 id="stampingTrendTitle">แนวโน้มยอดของเสีย · SCRAP STAMPING</h2><div class="periods" aria-label="เลือกช่วงเวลาของกราฟ"><button class="btn active" type="button" data-scrap-period="day">รายวัน</button><button class="btn" type="button" data-scrap-period="month">รายเดือน</button></div></div>
@@ -582,7 +582,7 @@ function renderStamping(rows){
  points.forEach(p=>svg+=`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="#ffca72"/>`);
  $('#stampingPareto').innerHTML=svg+'</svg>'
 }
-function render(){options();$('#stampingAnalytics').hidden=page!=='stamping';$('#generalCharts').hidden=page==='stamping';
+function render(){options();$('#stampingToolbar').hidden=page!=='stamping';$('#stampingAnalytics').hidden=page!=='stamping';$('#generalCharts').hidden=page==='stamping';
 let rows=filtered(),p=rows.reduce((a,r)=>a+r.production,0),s=rows.reduce((a,r)=>a+r.scrap,0);
 $('#production').textContent=fmt(p);
 $('#scrap').textContent=fmt(s);
