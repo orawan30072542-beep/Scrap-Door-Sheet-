@@ -283,13 +283,16 @@ dialog.entry-dialog::backdrop{
  #stampingEntry .stamping-entry-table td{display:block;width:auto!important;padding:0}
  #stampingEntry .stamping-entry-table td::before{display:block;color:#9db5ce;font-size:12px;margin-bottom:5px}
  #stampingEntry .stamping-entry-table td:nth-child(1)::before{content:"Part Code *"}
- #stampingEntry .stamping-entry-table td:nth-child(2)::before{content:"Model *"}
+#stampingEntry .stamping-entry-table td:nth-child(2)::before{content:"Part name"}
  #stampingEntry .stamping-entry-table td:nth-child(3)::before{content:"จำนวนของเสีย *"}
  #stampingEntry .stamping-entry-table td:nth-child(4)::before{content:"ปัญหา *"}
  #stampingEntry .stamping-entry-table td:nth-child(5)::before{content:"สาเหตุ"}
  #stampingEntry .stamping-entry-table td:nth-child(6)::before{content:"การแก้ไข"}
  #stampingEntry .stamping-entry-table td:nth-child(7)::before{content:"Leader"}
- #stampingEntry .stamping-entry-table td:nth-child(8)::before{content:"ชื่อ"}
+#stampingEntry .stamping-entry-table td:nth-child(8)::before{content:"ชื่อ"}
+#stampingEntry .stamping-entry-table td:nth-child(9)::before{content:"ราคาต่อชิ้น (บาท)"}
+#stampingEntry .stamping-entry-table td:nth-child(10)::before{content:"มูลค่าของเสีย (บาท)"}
+#stampingEntry .stamping-entry-table td:nth-child(11)::before{content:"Model *"}
  #stampingEntry .stamping-entry-table td:last-child{align-self:end}
 }
 @media(max-width:500px){#stampingEntry .stamping-entry-table tr{grid-template-columns:1fr}}
@@ -298,6 +301,7 @@ dialog.entry-dialog::backdrop{
 /* Wider entry form for Leader and name fields. */
 .entry-dialog:has(#stampingEntry:not([hidden])){width:min(1480px,calc(100% - 24px))}
 #stampingEntry .stamping-entry-table th:nth-last-child(2),#stampingEntry .stamping-entry-table td:nth-last-child(2){width:17%}
+#stampingEntry input[readonly]{background:#152c40;color:#b9edcf}
 @media(max-width:1399px){
  #stampingEntry .stamping-entry-table thead{display:none}
  #stampingEntry .stamping-entry-table,#stampingEntry .stamping-entry-table tbody{display:block}
@@ -456,19 +460,22 @@ dialog.entry-dialog::backdrop{
 <div class="tablewrap" style="max-height:none"><table class="stamping-entry-table">
 <thead><tr>
 <th>Part Code *</th>
-<th>Model *</th>
+<th>Part name</th>
 <th>จำนวนของเสีย *</th>
 <th>ปัญหา *</th>
 <th>สาเหตุ</th>
 <th>การแก้ไข</th>
 <th>Leader</th>
 <th>ชื่อ</th>
+<th>ราคาต่อชิ้น</th><th>มูลค่าของเสีย</th><th>Model *</th>
 <th></th>
 </tr></thead>
-<tbody id="stampingEntryRows"><tr><td><input name="partCode" inputmode="text" placeholder="เช่น 0060134560BT" required></td><td><input name="model" placeholder="รุ่น" required></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="employeeId" placeholder="กรอกรหัส Leader"></td><td><input name="responsibleName" placeholder="กรอกชื่อ"></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td></tr></tbody>
+<tbody id="stampingEntryRows"></tbody>
 </table></div>
+<p class="stamping-help" id="stampValueTotal">มูลค่าของเสียรวม: 0.00 บาท</p>
 <p class="stamping-help">กรอก Part Code ได้ทั้งตัวเลขและตัวอักษร · รุ่นที่เคยบันทึกจะแสดงอัตโนมัติ · รหัสใหม่ให้กรอก Model ครั้งแรก</p>
 <div class="stamping-help"><button class="btn" type="button" id="loadHrNames">ดึงรายชื่อจาก HRPortal (037, 039, 329)</button> <label class="btn" style="display:inline-block;cursor:pointer">นำเข้าไฟล์รายชื่อ<input id="hrNamesFile" type="file" accept=".csv,.html,.htm,text/csv,text/html" multiple hidden></label><span id="hrNamesNotice" role="status" style="display:block;margin-top:6px"></span></div>
+<div class="stamping-help"><button class="btn" type="button" id="openPartsDb">ฐานข้อมูล Part No. / ราคา</button> <span id="partsDbNotice" role="status"></span></div>
 <div class="stamping-form-actions">
 <div class="buttons">
 <button class="btn" type="button" id="addStampRow">+ เพิ่มแถว</button><button class="btn primary" type="submit">บันทึกรายการของเสีย</button>
@@ -490,7 +497,12 @@ dialog.entry-dialog::backdrop{
 <th class="num">อัตราของเสีย</th>
 </tr></thead>
 <tbody id="summary"></tbody>
-</table></div></section><p class="foot">ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้ · กรุณาเก็บไฟล์ต้นฉบับไว้สำรอง</p></main><script>
+</table></div></section><p class="foot">ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้ · กรุณาเก็บไฟล์ต้นฉบับไว้สำรอง</p></main>
+<dialog id="partsDbDialog" class="entry-dialog"><div class="dialog-head"><h2>ฐานข้อมูล Part No. / Part name / ราคา</h2><button type="button" class="btn" id="closePartsDb">✕ ปิด</button></div>
+<p class="stamping-help">เพิ่มรายการทีละรายการ หรือนำเข้า CSV จาก Excel ที่มีหัวคอลัมน์ Part No., Part name, Price (และ Model ถ้ามี) · ราคาคือราคาต่อชิ้น</p>
+<form id="partsDbForm" class="stamping-head-fields"><div class="field"><label>Part No. *</label><input name="partCode" required placeholder="เช่น 0060134560BT"></div><div class="field"><label>Part name *</label><input name="partName" required placeholder="ชื่อชิ้นส่วน"></div><div class="field"><label>ราคา/ชิ้น (บาท) *</label><input name="unitPrice" type="number" min="0" step="0.01" required></div><div class="field"><label>Model</label><input name="model" placeholder="รุ่น (ถ้ามี)"></div><div class="field"><button class="btn primary" type="submit">บันทึก Part</button></div></form>
+<label class="btn" style="display:inline-block;cursor:pointer">+ นำเข้าฐานข้อมูล CSV<input type="file" id="partsDbFile" accept=".csv,text/csv" hidden></label><span id="partsDbStatus" role="status" class="stamping-help" style="display:block;margin:10px 0"></span>
+<div class="tablewrap" style="max-height:260px;overflow:auto"><table><thead><tr><th>Part No.</th><th>Part name</th><th class="num">ราคา/ชิ้น (บาท)</th><th>Model</th></tr></thead><tbody id="partsDbRows"></tbody></table></div></dialog><script>
 const KEY='scrap_dashboard_v1';
 const HR_NAMES_KEY='scrap_hr_names_v1';let hrNames={};try{hrNames=JSON.parse(localStorage.getItem(HR_NAMES_KEY)||'{}')||{}}catch{hrNames={}}
 function rosterStatus(){const n=Object.keys(hrNames).length;return n?`มีรายชื่อพร้อมค้นหา ${n} รหัส · กรอก Leader เพื่อแสดงชื่อ`:'ยังไม่มีรายชื่อในระบบ · กด “ดึงรายชื่อจาก HRPortal” หรือ “นำเข้าไฟล์รายชื่อ” ก่อนกรอกรหัส Leader'}
@@ -499,6 +511,9 @@ let records=[];
 try{records=JSON.parse(localStorage.getItem(KEY)||'[]');
 if(!Array.isArray(records))records=[]}catch{records=[]}const PART_MAP_KEY='scrap_part_models_v1';
 let partModels={};try{partModels=JSON.parse(localStorage.getItem(PART_MAP_KEY)||'{}')}catch{partModels={}}
+const PARTS_DB_KEY='scrap_parts_db_v1';let partsDb={};try{partsDb=JSON.parse(localStorage.getItem(PARTS_DB_KEY)||'{}')||{}}catch{partsDb={}}
+function savePartsDb(){localStorage.setItem(PARTS_DB_KEY,JSON.stringify(partsDb));$('#partsDbNotice').textContent=`มี ${Object.keys(partsDb).length} Part ในฐานข้อมูล`}
+function renderPartsDb(){$('#partsDbRows').innerHTML=Object.entries(partsDb).sort(([a],[b])=>a.localeCompare(b)).map(([code,p])=>`<tr><td>${esc(code)}</td><td>${esc(p.name)}</td><td class="num">${Number(p.price).toFixed(2)}</td><td>${esc(p.model||'')}</td></tr>`).join('')||'<tr><td colspan="4">ยังไม่มีข้อมูล Part</td></tr>'}
 for(const old of records)if(old.partCode&&old.model)partModels[String(old.partCode).trim().toUpperCase()]=old.model;
 let page='foam',period='day',scrapPeriod='day',trendMetric='scrap';
 const $=s=>document.querySelector(s),fmt=n=>new Intl.NumberFormat('th-TH').format(n),rate=(s,p)=>p>0?100*s/p:0,esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),save=()=>localStorage.setItem(KEY,JSON.stringify(records));
@@ -528,10 +543,12 @@ pts.forEach(p=>{let [x,y]=p.split(',');
 s+=`<circle cx="${x}" cy="${y}" r="4" fill="#42d7ba"/>`});
 box.innerHTML=s+'</svg>'}function addStampRow(value={}){
  const tr=document.createElement('tr');
- tr.innerHTML=`<td><input name="partCode" inputmode="text" placeholder="เช่น 0060134560BT" required></td><td><input name="model" placeholder="รุ่น" required></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="employeeId" placeholder="กรอกรหัส Leader"></td><td><input name="responsibleName" placeholder="กรอกชื่อ"></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td>`;
+ tr.innerHTML=`<td><input name="partCode" inputmode="text" placeholder="เช่น 0060134560BT" required></td><td><input name="partName" placeholder="Part name" readonly></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="employeeId" placeholder="กรอกรหัส Leader"></td><td><input name="responsibleName" placeholder="กรอกชื่อ"></td><td><input name="unitPrice" placeholder="บาท/ชิ้น" readonly></td><td><input name="scrapValue" placeholder="บาท" readonly></td><td><input name="model" placeholder="รุ่น" required></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td>`;
  for(const name of ['partCode','model','quantity','defect','cause','action','employeeId','responsibleName'])tr.querySelector(`[name="${name}"]`).value=value[name]||'';
- $('#stampingEntryRows').append(tr);fillLeaderName(tr)
+ $('#stampingEntryRows').append(tr);fillLeaderName(tr);refreshStampPart(tr)
 }
+function refreshStampValue(tr){const qty=Number(tr.querySelector('[name="quantity"]').value),unit=Number(tr.querySelector('[name="unitPrice"]').value),known=tr.querySelector('[name="unitPrice"]').value!=='';tr.querySelector('[name="scrapValue"]').value=known&&Number.isFinite(qty)?(qty*unit).toFixed(2):'';const sum=[...$('#stampingEntryRows tr')].reduce((n,row)=>n+Number(row.querySelector('[name="scrapValue"]')?.value||0),0);$('#stampValueTotal').textContent='มูลค่าของเสียรวม: '+sum.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})+' บาท'}
+function refreshStampPart(tr){const code=tr.querySelector('[name="partCode"]').value.trim().toUpperCase(),part=partsDb[code];tr.querySelector('[name="partName"]').value=part?.name||'';tr.querySelector('[name="unitPrice"]').value=part?Number(part.price).toFixed(2):'';const model=tr.querySelector('[name="model"]');if(part?.model)model.value=part.model;else if(partModels[code])model.value=partModels[code];refreshStampValue(tr)}
 function fillLeaderName(tr){const id=tr.querySelector('[name="employeeId"]')?.value.trim(),name=tr.querySelector('[name="responsibleName"]');if(name&&id&&hrNames[id])name.value=hrNames[id]}
 function importHrNames(text,isHtml){const doc=isHtml?new DOMParser().parseFromString(text,'text/html'):null;
  const rows=isHtml?[...doc.querySelectorAll('tr')].map(tr=>[...tr.querySelectorAll('td,th')].map(td=>td.textContent.trim())):parseCSV(text);
@@ -541,6 +558,10 @@ $('#loadHrNames').onclick=async()=>{const notice=$('#hrNamesNotice');notice.text
  for(const ps of ['037','039','329']){try{const response=await fetch(`http://190.7.10.27/HRPortal/processDetail.php?tim=${date}&Ps=${ps}`,{credentials:'include',signal:AbortSignal.timeout(8000)});if(!response.ok)throw Error('HTTP '+response.status);loaded+=importHrNames(await response.text(),true)}catch(e){failed.push(ps)}}
  notice.textContent=loaded?`บันทึกรายชื่อ ${loaded} รายการแล้ว${failed.length?' · อ่านหน้า '+failed.join(', ')+' ไม่ได้':''}`:'อ่าน HRPortal ไม่ได้จากเบราว์เซอร์นี้ (เว็บภายในหรือ CORS) · เปิดแต่ละลิงก์บนเครื่องที่เข้าถึงได้ บันทึกเป็น HTML แล้วกด “นำเข้าไฟล์รายชื่อ”';};
 $('#hrNamesFile').onchange=async e=>{const files=[...e.target.files];e.target.value='';let total=0;try{for(const file of files)total+=importHrNames(await file.text(),/\.html?$/i.test(file.name));$('#hrNamesNotice').textContent=`บันทึกรายชื่อ ${total} รายการแล้ว · กรอกรหัส Leader เพื่อแสดงชื่ออัตโนมัติ`}catch(error){$('#hrNamesNotice').textContent='นำเข้าไม่ได้: '+error.message}};
+$('#partsDbNotice').textContent=`มี ${Object.keys(partsDb).length} Part ในฐานข้อมูล`;
+$('#openPartsDb').onclick=()=>{renderPartsDb();$('#partsDbStatus').textContent='';$('#partsDbDialog').showModal()};$('#closePartsDb').onclick=()=>$('#partsDbDialog').close();
+$('#partsDbForm').onsubmit=e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target)),code=data.partCode.trim().toUpperCase(),price=Number(data.unitPrice);if(!code||!data.partName.trim()||!Number.isFinite(price)||price<0){$('#partsDbStatus').textContent='ตรวจ Part No., Part name และราคา';return}partsDb[code]={name:data.partName.trim(),price,model:data.model.trim()};try{savePartsDb()}catch{$('#partsDbStatus').textContent='บันทึกไม่ได้: พื้นที่เก็บข้อมูลเต็ม';return}$('#partsDbStatus').textContent=`บันทึก ${code} แล้ว`;e.target.reset();renderPartsDb();document.querySelectorAll('#stampingEntryRows tr').forEach(refreshStampPart)};
+$('#partsDbFile').onchange=async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;try{const rows=parseCSV(await file.text()),heads=rows.shift().map(v=>v.trim().toLowerCase().replace(/[.\s_-]/g,''));const col=(...names)=>names.map(n=>heads.indexOf(n.replace(/[.\s_-]/g,''))).find(i=>i>=0),ci=col('partno','partcode'),ni=col('partname','name'),pi=col('price','unitprice','ราคาต่อชิ้น','ราคา'),mi=col('model');if([ci,ni,pi].some(x=>x===undefined))throw Error('ต้องมีคอลัมน์ Part No., Part name, Price');let count=0;const incoming={};for(const [index,row] of rows.entries()){if(row.every(v=>!String(v).trim()))continue;const code=String(row[ci]||'').trim().toUpperCase(),name=String(row[ni]||'').trim(),price=Number(String(row[pi]||'').trim().replace(/,/g,''));if(!code||!name||!Number.isFinite(price)||price<0)throw Error(`ข้อมูลแถว ${index+2} ไม่ถูกต้อง`);incoming[code]={name,price,model:mi===undefined?'':String(row[mi]||'').trim()};count++}if(!count)throw Error('ไฟล์ไม่มีรายการ');if(!confirm(`นำเข้า ${count} รายการจาก ${file.name} และทับข้อมูลของ Part No. ที่ซ้ำ ใช่หรือไม่?`))return;const old=partsDb;partsDb={...partsDb,...incoming};try{savePartsDb()}catch{partsDb=old;throw Error('พื้นที่เก็บข้อมูลเต็ม')}renderPartsDb();document.querySelectorAll('#stampingEntryRows tr').forEach(refreshStampPart);$('#partsDbStatus').textContent=`นำเข้า ${count} รายการแล้ว`}catch(err){$('#partsDbStatus').textContent='นำเข้าไม่ได้: '+err.message}};
 function rateText(scrap,production){return production>0?rate(scrap,production).toFixed(2)+'%':'—'}
 function machineName(value){
  const found=String(value||'').toUpperCase().replace(/\s+/g,'').match(/(?:400T|200T|100T)/);
@@ -640,14 +661,15 @@ $('#entryDialog').onclick=e=>{if(e.target===$('#entryDialog'))$('#entryDialog').
 $('#addStampRow').onclick=()=>addStampRow();
 $('#stampingEntryRows').oninput=e=>{
  if(e.target.name==='employeeId'){const tr=e.target.closest('tr'),id=e.target.value.trim(),name=hrNames[id];tr.querySelector('[name="responsibleName"]').value=name||'';$('#hrNamesNotice').textContent=!id?rosterStatus():name?`พบรหัส ${id} · ${name}`:Object.keys(hrNames).length?`ไม่พบรหัส ${id} ในรายชื่อที่นำเข้า · ตรวจรหัสหรือเพิ่มไฟล์รายชื่อ`:'ยังไม่มีรายชื่อให้ค้นหา · กด “ดึงรายชื่อจาก HRPortal” หรือ “นำเข้าไฟล์รายชื่อ”';return}
+ if(e.target.name==='quantity'){refreshStampValue(e.target.closest('tr'));return}
  if(e.target.name!=='partCode')return;
- const row=e.target.closest('tr'),code=e.target.value.trim().toUpperCase(),model=row.querySelector('[name=model]');
- if(partModels[code])model.value=partModels[code];else model.value=''
+ const row=e.target.closest('tr');row.querySelector('[name="model"]').value='';refreshStampPart(row);
+ $('#partsDbNotice').textContent=row.querySelector('[name="partName"]').value?'พบ Part No. ในฐานข้อมูล':`ไม่พบ Part No. ${e.target.value.trim()} · กด “ฐานข้อมูล Part No. / ราคา” เพื่อเพิ่ม`;
 };
 $('#stampingEntryRows').onclick=e=>{
  if(!e.target.closest('.removeStampRow'))return;
  if($('#stampingEntryRows').children.length>1)e.target.closest('tr').remove();
- else{e.target.closest('tr').querySelectorAll('input').forEach(input=>input.value='')}
+ else{e.target.closest('tr').querySelectorAll('input').forEach(input=>input.value='')}refreshStampValue($('#stampingEntryRows tr'))
 };
 $('#stampingEntry').querySelector('[name=date]').value=new Date().toLocaleDateString('en-CA');
 $('#openStampProduction').onclick=()=>{const form=$('#stampProductionForm');form.querySelector('[name=date]').value=$('#stampingEntry').querySelector('[name=date]').value||new Date().toLocaleDateString('en-CA');form.querySelector('[name=shift]').value=$('#stampingEntry').querySelector('[name=shift]').value;form.querySelector('[name=line]').value=$('#stampingEntry').querySelector('[name=line]').value;$('#stampProductionNotice').textContent='';$('#stampProductionDialog').showModal()};
@@ -675,7 +697,7 @@ $('#stampingEntry').onsubmit=e=>{
  if(!issues.length){$('#stampFormNotice').textContent='เพิ่มรายการของเสียอย่างน้อย 1 แถว';return}
  const date=meta.date,shift=meta.shift,line=meta.line;
  if(!date||!shift||!['400T','200T','100T'].includes(line)){$('#stampFormNotice').textContent='กรุณากรอกวันที่ กะ และเครื่องจักร';return}
- for(const issue of issues){partModels[issue.partCode]=issue.model;records.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'scrap',date,shift,line,partCode:issue.partCode,model:issue.model,production:0,scrap:Number(issue.quantity),defect:issue.defect,cause:issue.cause,action:issue.action,employeeId:issue.employeeId,responsibleName:issue.responsibleName,note:''})}
+ for(const issue of issues){partModels[issue.partCode]=issue.model;records.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'scrap',date,shift,line,partCode:issue.partCode,partName:issue.partName,model:issue.model,production:0,scrap:Number(issue.quantity),unitPrice:issue.unitPrice===''?null:Number(issue.unitPrice),scrapValue:issue.scrapValue===''?null:Number(issue.scrapValue),defect:issue.defect,cause:issue.cause,action:issue.action,employeeId:issue.employeeId,responsibleName:issue.responsibleName,note:''})}
  localStorage.setItem(PART_MAP_KEY,JSON.stringify(partModels));save();$('#notice').textContent=`บันทึก ${issues.length} รายการแล้ว`;
  form.reset();form.querySelector('[name=date]').value=new Date().toLocaleDateString('en-CA');$('#stampingEntryRows').innerHTML='';addStampRow();$('#entryDialog').close();render()
 };
