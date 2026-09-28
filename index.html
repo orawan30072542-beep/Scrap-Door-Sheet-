@@ -254,6 +254,7 @@ dialog.entry-dialog::backdrop{
 #stampingEntry[hidden],#foamEntryWrap[hidden]{display:none!important}
 .entry-dialog:has(#stampingEntry:not([hidden])){width:min(1160px,calc(100% - 24px))}
 .stamping-head-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}
+#stampingEntry .stamping-head-fields,#stampProductionForm .stamping-head-fields{grid-template-columns:repeat(4,minmax(0,1fr))}
 .stamping-entry-table{width:100%;border-collapse:separate;border-spacing:0 8px;min-width:940px}
 .stamping-entry-table th{position:static;border:0;padding:3px 7px;font-size:12px}
 .stamping-entry-table td{border:0;padding:0 5px;vertical-align:top}
@@ -267,6 +268,8 @@ dialog.entry-dialog::backdrop{
 .stamping-form-actions .buttons{display:flex;gap:8px;flex-wrap:wrap}
 .stamping-help{color:#9db1c9;font-size:12px;line-height:1.6;margin:12px 0}
 @media(max-width:650px){.stamping-head-fields{grid-template-columns:1fr}.stamping-form-actions .field{max-width:none}}
+@media(max-width:750px){#stampingEntry .stamping-head-fields,#stampProductionForm .stamping-head-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:500px){#stampingEntry .stamping-head-fields,#stampProductionForm .stamping-head-fields{grid-template-columns:1fr}}
 
 /* Stamping entry: fit within dialog without sideways scrolling */
 #stampingEntry .tablewrap{overflow:visible;max-height:none;width:100%}
@@ -446,10 +449,9 @@ dialog.entry-dialog::backdrop{
 <label>วันที่ *</label><input type="date" name="date" required>
 </div>
 <div class="field">
-<label>กะการผลิต *</label><select name="shift" required><option value="">เลือกกะ</option>
-<option value="Day">กะกลางวัน</option>
-<option value="Night">กะกลางคืน</option></select>
+<label>Leader ประจำกะ *</label><input name="shiftLeader" list="shiftLeaders" placeholder="K.Amnuai / K.Thawatchai" required autocomplete="off"><datalist id="shiftLeaders"><option value="K.Amnuai"><option value="K.Thawatchai"></datalist>
 </div>
+<div class="field"><label>กะการผลิต (อัตโนมัติ) *</label><input name="shift" readonly required placeholder="กรอกชื่อ Leader ก่อน"></div>
 <div class="field">
 <label>เครื่องจักร *</label><select name="line" required><option value="">เลือกเครื่อง</option>
 <option>400T</option>
@@ -481,7 +483,7 @@ dialog.entry-dialog::backdrop{
 <button class="btn" type="button" id="addStampRow">+ เพิ่มแถว</button><button class="btn primary" type="submit">บันทึกรายการของเสีย</button>
 </div>
 </div>
-<p id="stampFormNotice" role="alert" style="color:#ffcb83;font-size:13px;margin:10px 0 0"></p></form></dialog><dialog id="stampProductionDialog" class="entry-dialog"><div class="dialog-head"><h2>บันทึกยอดผลิต · SCRAP STAMPING</h2><button class="btn" id="closeStampProduction" type="button">✕ ปิด</button></div><form id="stampProductionForm"><div class="stamping-head-fields"><div class="field"><label>วันที่ *</label><input type="date" name="date" required></div><div class="field"><label>กะการผลิต *</label><select name="shift" required><option value="">เลือกกะ</option><option value="Day">กะกลางวัน</option><option value="Night">กะกลางคืน</option></select></div><div class="field"><label>เครื่องจักร *</label><select name="line" required><option value="">เลือกเครื่อง</option><option value="400T">400T</option><option value="200T">200T</option><option value="100T">100T</option></select></div></div><div class="field" style="max-width:280px"><label>ยอดผลิต *</label><input type="number" name="production" min="0" step="1" required placeholder="จำนวนชิ้นที่ผลิต"><button class="btn primary" type="submit" style="margin-top:14px">บันทึกยอดผลิต</button></div><p id="stampProductionNotice" role="alert" class="stamping-help"></p></form></dialog><dialog id="stampScrapPreview" class="entry-dialog" style="width:min(1000px,calc(100% - 24px))"><div class="dialog-head"><h2>ตรวจสอบไฟล์ยอดของเสียก่อนบันทึก</h2><button class="btn" id="closeStampScrapPreview" type="button">✕ ปิด</button></div><p id="stampScrapPreviewSummary" class="stamping-help"></p><div class="tablewrap"><table><thead><tr><th>วันที่</th><th>กะ</th><th>เครื่อง</th><th>Part Code</th><th>Model</th><th>ปัญหา</th><th class="num">จำนวนของเสีย</th></tr></thead><tbody id="stampScrapPreviewRows"></tbody></table></div><p class="stamping-help">แสดงตัวอย่าง 20 แถวแรก · เมื่อกดยืนยันจะบันทึกทุกแถวในเบราว์เซอร์เครื่องนี้</p><p id="stampScrapPreviewNotice" role="alert" class="stamping-help" style="color:#ffcb83"></p><div class="actions" style="justify-content:flex-end"><button class="btn" id="cancelStampScrap" type="button">ยกเลิก</button><button class="btn primary" id="confirmStampScrap" type="button">ตกลง · บันทึกข้อมูล</button></div></dialog><section class="panel"><div class="top">
+<p id="stampFormNotice" role="alert" style="color:#ffcb83;font-size:13px;margin:10px 0 0"></p></form></dialog><dialog id="stampProductionDialog" class="entry-dialog"><div class="dialog-head"><h2>บันทึกยอดผลิต · SCRAP STAMPING</h2><button class="btn" id="closeStampProduction" type="button">✕ ปิด</button></div><form id="stampProductionForm"><div class="stamping-head-fields"><div class="field"><label>วันที่ *</label><input type="date" name="date" required></div><div class="field"><label>Leader ประจำกะ *</label><input name="shiftLeader" list="shiftLeaders" required autocomplete="off" placeholder="K.Amnuai / K.Thawatchai"></div><div class="field"><label>กะการผลิต (อัตโนมัติ) *</label><input name="shift" readonly required placeholder="กรอกชื่อ Leader ก่อน"></div><div class="field"><label>เครื่องจักร *</label><select name="line" required><option value="">เลือกเครื่อง</option><option value="400T">400T</option><option value="200T">200T</option><option value="100T">100T</option></select></div></div><div class="field" style="max-width:280px"><label>ยอดผลิต *</label><input type="number" name="production" min="0" step="1" required placeholder="จำนวนชิ้นที่ผลิต"><button class="btn primary" type="submit" style="margin-top:14px">บันทึกยอดผลิต</button></div><p id="stampProductionNotice" role="alert" class="stamping-help"></p></form></dialog><dialog id="stampScrapPreview" class="entry-dialog" style="width:min(1000px,calc(100% - 24px))"><div class="dialog-head"><h2>ตรวจสอบไฟล์ยอดของเสียก่อนบันทึก</h2><button class="btn" id="closeStampScrapPreview" type="button">✕ ปิด</button></div><p id="stampScrapPreviewSummary" class="stamping-help"></p><div class="tablewrap"><table><thead><tr><th>วันที่</th><th>กะ</th><th>เครื่อง</th><th>Part Code</th><th>Model</th><th>ปัญหา</th><th class="num">จำนวนของเสีย</th></tr></thead><tbody id="stampScrapPreviewRows"></tbody></table></div><p class="stamping-help">แสดงตัวอย่าง 20 แถวแรก · เมื่อกดยืนยันจะบันทึกทุกแถวในเบราว์เซอร์เครื่องนี้</p><p id="stampScrapPreviewNotice" role="alert" class="stamping-help" style="color:#ffcb83"></p><div class="actions" style="justify-content:flex-end"><button class="btn" id="cancelStampScrap" type="button">ยกเลิก</button><button class="btn primary" id="confirmStampScrap" type="button">ตกลง · บันทึกข้อมูล</button></div></dialog><section class="panel"><div class="top">
 <h2>รายละเอียดตามช่วงเวลา</h2>
 <span class="muted" id="count"></span>
 </div>
@@ -495,6 +497,7 @@ dialog.entry-dialog::backdrop{
 <th class="num">ยอดผลิต</th>
 <th class="num">ของเสีย</th>
 <th class="num">อัตราของเสีย</th>
+<th>แก้ไข</th>
 </tr></thead>
 <tbody id="summary"></tbody>
 </table></div></section><p class="foot">ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้ · กรุณาเก็บไฟล์ต้นฉบับไว้สำรอง</p></main>
@@ -502,7 +505,7 @@ dialog.entry-dialog::backdrop{
 <p class="stamping-help">เพิ่มรายการทีละรายการ หรือนำเข้า Excel (.xlsx) / CSV ที่มีหัวคอลัมน์ Part No., Part name, Price (และ Model ถ้ามี) · ราคาคือราคาต่อชิ้น</p>
 <form id="partsDbForm" class="stamping-head-fields"><div class="field"><label>Part No. *</label><input name="partCode" required placeholder="เช่น 0060134560BT"></div><div class="field"><label>Part name *</label><input name="partName" required placeholder="ชื่อชิ้นส่วน"></div><div class="field"><label>ราคา/ชิ้น (บาท) *</label><input name="unitPrice" type="number" min="0" step="0.01" required></div><div class="field"><label>Model</label><input name="model" placeholder="รุ่น (ถ้ามี)"></div><div class="field"><button class="btn primary" type="submit">บันทึก Part</button></div></form>
 <label class="btn" style="display:inline-block;cursor:pointer">+ นำเข้าฐานข้อมูล Excel / CSV<input type="file" id="partsDbFile" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden></label><span id="partsDbStatus" role="status" class="stamping-help" style="display:block;margin:10px 0"></span>
-<div class="tablewrap" style="max-height:260px;overflow:auto"><table><thead><tr><th>Part No.</th><th>Part name</th><th class="num">ราคา/ชิ้น (บาท)</th><th>Model</th></tr></thead><tbody id="partsDbRows"></tbody></table></div></dialog><script>/*!
+<div class="tablewrap" style="max-height:260px;overflow:auto"><table><thead><tr><th>Part No.</th><th>Part name</th><th class="num">ราคา/ชิ้น (บาท)</th><th>Model</th></tr></thead><tbody id="partsDbRows"></tbody></table></div></dialog><dialog id="summaryEditDialog" class="entry-dialog"><div class="dialog-head"><h2>แก้ไขข้อมูลที่บันทึก</h2><button type="button" class="btn" id="closeSummaryEdit">✕ ปิด</button></div><p class="stamping-help" id="summaryEditHelp"></p><div id="summaryEditList"></div><form id="summaryEditForm" hidden><div class="stamping-head-fields"><div class="field"><label>วันที่ *</label><input type="date" name="date" required></div><div class="field"><label>กะ</label><select name="shift"><option value="">ไม่ระบุ</option><option>Shift A</option><option>Shift B</option><option>Day</option><option>Night</option></select></div><div class="field"><label>เครื่อง / ไลน์ *</label><input name="line" required></div><div class="field"><label>Part Code</label><input name="partCode"></div><div class="field"><label>Model</label><input name="model"></div><div class="field"><label>ประเภทปัญหา</label><input name="defect"></div><div class="field"><label>ยอดผลิต</label><input type="number" name="production" min="0" step="1" required></div><div class="field"><label>ของเสีย</label><input type="number" name="scrap" min="0" step="1" required></div></div><p id="summaryEditNotice" role="alert" class="stamping-help"></p><div class="actions"><button type="button" class="btn" id="cancelSummaryEdit">ย้อนกลับ</button><button type="submit" class="btn primary">บันทึกการแก้ไข</button></div></form></dialog><script>/*!
 
 JSZip v3.10.1 - A JavaScript class for generating and reading zip files
 <http://stuartk.com/jszip>
@@ -527,7 +530,7 @@ const PARTS_DB_KEY='scrap_parts_db_v1';let partsDb={};try{partsDb=JSON.parse(loc
 function savePartsDb(){localStorage.setItem(PARTS_DB_KEY,JSON.stringify(partsDb));$('#partsDbNotice').textContent=`มี ${Object.keys(partsDb).length} Part ในฐานข้อมูล`}
 function renderPartsDb(){$('#partsDbRows').innerHTML=Object.entries(partsDb).sort(([a],[b])=>a.localeCompare(b)).map(([code,p])=>`<tr><td>${esc(code)}</td><td>${esc(p.name)}</td><td class="num">${Number(p.price).toFixed(2)}</td><td>${esc(p.model||'')}</td></tr>`).join('')||'<tr><td colspan="4">ยังไม่มีข้อมูล Part</td></tr>'}
 for(const old of records)if(old.partCode&&old.model)partModels[String(old.partCode).trim().toUpperCase()]=old.model;
-let page='foam',period='day',scrapPeriod='day',trendMetric='scrap';
+let page='foam',period='day',scrapPeriod='day',trendMetric='scrap',summaryKeys=[],editRecordIndex=-1;
 const $=s=>document.querySelector(s),fmt=n=>new Intl.NumberFormat('th-TH').format(n),rate=(s,p)=>p>0?100*s/p:0,esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),save=()=>localStorage.setItem(KEY,JSON.stringify(records));
 $('input[name=date]').value=new Date().toLocaleDateString('en-CA');
 function weekKey(date){let d=new Date(date+'T12:00:00Z'),day=(d.getUTCDay()+6)%7;
@@ -645,9 +648,15 @@ if(page==='stamping')renderStamping(rows);else chart(rows);
 let types=group(rows,r=>r.defect||'ไม่ระบุ').sort((a,b)=>b.scrap-a.scrap).slice(0,7),max=Math.max(1,...types.map(x=>x.scrap));
 $('#pareto').innerHTML=types.length?types.map(x=>`<div class="barrow"><span title="${esc(x.key)}">${esc(x.key)}</span><div class="track"><div class="fill" style="width:${x.scrap/max*100}%"></div></div><b>${fmt(x.scrap)}</b></div>`).join(''):'<p class="muted">ยังไม่มีข้อมูลในช่วงที่เลือก</p>';
 let summary=group(rows,r=>[key(r.date),r.shift||'',r.line,r.model,r.defect].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
-$('#summary').innerHTML=summary.length?summary.map(v=>{let [d,shift,l,m,t]=v.key.split('\u0001');
-return `<tr><td>${esc(d)}</td><td>${esc(shift||'—')}</td><td>${esc(l)}</td><td>${esc(m||'—')}</td><td>${esc(t||'—')}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td></tr>`}).join(''):'<tr><td colspan="8" class="muted">ยังไม่มีข้อมูล</td></tr>';
-}document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{page=b.dataset.page;
+summaryKeys=summary.map(v=>v.key);$('#summary').innerHTML=summary.length?summary.map((v,i)=>{let [d,shift,l,m,t]=v.key.split('\u0001');
+return `<tr><td>${esc(d)}</td><td>${esc(shift||'—')}</td><td>${esc(l)}</td><td>${esc(m||'—')}</td><td>${esc(t||'—')}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td><td><button class="btn" type="button" data-summary-edit="${i}">แก้ไข</button></td></tr>`}).join(''):'<tr><td colspan="9" class="muted">ยังไม่มีข้อมูล</td></tr>';
+}
+function showSummaryGroup(index){const selected=summaryKeys[index];if(selected===undefined)return;const matches=filtered().filter(r=>[key(r.date),r.shift||'',r.line,r.model,r.defect].join('\u0001')===selected);$('#summaryEditHelp').textContent=`กลุ่มนี้มี ${matches.length} รายการ · เลือกรายการที่ต้องการแก้วันที่หรือข้อมูล`;$('#summaryEditList').innerHTML=matches.map(r=>{const i=records.indexOf(r);return `<div class="panel" style="margin:8px 0;padding:12px;display:flex;gap:12px;align-items:center;justify-content:space-between"><span>${esc(r.date)} · ${esc(r.shift||'—')} · ${esc(r.line||'—')} · ${esc(r.partCode||r.model||'ยอดผลิต')} · ผลิต ${fmt(Number(r.production)||0)} · เสีย ${fmt(Number(r.scrap)||0)}</span><button class="btn" type="button" data-edit-record="${i}">แก้ไขรายการนี้</button></div>`}).join('');$('#summaryEditList').hidden=false;$('#summaryEditForm').hidden=true}
+$('#summary').onclick=e=>{const button=e.target.closest('[data-summary-edit]');if(!button)return;showSummaryGroup(Number(button.dataset.summaryEdit));$('#summaryEditDialog').showModal()};
+$('#summaryEditList').onclick=e=>{const button=e.target.closest('[data-edit-record]');if(!button)return;editRecordIndex=Number(button.dataset.editRecord);const r=records[editRecordIndex];if(!r)return;const form=$('#summaryEditForm');for(const name of ['date','shift','line','partCode','model','defect','production','scrap']){const field=form.elements.namedItem(name);field.value=r[name]??''}$('#summaryEditNotice').textContent='';$('#summaryEditList').hidden=true;form.hidden=false};
+$('#cancelSummaryEdit').onclick=()=>{$('#summaryEditForm').hidden=true;$('#summaryEditList').hidden=false};$('#closeSummaryEdit').onclick=()=>$('#summaryEditDialog').close();
+$('#summaryEditForm').onsubmit=e=>{e.preventDefault();const r=records[editRecordIndex],x=Object.fromEntries(new FormData(e.target)),production=Number(x.production),scrap=Number(x.scrap);if(!r||!x.date||!x.line.trim()||!Number.isInteger(production)||production<0||!Number.isInteger(scrap)||scrap<0){$('#summaryEditNotice').textContent='ตรวจวันที่ เครื่องจักร ยอดผลิต และยอดของเสีย';return}const backup={...r};Object.assign(r,{date:x.date,shift:x.shift,line:x.line.trim(),partCode:x.partCode.trim().toUpperCase(),model:x.model.trim(),defect:x.defect.trim(),production,scrap});if(r.shiftLeader&&shiftForLeader(r.shiftLeader)!==r.shift)r.shiftLeader='';if(r.unitPrice!==null&&r.unitPrice!==undefined)r.scrapValue=Number((Number(r.unitPrice)*scrap).toFixed(2));try{save()}catch{Object.assign(r,backup);$('#summaryEditNotice').textContent='บันทึกไม่ได้: พื้นที่เก็บข้อมูลเต็ม';return}$('#summaryEditDialog').close();$('#notice').textContent='แก้ไขข้อมูลและวันที่แล้ว';render()};
+document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{page=b.dataset.page;
 document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x===b));
 $('#formPage').textContent=b.textContent;$('#openEntry').textContent=page==='stamping'?'+ เพิ่มข้อมูลรายวัน · SCRAP STAMPING':'+ เพิ่มข้อมูลรายวัน · SCRAP DOOR FOAM';
 $('#foamEntryWrap').hidden=page==='stamping';$('#stampingEntry').hidden=page!=='stamping';
@@ -689,15 +698,17 @@ $('#stampingEntryRows').onclick=e=>{
  else{e.target.closest('tr').querySelectorAll('input').forEach(input=>input.value='')}refreshStampValue($('#stampingEntryRows tr'))
 };
 $('#stampingEntry').querySelector('[name=date]').value=new Date().toLocaleDateString('en-CA');
-$('#openStampProduction').onclick=()=>{const form=$('#stampProductionForm');form.querySelector('[name=date]').value=$('#stampingEntry').querySelector('[name=date]').value||new Date().toLocaleDateString('en-CA');form.querySelector('[name=shift]').value=$('#stampingEntry').querySelector('[name=shift]').value;form.querySelector('[name=line]').value=$('#stampingEntry').querySelector('[name=line]').value;$('#stampProductionNotice').textContent='';$('#stampProductionDialog').showModal()};
+function shiftForLeader(value){const key=String(value||'').trim().toLowerCase().replace(/[^a-z]/g,'');return key==='kamnuai'||key==='amnuai'?'Shift B':key==='kthawatchai'||key==='thawatchai'?'Shift A':''}
+for(const form of [$('#stampingEntry'),$('#stampProductionForm')]){form.querySelector('[name="shiftLeader"]').addEventListener('input',e=>{form.querySelector('[name="shift"]').value=shiftForLeader(e.target.value);const notice=form.querySelector('[role="alert"]');if(notice)notice.textContent=e.target.value&&!shiftForLeader(e.target.value)?'ไม่พบชื่อ Leader นี้ · ใช้ K.Amnuai หรือ K.Thawatchai':''})}
+$('#openStampProduction').onclick=()=>{const form=$('#stampProductionForm'),scrap=$('#stampingEntry');form.querySelector('[name=date]').value=scrap.querySelector('[name=date]').value||new Date().toLocaleDateString('en-CA');form.querySelector('[name=shiftLeader]').value=scrap.querySelector('[name=shiftLeader]').value;form.querySelector('[name=shift]').value=shiftForLeader(form.querySelector('[name=shiftLeader]').value);form.querySelector('[name=line]').value=scrap.querySelector('[name=line]').value;$('#stampProductionNotice').textContent='';$('#stampProductionDialog').showModal()};
 $('#closeStampProduction').onclick=()=>$('#stampProductionDialog').close();
 $('#stampProductionDialog').onclick=e=>{if(e.target===$('#stampProductionDialog'))e.target.close()};
 $('#stampProductionForm').onsubmit=e=>{
  e.preventDefault();const form=e.target,x=Object.fromEntries(new FormData(form));const production=Number(x.production);
- if(!x.date||!x.shift||!['400T','200T','100T'].includes(x.line)||x.production===''||!Number.isInteger(production)||production<0){$('#stampProductionNotice').textContent='กรุณาตรวจวันที่ กะ เครื่องจักร และยอดผลิต';return}
+ if(!x.date||!x.shift||x.shift!==shiftForLeader(x.shiftLeader)||!['400T','200T','100T'].includes(x.line)||x.production===''||!Number.isInteger(production)||production<0){$('#stampProductionNotice').textContent='กรุณาตรวจวันที่ ชื่อ Leader เครื่องจักร และยอดผลิต';return}
  let previous=records.find(r=>r.page==='stamping'&&r.kind==='production'&&r.date===x.date&&r.shift===x.shift&&r.line===x.line);
- if(previous)previous.production=production;
- else records.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'production',date:x.date,shift:x.shift,line:x.line,production,scrap:0,model:'',defect:'',note:''});
+ if(previous){previous.production=production;previous.shiftLeader=x.shiftLeader.trim()}
+ else records.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'production',date:x.date,shift:x.shift,shiftLeader:x.shiftLeader.trim(),line:x.line,production,scrap:0,model:'',defect:'',note:''});
  save();$('#notice').textContent=`บันทึกยอดผลิต ${x.line} วันที่ ${x.date} กะ ${x.shift} จำนวน ${fmt(production)} ชิ้นแล้ว`;
  $('#stampProductionDialog').close();render()
 };
@@ -713,8 +724,8 @@ $('#stampingEntry').onsubmit=e=>{
  }
  if(!issues.length){$('#stampFormNotice').textContent='เพิ่มรายการของเสียอย่างน้อย 1 แถว';return}
  const date=meta.date,shift=meta.shift,line=meta.line;
- if(!date||!shift||!['400T','200T','100T'].includes(line)){$('#stampFormNotice').textContent='กรุณากรอกวันที่ กะ และเครื่องจักร';return}
- for(const issue of issues){partModels[issue.partCode]=issue.model;records.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'scrap',date,shift,line,partCode:issue.partCode,partName:issue.partName,model:issue.model,production:0,scrap:Number(issue.quantity),unitPrice:issue.unitPrice===''?null:Number(issue.unitPrice),scrapValue:issue.scrapValue===''?null:Number(issue.scrapValue),defect:issue.defect,cause:issue.cause,action:issue.action,employeeId:issue.employeeId,responsibleName:issue.responsibleName,note:''})}
+ if(!date||!shift||shift!==shiftForLeader(meta.shiftLeader)||!['400T','200T','100T'].includes(line)){$('#stampFormNotice').textContent='กรุณากรอกวันที่ ชื่อ Leader ที่กำหนดไว้ และเครื่องจักร';return}
+ for(const issue of issues){partModels[issue.partCode]=issue.model;records.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'scrap',date,shift,shiftLeader:meta.shiftLeader.trim(),line,partCode:issue.partCode,partName:issue.partName,model:issue.model,production:0,scrap:Number(issue.quantity),unitPrice:issue.unitPrice===''?null:Number(issue.unitPrice),scrapValue:issue.scrapValue===''?null:Number(issue.scrapValue),defect:issue.defect,cause:issue.cause,action:issue.action,employeeId:issue.employeeId,responsibleName:issue.responsibleName,note:''})}
  localStorage.setItem(PART_MAP_KEY,JSON.stringify(partModels));save();$('#notice').textContent=`บันทึก ${issues.length} รายการแล้ว`;
  form.reset();form.querySelector('[name=date]').value=new Date().toLocaleDateString('en-CA');$('#stampingEntryRows').innerHTML='';addStampRow();$('#entryDialog').close();render()
 };
