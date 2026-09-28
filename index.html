@@ -234,6 +234,8 @@ dialog.entry-dialog::backdrop{
 .stamping-layout{display:grid;grid-template-columns:1.65fr 1fr;gap:15px;margin-bottom:16px}
 .stamping-title{margin:6px 0 15px;font-size:21px;letter-spacing:.02em}
 .stamping-title span{color:#80c8ff}
+#stampingToolbar{font-size:12px;line-height:1.35}
+#stampingToolbar .btn,#stampingToolbar label.btn{font-size:10px;font-weight:600;padding:6px 9px;border-radius:7px;vertical-align:middle}
 .machine-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
 .machine-card{border:1px solid #2c4560;border-radius:13px;background:#0c1b2c;padding:14px}
 .machine-card strong{font-size:18px;color:#eff8ff}
@@ -315,9 +317,7 @@ dialog.entry-dialog::backdrop{
 <h1>Scrap Analysis Dashboard</h1>
 <p class="sub">วิเคราะห์ยอดผลิต ยอดของเสีย และอัตราของเสียตามช่วงเวลา</p>
 </div>
-<div class="actions">
-<button class="btn" id="template">ดาวน์โหลด CSV ตัวอย่าง</button><button class="btn" id="export">ส่งออกข้อมูล CSV</button><label class="btn primary">นำเข้า CSV<input id="import" type="file" accept=".csv,text/csv" hidden></label>
-</div></header><nav class="tabs"><button class="btn active" data-page="foam">SCRAP DOOR FOAM</button><button class="btn" data-page="stamping">SCRAP STAMPING</button><button class="btn primary" id="openEntry" type="button">+ เพิ่มข้อมูลรายวัน</button></nav>
+</header><nav class="tabs"><button class="btn active" data-page="foam">SCRAP DOOR FOAM</button><button class="btn" data-page="stamping">SCRAP STAMPING</button><button class="btn primary" id="openEntry" type="button">+ เพิ่มข้อมูลรายวัน</button></nav>
 <h2 class="stamping-title" id="stampingToolbar" hidden>SCRAP STAMPING <span>· วิเคราะห์รายเครื่องจักร</span> <button class="btn primary" type="button" id="openStampEntry">+ เพิ่มข้อมูลรายวัน STAMPING</button> <button class="btn" type="button" id="openStampProduction">+ บันทึกยอดผลิต</button> <label class="btn" style="display:inline-block;cursor:pointer">+ เพิ่มไฟล์ยอดของเสีย<input id="stampScrapFile" type="file" accept=".csv,text/csv" hidden></label></h2>
 <section class="panel"><div class="grid filters">
 <div class="field">
@@ -488,7 +488,7 @@ dialog.entry-dialog::backdrop{
 <th class="num">อัตราของเสีย</th>
 </tr></thead>
 <tbody id="summary"></tbody>
-</table></div></section><p class="foot">ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้ · ส่งออก CSV เพื่อสำรองหรือย้ายข้อมูลไปอีกเครื่อง</p></main><script>
+</table></div></section><p class="foot">ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้ · กรุณาเก็บไฟล์ต้นฉบับไว้สำรอง</p></main><script>
 const KEY='scrap_dashboard_v1';
 let records=[];
 try{records=JSON.parse(localStorage.getItem(KEY)||'[]');
@@ -582,7 +582,7 @@ function renderStamping(rows){
  points.forEach(p=>svg+=`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="#ffca72"/>`);
  $('#stampingPareto').innerHTML=svg+'</svg>'
 }
-function render(){options();$('#stampingToolbar').hidden=page!=='stamping';$('#stampingAnalytics').hidden=page!=='stamping';$('#generalCharts').hidden=page==='stamping';
+function render(){options();$('#openEntry').hidden=page==='stamping';$('#stampingToolbar').hidden=page!=='stamping';$('#stampingAnalytics').hidden=page!=='stamping';$('#generalCharts').hidden=page==='stamping';
 let rows=filtered(),p=rows.reduce((a,r)=>a+r.production,0),s=rows.reduce((a,r)=>a+r.scrap,0);
 $('#production').textContent=fmt(p);
 $('#scrap').textContent=fmt(s);
@@ -673,8 +673,7 @@ $('#entryDialog').close();
 e.target.reset();
 $('input[name=date]').value=new Date().toLocaleDateString('en-CA');
 render()};
-function csvCell(v){let s=String(v??'');
-return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}const headers=['page','date','shift','line','model','production','scrap','defect','note','partCode','cause','action','employeeId','responsibleName','kind'];function download(rows,name){let body='\ufeff'+[headers.join(','),...rows.map(r=>headers.map(h=>csvCell(h==='responsibleName'?(r.responsibleName||r.department):r[h])).join(','))].join('\r\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([body],{type:'text/csv;charset=utf-8'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}$('#template').onclick=()=>download([{page:'foam',date:'2026-09-24',shift:'Day',line:'Door A',model:'Example',production:100,scrap:2,defect:'Foam leak',note:''},{page:'stamping',date:'2026-09-24',shift:'Day',line:'Stamping 1',model:'Example',production:100,scrap:1,defect:'Scratch',note:''}],'scrap-template.csv');$('#export').onclick=()=>download(records,'scrap-data.csv');function parseCSV(txt){let out=[],row=[],cell='',quoted=false;txt=txt.replace(/^\ufeff/,'');for(let i=0;i<txt.length;i++){let c=txt[i];if(quoted){if(c==='"'&&txt[i+1]==='"'){cell+='"';i++}else if(c==='"')quoted=false;else cell+=c}else if(c==='"')quoted=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'||c==='\r'){row.push(cell);if(row.some(v=>v!==''))out.push(row);row=[];cell='';if(c==='\r'&&txt[i+1]==='\n')i++}else cell+=c}row.push(cell);if(row.some(v=>v!==''))out.push(row);if(quoted)throw Error('เครื่องหมายอัญประกาศใน CSV ไม่ครบ');return out}$('#import').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let rows=parseCSV(await file.text()),head=rows.shift().map(s=>s.trim().toLowerCase()),missing=['page','date','shift','line','model','production','scrap','defect','note'].filter(h=>!head.includes(h));if(missing.length)throw Error('ขาดคอลัมน์ '+missing.join(', '));let added=[];for(let [i,values] of rows.entries()){let obj=Object.fromEntries(headers.map(h=>[h,head.indexOf(h)<0?'':values[head.indexOf(h)]??'']));if(!obj.employeeId&&head.includes('employeeid'))obj.employeeId=values[head.indexOf('employeeid')]||'';if(!obj.responsibleName&&head.includes('department'))obj.responsibleName=values[head.indexOf('department')]||'';obj.production=Number(obj.production);obj.scrap=Number(obj.scrap);if(!['foam','stamping'].includes(obj.page)||!/^\d{4}-\d{2}-\d{2}$/.test(obj.date)||Number.isNaN(new Date(obj.date+'T12:00:00Z').getTime())||!obj.line||!Number.isInteger(obj.production)||!Number.isInteger(obj.scrap)||obj.production<0||obj.scrap<0)throw Error(`แถว ${i+2} มีข้อมูลไม่ถูกต้อง`);obj.id=crypto.randomUUID?.()||String(Date.now()+Math.random());added.push(obj)}records.push(...added);for(const r of added)if(r.partCode&&r.model)partModels[String(r.partCode).trim().toUpperCase()]=r.model;localStorage.setItem(PART_MAP_KEY,JSON.stringify(partModels));save();$('#notice').textContent=`นำเข้าสำเร็จ ${added.length} รายการ`;render()}catch(err){$('#notice').textContent='นำเข้าไม่สำเร็จ: '+err.message}e.target.value=''};render();
+function parseCSV(txt){let out=[],row=[],cell='',quoted=false;txt=txt.replace(/^\ufeff/,'');for(let i=0;i<txt.length;i++){let c=txt[i];if(quoted){if(c==='"'&&txt[i+1]==='"'){cell+='"';i++}else if(c==='"')quoted=false;else cell+=c}else if(c==='"')quoted=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'||c==='\r'){row.push(cell);if(row.some(v=>v!==''))out.push(row);row=[];cell='';if(c==='\r'&&txt[i+1]==='\n')i++}else cell+=c}row.push(cell);if(row.some(v=>v!==''))out.push(row);if(quoted)throw Error('เครื่องหมายอัญประกาศใน CSV ไม่ครบ');return out}render();
 </script>
 </body>
 </html>
