@@ -542,7 +542,6 @@ body:not(.admin-unlocked) #openEntry,body:not(.admin-unlocked) #openStampEntry,b
 <th class="num">ยอดผลิต</th>
 <th class="num">ของเสีย</th>
 <th class="num">อัตราของเสีย</th>
-<th>จัดการ</th>
 </tr></thead>
 <tbody id="summary"></tbody>
 </table></div></section><p class="foot">ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้ · กรุณาเก็บไฟล์ต้นฉบับไว้สำรอง</p></div>
@@ -699,7 +698,7 @@ let types=group(rows,r=>r.defect||'ไม่ระบุ').sort((a,b)=>b.scrap-a
 $('#pareto').innerHTML=types.length?types.map(x=>`<div class="barrow"><span title="${esc(x.key)}">${esc(x.key)}</span><div class="track"><div class="fill" style="width:${x.scrap/max*100}%"></div></div><b>${fmt(x.scrap)}</b></div>`).join(''):'<p class="muted">ยังไม่มีข้อมูลในช่วงที่เลือก</p>';
 let summary=group(rows,r=>[key(r.date),r.shift||'',r.line,r.model,r.defect].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
 summaryKeys=summary.map(v=>v.key);$('#summary').innerHTML=summary.length?summary.map((v,i)=>{let [d,shift,l,m,t]=v.key.split('\u0001');
-return `<tr><td>${esc(period==='week'?weekLabel(d):d)}</td><td>${esc(shift||'—')}</td><td>${esc(l)}</td><td>${esc(m||'—')}</td><td>${esc(t||'—')}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td><td><div class="actions" style="flex-wrap:nowrap"><button class="btn" type="button" data-summary-view="${i}">ดูรายละเอียด</button></div></td></tr>`}).join(''):'<tr><td colspan="9" class="muted">ยังไม่มีข้อมูล</td></tr>';
+return `<tr><td>${esc(period==='week'?weekLabel(d):d)}</td><td>${esc(shift||'—')}</td><td>${esc(l)}</td><td>${esc(m||'—')}</td><td>${esc(t||'—')}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td></tr>`}).join(''):'<tr><td colspan="8" class="muted">ยังไม่มีข้อมูล</td></tr>';
 }
 function showSummaryGroup(index){const selected=summaryKeys[index];if(selected===undefined)return;const matches=filtered().filter(r=>[key(r.date),r.shift||'',r.line,r.model,r.defect].join('\u0001')===selected);$('#summaryEditHelp').textContent=`กลุ่มนี้มี ${matches.length} รายการ · แสดงรายละเอียดสำหรับดูข้อมูลเท่านั้น`;$('#summaryEditList').innerHTML=matches.map(r=>{const i=records.indexOf(r);return `<div class="panel" style="margin:8px 0;padding:12px;display:flex;gap:12px;align-items:center;justify-content:space-between"><span>${esc(r.date)} · ${esc(r.shift||'—')} · ${esc(r.line||'—')} · ${esc(r.partCode||r.model||'ยอดผลิต')} · ผลิต ${fmt(Number(r.production)||0)} · เสีย ${fmt(Number(r.scrap)||0)}</span></div>`}).join('');$('#summaryEditList').hidden=false;$('#summaryEditForm').hidden=true}
 $('#summary').onclick=e=>{const button=e.target.closest('[data-summary-view]');if(!button)return;showSummaryGroup(Number(button.dataset.summaryView));$('#summaryEditDialog').showModal()};
