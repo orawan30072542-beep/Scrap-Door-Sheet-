@@ -371,6 +371,10 @@ body{background:#061222;color:#dcecff}.panel{background:linear-gradient(145deg,#
 .dashboard-header{display:flex;align-items:center;gap:24px;flex-wrap:nowrap;margin-bottom:20px}.dashboard-header .haier-header-logo{width:clamp(130px,15vw,200px);margin:0;padding-right:20px;border-right:1px solid #36516e;box-sizing:content-box;align-self:stretch;max-height:95px}.dashboard-heading{flex:1;min-width:0}.dashboard-heading h1{font-size:clamp(23px,2.2vw,34px);font-weight:800;line-height:1.2;margin:10px 0}.dashboard-heading .eyebrow{font-size:11px}.dashboard-heading .sub{font-size:12px;line-height:1.6}.header-navigation{margin:0;padding:0;border:0;flex-wrap:nowrap;flex-shrink:0;gap:8px}.header-navigation .btn{font-size:12px;padding:12px 14px;white-space:nowrap}.header-entry-actions{display:flex;justify-content:flex-end;margin-bottom:16px}.header-entry-actions:has([hidden]){display:none}
 @media(max-width:1150px){.dashboard-header{flex-wrap:wrap;gap:18px}.header-navigation{width:100%;justify-content:flex-end}.dashboard-heading h1{font-size:28px}}
 @media(max-width:620px){.dashboard-header .haier-header-logo{width:100px;max-height:75px;padding-right:12px}.dashboard-header{gap:12px}.dashboard-heading h1{font-size:21px}.dashboard-heading .eyebrow{font-size:9px;letter-spacing:.06em}.header-navigation{justify-content:stretch;flex-wrap:wrap}.header-navigation .btn{flex:1;font-size:11px;padding:10px}}
+
+#stampingScrapTrend{display:block;width:100%;height:390px;min-width:0}
+#stampingScrapTrend svg{display:block;width:100%;height:100%}
+@media(max-width:620px){#stampingScrapTrend{height:310px}}
 </style>
 </head>
 <body>
@@ -411,7 +415,7 @@ body{background:#061222;color:#dcecff}.panel{background:linear-gradient(145deg,#
 <section class="panel" style="margin-bottom:16px" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
 <div class="top"><h2 id="stampingTrendTitle">แนวโน้มยอดของเสีย · SCRAP STAMPING</h2><div class="periods" aria-label="เลือกช่วงเวลาของกราฟ"><button class="btn active" type="button" data-scrap-period="day">รายวัน</button><button class="btn" type="button" data-scrap-period="month">รายเดือน</button></div></div>
 <div class="periods" style="margin-bottom:10px" aria-label="เลือกข้อมูลในกราฟ"><button class="btn" type="button" data-trend-metric="production">ยอดผลิต</button><button class="btn active" type="button" data-trend-metric="scrap">ยอดของเสีย</button><button class="btn" type="button" data-trend-metric="rate">Percent Rate</button></div>
-<div id="stampingScrapTrend" class="stamping-chart" style="height:310px"></div><div class="chart-note" id="stampingTrendNote">แสดงสูงสุด 21 วันหรือ 12 เดือนล่าสุดตามตัวกรองด้านบน</div>
+<div id="stampingScrapTrend" class="stamping-chart"></div><div class="chart-note" id="stampingTrendNote">แสดงสูงสุด 21 วันหรือ 12 เดือนล่าสุดตามตัวกรองด้านบน</div>
 </section>
 <div class="stamping-layout">
 <div class="panel">
@@ -644,7 +648,7 @@ function renderScrapTrend(rows){
  $('#stampingTrendNote').textContent='แสดงสูงสุด 21 วันหรือ 12 เดือนล่าสุดตามตัวกรองด้านบน'+(trendMetric==='rate'&&missing?' · '+missing+' ช่วงไม่มีข้อมูลยอดผลิต จึงไม่คำนวณ Percent Rate':'');
  if(!values.length||values.every(v=>v.amount===null)){box.innerHTML='<span class="stamping-empty">'+(trendMetric==='rate'?'ยังไม่มียอดผลิตสำหรับคำนวณ Percent Rate':'ยังไม่มีข้อมูล'+titles[trendMetric]+'ในช่วงที่เลือก')+'</span>';return}
  const W=900,H=300,L=65,R=20,T=34,B=65,iw=W-L-R,ih=H-T-B,max=Math.max(1,...values.map(v=>v.amount??0)),step=iw/values.length,width=Math.min(34,step*.65),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#69baff':'#339dff';
- let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${titles[trendMetric]}${scrapPeriod==='month'?'รายเดือน':'รายวัน'}">`;
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="none" aria-label="${titles[trendMetric]}${scrapPeriod==='month'?'รายเดือน':'รายวัน'}">`;
  for(let n=0;n<=4;n++){const y=T+ih*n/4,scale=max*(4-n)/4;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#2c4058"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#9db5ca" font-size="11">${trendMetric==='rate'?scale.toFixed(1)+'%':fmt(Math.round(scale))}</text>`}
  values.forEach(({label,amount},i)=>{const x=L+step*(i+.5),short=scrapPeriod==='month'?label.slice(5)+'/'+label.slice(2,4):label.slice(8)+'/'+label.slice(5,7);if(amount!==null){const h=amount/max*ih,display=trendMetric==='rate'?amount.toFixed(2)+'%':fmt(amount);svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${Math.max(h,1)}" rx="4" fill="${color}"><title>${esc(label)}: ${display}</title></rect><text x="${x}" y="${Math.max(T+12,T+ih-h-7)}" text-anchor="middle" fill="#dce9fa" font-size="10">${display}</text>`}else svg+=`<text x="${x}" y="${T+ih-8}" text-anchor="middle" fill="#9db5ca" font-size="13">—</text>`;svg+=`<text x="${x}" y="${H-30}" text-anchor="middle" fill="#a9bdd1" font-size="11">${short}</text>`});
  box.innerHTML=svg+'</svg>'
