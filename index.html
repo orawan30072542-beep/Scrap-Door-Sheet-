@@ -356,6 +356,10 @@ dialog.entry-dialog::backdrop{
 
 body{background:#061222;color:#dcecff}.panel{background:linear-gradient(145deg,#0e223a,#0b1b30);border-color:#254869}.stamping-layout>.panel{min-width:0}.issue-kicker,.issue-form-section h3,.issue-form-section h3 small{color:#8bcaff}.issue-form-section h3 span{background:#183c60;color:#a1d7ff;border-color:#345879}.machine-card .rate{color:#69baff}.machine-scrap-label span{font-size:18px}.machine-scrap-label small{display:block;text-align:right;font-size:11px}.issue-analysis-table thead th{color:#a1d7ff}.issue-chip.process,.issue-chip.finish{background:#123353;border-color:#345879;color:#a1d7ff}
 @media(max-width:900px){.stamping-layout{grid-template-columns:1fr}}
+
+#stampingPareto{width:100%;height:340px;display:block;min-width:0}
+#stampingPareto svg{display:block;width:100%;height:100%}
+@media(max-width:620px){#stampingPareto{height:290px}}
 </style>
 </head>
 <body>
@@ -657,8 +661,8 @@ function renderStamping(rows){
  let problem=group(rows,r=>r.defect?.trim()||'ไม่ระบุประเภท').filter(p=>p.scrap>0).sort((a,b)=>b.scrap-a.scrap),total=problem.reduce((n,p)=>n+p.scrap,0);
  if(!problem.length){$('#stampingPareto').innerHTML='<span class="stamping-empty">ยังไม่มีข้อมูลของเสียในช่วงที่เลือก</span>';return}
  let top=problem.slice(0,6);if(problem.length>6)top.push({key:'อื่น ๆ',scrap:problem.slice(6).reduce((n,p)=>n+p.scrap,0)});
- const W=500,H=275,L=45,R=40,T=20,B=72,iw=W-L-R,ih=H-T-B,maxScrap=Math.max(...top.map(p=>p.scrap),1);
- let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="พาเรโตจำนวนของเสียตามประเภทปัญหาและเปอร์เซ็นต์สะสม">`,sum=0,points=[];
+ const W=900,H=340,L=45,R=48,T=24,B=78,iw=W-L-R,ih=H-T-B,maxScrap=Math.max(...top.map(p=>p.scrap),1);
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="none" aria-label="พาเรโตจำนวนของเสียตามประเภทปัญหาและเปอร์เซ็นต์สะสม">`,sum=0,points=[];
  [0,25,50,75,100].forEach(n=>{let y=T+ih*(1-n/100);svg+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#2c4058"/><text x="${W-R+5}" y="${y+4}" fill="#a1d7ff" font-size="10">${n}%</text>`});
  top.forEach((p,i)=>{let x=L+iw*(i+.5)/top.length,h=ih*p.scrap/maxScrap;sum+=p.scrap;let y=T+ih-ih*sum/total;points.push([x,y]);svg+=`<rect x="${x-17}" y="${T+ih-h}" width="34" height="${h}" rx="3" fill="#339dff"/><text x="${x}" y="${Math.max(T+10,T+ih-h-6)}" text-anchor="middle" fill="#c4e4ff" font-size="10">${fmt(p.scrap)}</text><text transform="translate(${x-6},${H-62}) rotate(35)" fill="#a9bdd1" font-size="10">${esc(p.key.slice(0,16))}</text>`});
  svg+=`<polyline points="${points.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#a1d7ff" stroke-width="3"/>`;
