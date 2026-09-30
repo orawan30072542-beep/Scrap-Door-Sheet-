@@ -375,6 +375,8 @@ body{background:#061222;color:#dcecff}.panel{background:linear-gradient(145deg,#
 #stampingScrapTrend{display:block;width:100%;height:390px;min-width:0}
 #stampingScrapTrend svg{display:block;width:100%;height:100%}
 @media(max-width:620px){#stampingScrapTrend{height:310px}}
+
+.dashboard-header{position:sticky;top:0;z-index:40;background:#08182b;padding:16px 0;border-bottom:1px solid #254869;box-shadow:0 8px 20px #0003}
 </style>
 </head>
 <body>
@@ -413,9 +415,9 @@ body{background:#061222;color:#dcecff}.panel{background:linear-gradient(145deg,#
 </div></section><section id="stampingAnalytics" hidden>
 <div class="machine-list" id="machineCards"></div>
 <section class="panel" style="margin-bottom:16px" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
-<div class="top"><h2 id="stampingTrendTitle">แนวโน้มยอดของเสีย · SCRAP STAMPING</h2><div class="periods" aria-label="เลือกช่วงเวลาของกราฟ"><button class="btn active" type="button" data-scrap-period="day">รายวัน</button><button class="btn" type="button" data-scrap-period="month">รายเดือน</button></div></div>
+<div class="top"><h2 id="stampingTrendTitle">แนวโน้มยอดของเสีย · SCRAP STAMPING</h2><div class="periods" aria-label="เลือกช่วงเวลาของกราฟ"><button class="btn active" type="button" data-scrap-period="day">รายวัน</button><button class="btn" type="button" data-scrap-period="week">รายสัปดาห์</button><button class="btn" type="button" data-scrap-period="month">รายเดือน</button></div></div>
 <div class="periods" style="margin-bottom:10px" aria-label="เลือกข้อมูลในกราฟ"><button class="btn" type="button" data-trend-metric="production">ยอดผลิต</button><button class="btn active" type="button" data-trend-metric="scrap">ยอดของเสีย</button><button class="btn" type="button" data-trend-metric="rate">Percent Rate</button></div>
-<div id="stampingScrapTrend" class="stamping-chart"></div><div class="chart-note" id="stampingTrendNote">แสดงสูงสุด 21 วันหรือ 12 เดือนล่าสุดตามตัวกรองด้านบน</div>
+<div id="stampingScrapTrend" class="stamping-chart"></div><div class="chart-note" id="stampingTrendNote">แสดงสูงสุด 21 วัน / 12 สัปดาห์ / 12 เดือน · Week นับวันจันทร์–อาทิตย์</div>
 </section>
 <div class="stamping-layout">
 <div class="panel">
@@ -586,7 +588,8 @@ $('input[name=date]').value=new Date().toLocaleDateString('en-CA');
 function weekKey(date){let d=new Date(date+'T12:00:00Z'),day=(d.getUTCDay()+6)%7;
 d.setUTCDate(d.getUTCDate()-day+3);
 let y=d.getUTCFullYear(),first=new Date(Date.UTC(y,0,4)),w=1+Math.round(((d-first)/86400000-3+(first.getUTCDay()+6)%7)/7);
-return `${y}-W${String(w).padStart(2,'0')}`}function key(d){return period==='month'?d.slice(0,7):period==='week'?weekKey(d):d}function filtered(){return records.filter(r=>r.page===page&&(!$('#start').value||r.date>=$('#start').value)&&(!$('#end').value||r.date<=$('#end').value)&&(!$('#line').value||r.line===$('#line').value)&&(!$('#model').value||r.model===$('#model').value))}function options(){for(let [id,field] of [['line','line'],['model','model']]){let el=$('#'+id),old=el.value,values=[...new Set(records.filter(r=>r.page===page).map(r=>r[field]).filter(Boolean))].sort();
+return `${y}-W${String(w).padStart(2,'0')}`}function weekLabel(value){return /^\d{4}-W\d{2}$/.test(value)?'Week '+Number(value.slice(6))+' / '+value.slice(0,4):value}
+function key(d){return period==='month'?d.slice(0,7):period==='week'?weekKey(d):d}function filtered(){return records.filter(r=>r.page===page&&(!$('#start').value||r.date>=$('#start').value)&&(!$('#end').value||r.date<=$('#end').value)&&(!$('#line').value||r.line===$('#line').value)&&(!$('#model').value||r.model===$('#model').value))}function options(){for(let [id,field] of [['line','line'],['model','model']]){let el=$('#'+id),old=el.value,values=[...new Set(records.filter(r=>r.page===page).map(r=>r[field]).filter(Boolean))].sort();
 el.innerHTML='<option value="">ทั้งหมด</option>'+values.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
 el.value=values.includes(old)?old:''}}function group(rows,by){let map=new Map;
 for(let r of rows){let k=by(r),v=map.get(k)||{key:k,production:0,scrap:0};
@@ -601,7 +604,7 @@ i<=4;
 i++){let y=T+ih*i/4;
 s+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#29405a"/><text x="${L-7}" y="${y+4}" text-anchor="end" fill="#8da7c1" font-size="10">${fmt(Math.round(maxP*(4-i)/4))}</text><text x="${W-R+6}" y="${y+4}" fill="#6cbea9" font-size="10">${(maxR*(4-i)/4).toFixed(1)}%</text>`}let pts=[];
 a.forEach((v,i)=>{let x=L+step*(i+.5),h1=v.production/maxP*ih,h2=v.scrap/maxP*ih,ry=T+ih-rate(v.scrap,v.production)/maxR*ih;
-s+=`<rect x="${x-bw-2}" y="${T+ih-h1}" width="${bw}" height="${h1}" rx="3" fill="#319cf4"/><rect x="${x+2}" y="${T+ih-h2}" width="${bw}" height="${Math.max(1,h2)}" rx="3" fill="#67b9ff"/><text x="${x}" y="${H-22}" text-anchor="middle" fill="#a7b9cb" font-size="10">${esc(v.key.slice(5))}</text>`;
+s+=`<rect x="${x-bw-2}" y="${T+ih-h1}" width="${bw}" height="${h1}" rx="3" fill="#319cf4"/><rect x="${x+2}" y="${T+ih-h2}" width="${bw}" height="${Math.max(1,h2)}" rx="3" fill="#67b9ff"/><text x="${x}" y="${H-22}" text-anchor="middle" fill="#a7b9cb" font-size="10">${esc(period==='week'?weekLabel(v.key):v.key.slice(5))}</text>`;
 pts.push(`${x},${ry}`)});
 s+=`<polyline points="${pts.join(' ')}" fill="none" stroke="#a1d7ff" stroke-width="3"/>`;
 pts.forEach(p=>{let [x,y]=p.split(',');
@@ -641,16 +644,16 @@ function renderScrapTrend(rows){
  const box=$('#stampingScrapTrend'),titles={production:'ยอดผลิต',scrap:'ยอดของเสีย',rate:'Percent Rate'};
  $('#stampingTrendTitle').textContent='แนวโน้ม'+titles[trendMetric]+' · SCRAP STAMPING';
  const totals=new Map();
- for(const r of rows){if(!/^\d{4}-\d{2}-\d{2}$/.test(r.date))continue;const k=scrapPeriod==='month'?r.date.slice(0,7):r.date,v=totals.get(k)||{production:0,scrap:0};v.production+=Number(r.production)||0;v.scrap+=Number(r.scrap)||0;totals.set(k,v)}
- const periods=[...totals].sort((a,b)=>a[0].localeCompare(b[0])).slice(scrapPeriod==='month'?-12:-21);
+ for(const r of rows){if(!/^\d{4}-\d{2}-\d{2}$/.test(r.date))continue;const k=scrapPeriod==='month'?r.date.slice(0,7):scrapPeriod==='week'?weekKey(r.date):r.date,v=totals.get(k)||{production:0,scrap:0};v.production+=Number(r.production)||0;v.scrap+=Number(r.scrap)||0;totals.set(k,v)}
+ const periods=[...totals].sort((a,b)=>a[0].localeCompare(b[0])).slice(scrapPeriod==='day'?-21:-12);
  const values=periods.map(([label,v])=>({label,amount:trendMetric==='rate'?(v.production>0?rate(v.scrap,v.production):null):v[trendMetric]}));
  const missing=values.filter(v=>v.amount===null).length;
- $('#stampingTrendNote').textContent='แสดงสูงสุด 21 วันหรือ 12 เดือนล่าสุดตามตัวกรองด้านบน'+(trendMetric==='rate'&&missing?' · '+missing+' ช่วงไม่มีข้อมูลยอดผลิต จึงไม่คำนวณ Percent Rate':'');
+ $('#stampingTrendNote').textContent='แสดงสูงสุด 21 วัน / 12 สัปดาห์ / 12 เดือน · Week นับวันจันทร์–อาทิตย์'+(trendMetric==='rate'&&missing?' · '+missing+' ช่วงไม่มีข้อมูลยอดผลิต จึงไม่คำนวณ Percent Rate':'');
  if(!values.length||values.every(v=>v.amount===null)){box.innerHTML='<span class="stamping-empty">'+(trendMetric==='rate'?'ยังไม่มียอดผลิตสำหรับคำนวณ Percent Rate':'ยังไม่มีข้อมูล'+titles[trendMetric]+'ในช่วงที่เลือก')+'</span>';return}
  const W=900,H=300,L=65,R=20,T=34,B=65,iw=W-L-R,ih=H-T-B,max=Math.max(1,...values.map(v=>v.amount??0)),step=iw/values.length,width=Math.min(34,step*.65),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#69baff':'#339dff';
- let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="none" aria-label="${titles[trendMetric]}${scrapPeriod==='month'?'รายเดือน':'รายวัน'}">`;
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="none" aria-label="${titles[trendMetric]}${scrapPeriod==='month'?'รายเดือน':scrapPeriod==='week'?'รายสัปดาห์':'รายวัน'}">`;
  for(let n=0;n<=4;n++){const y=T+ih*n/4,scale=max*(4-n)/4;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#2c4058"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#9db5ca" font-size="11">${trendMetric==='rate'?scale.toFixed(1)+'%':fmt(Math.round(scale))}</text>`}
- values.forEach(({label,amount},i)=>{const x=L+step*(i+.5),short=scrapPeriod==='month'?label.slice(5)+'/'+label.slice(2,4):label.slice(8)+'/'+label.slice(5,7);if(amount!==null){const h=amount/max*ih,display=trendMetric==='rate'?amount.toFixed(2)+'%':fmt(amount);svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${Math.max(h,1)}" rx="4" fill="${color}"><title>${esc(label)}: ${display}</title></rect><text x="${x}" y="${Math.max(T+12,T+ih-h-7)}" text-anchor="middle" fill="#dce9fa" font-size="10">${display}</text>`}else svg+=`<text x="${x}" y="${T+ih-8}" text-anchor="middle" fill="#9db5ca" font-size="13">—</text>`;svg+=`<text x="${x}" y="${H-30}" text-anchor="middle" fill="#a9bdd1" font-size="11">${short}</text>`});
+ values.forEach(({label,amount},i)=>{const x=L+step*(i+.5),short=scrapPeriod==='week'?weekLabel(label):scrapPeriod==='month'?label.slice(5)+'/'+label.slice(2,4):label.slice(8)+'/'+label.slice(5,7);if(amount!==null){const h=amount/max*ih,display=trendMetric==='rate'?amount.toFixed(2)+'%':fmt(amount);svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${Math.max(h,1)}" rx="4" fill="${color}"><title>${esc(label)}: ${display}</title></rect><text x="${x}" y="${Math.max(T+12,T+ih-h-7)}" text-anchor="middle" fill="#dce9fa" font-size="10">${display}</text>`}else svg+=`<text x="${x}" y="${T+ih-8}" text-anchor="middle" fill="#9db5ca" font-size="13">—</text>`;svg+=`<text x="${x}" y="${H-30}" text-anchor="middle" fill="#a9bdd1" font-size="11">${short}</text>`});
  box.innerHTML=svg+'</svg>'
 }
 function renderStamping(rows){
@@ -693,7 +696,7 @@ let types=group(rows,r=>r.defect||'ไม่ระบุ').sort((a,b)=>b.scrap-a
 $('#pareto').innerHTML=types.length?types.map(x=>`<div class="barrow"><span title="${esc(x.key)}">${esc(x.key)}</span><div class="track"><div class="fill" style="width:${x.scrap/max*100}%"></div></div><b>${fmt(x.scrap)}</b></div>`).join(''):'<p class="muted">ยังไม่มีข้อมูลในช่วงที่เลือก</p>';
 let summary=group(rows,r=>[key(r.date),r.shift||'',r.line,r.model,r.defect].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
 summaryKeys=summary.map(v=>v.key);$('#summary').innerHTML=summary.length?summary.map((v,i)=>{let [d,shift,l,m,t]=v.key.split('\u0001');
-return `<tr><td>${esc(d)}</td><td>${esc(shift||'—')}</td><td>${esc(l)}</td><td>${esc(m||'—')}</td><td>${esc(t||'—')}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td><td><div class="actions" style="flex-wrap:nowrap"><button class="btn" type="button" data-summary-view="${i}">ดูรายละเอียด</button></div></td></tr>`}).join(''):'<tr><td colspan="9" class="muted">ยังไม่มีข้อมูล</td></tr>';
+return `<tr><td>${esc(period==='week'?weekLabel(d):d)}</td><td>${esc(shift||'—')}</td><td>${esc(l)}</td><td>${esc(m||'—')}</td><td>${esc(t||'—')}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td><td><div class="actions" style="flex-wrap:nowrap"><button class="btn" type="button" data-summary-view="${i}">ดูรายละเอียด</button></div></td></tr>`}).join(''):'<tr><td colspan="9" class="muted">ยังไม่มีข้อมูล</td></tr>';
 }
 function showSummaryGroup(index){const selected=summaryKeys[index];if(selected===undefined)return;const matches=filtered().filter(r=>[key(r.date),r.shift||'',r.line,r.model,r.defect].join('\u0001')===selected);$('#summaryEditHelp').textContent=`กลุ่มนี้มี ${matches.length} รายการ · ตรวจสอบข้อมูล และกด “แก้ไขรายการนี้” เมื่อต้องการปรับข้อมูล`;$('#summaryEditList').innerHTML=matches.map(r=>{const i=records.indexOf(r);return `<div class="panel" style="margin:8px 0;padding:12px;display:flex;gap:12px;align-items:center;justify-content:space-between"><span>${esc(r.date)} · ${esc(r.shift||'—')} · ${esc(r.line||'—')} · ${esc(r.partCode||r.model||'ยอดผลิต')} · ผลิต ${fmt(Number(r.production)||0)} · เสีย ${fmt(Number(r.scrap)||0)}</span><button class="btn" type="button" data-edit-record="${i}">แก้ไขรายการนี้</button></div>`}).join('');$('#summaryEditList').hidden=false;$('#summaryEditForm').hidden=true}
 $('#summary').onclick=e=>{const button=e.target.closest('[data-summary-view]');if(!button)return;showSummaryGroup(Number(button.dataset.summaryView));$('#summaryEditDialog').showModal()};
