@@ -392,6 +392,9 @@ body:not(.admin-unlocked) #openEntry,body:not(.admin-unlocked) #openStampEntry,b
 </div>
 </div>
 <div class="field">
+<label>เลือกเดือน</label><select id="monthFilter"><option value="">ทุกเดือน</option></select>
+</div>
+<div class="field">
 <label>ตั้งแต่วันที่</label><input type="date" id="start">
 </div>
 <div class="field">
@@ -418,7 +421,7 @@ body:not(.admin-unlocked) #openEntry,body:not(.admin-unlocked) #openStampEntry,b
 </div></section><section id="stampingAnalytics" hidden>
 <div class="machine-list" id="machineCards"></div>
 <section class="panel" style="margin-bottom:16px" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
-<div class="top"><h2 id="stampingTrendTitle">แนวโน้มยอดของเสีย · SCRAP STAMPING</h2><div class="periods" aria-label="เลือกช่วงเวลาของกราฟ"><button class="btn active" type="button" data-scrap-period="day">รายวัน</button><button class="btn" type="button" data-scrap-period="week">รายสัปดาห์</button><button class="btn" type="button" data-scrap-period="month">รายเดือน</button></div></div>
+<div class="top"><h2 id="stampingTrendTitle">แนวโน้มยอดของเสีย · SCRAP STAMPING</h2></div>
 <div class="periods" style="margin-bottom:10px" aria-label="เลือกข้อมูลในกราฟ"><button class="btn" type="button" data-trend-metric="production">ยอดผลิต</button><button class="btn active" type="button" data-trend-metric="scrap">ยอดของเสีย</button><button class="btn" type="button" data-trend-metric="rate">Percent Rate</button></div>
 <div id="stampingScrapTrend" class="stamping-chart"></div><div class="chart-note" id="stampingTrendNote">แสดงสูงสุด 21 วัน / 12 สัปดาห์ / 12 เดือน · Week นับวันจันทร์–อาทิตย์</div>
 </section>
@@ -597,7 +600,8 @@ function weekKey(date){let d=new Date(date+'T12:00:00Z'),day=(d.getUTCDay()+6)%7
 d.setUTCDate(d.getUTCDate()-day+3);
 let y=d.getUTCFullYear(),first=new Date(Date.UTC(y,0,4)),w=1+Math.round(((d-first)/86400000-3+(first.getUTCDay()+6)%7)/7);
 return `${y}-W${String(w).padStart(2,'0')}`}function weekLabel(value){return /^\d{4}-W\d{2}$/.test(value)?'Week '+Number(value.slice(6))+' / '+value.slice(0,4):value}
-function key(d){return period==='month'?d.slice(0,7):period==='week'?weekKey(d):d}function filtered(){return records.filter(r=>r.page===page&&(!$('#start').value||r.date>=$('#start').value)&&(!$('#end').value||r.date<=$('#end').value)&&(!$('#line').value||r.line===$('#line').value)&&(!$('#model').value||r.defect===$('#model').value))}function options(){for(let [id,field] of [['line','line'],['model','defect']]){let el=$('#'+id),old=el.value,values=[...new Set(records.filter(r=>r.page===page).map(r=>r[field]).filter(Boolean))].sort();
+function key(d){return period==='month'?d.slice(0,7):period==='week'?weekKey(d):d}function filtered(){return records.filter(r=>r.page===page&&(!$('#monthFilter').value||String(r.date||'').slice(0,7)===$('#monthFilter').value)&&(!$('#start').value||r.date>=$('#start').value)&&(!$('#end').value||r.date<=$('#end').value)&&(!$('#line').value||r.line===$('#line').value)&&(!$('#model').value||r.defect===$('#model').value))}function monthOptions(){const el=$('#monthFilter'),old=el.value,months=[...new Set(records.filter(r=>r.page===page&&/^\d{4}-\d{2}-\d{2}$/.test(r.date)).map(r=>r.date.slice(0,7)))].sort().reverse();el.innerHTML='<option value="">ทุกเดือน</option>'+months.map(m=>{const label=new Intl.DateTimeFormat('th-TH',{month:'long',year:'numeric'}).format(new Date(Number(m.slice(0,4)),Number(m.slice(5))-1,1));return `<option value="${m}">${label}</option>`}).join('');el.value=months.includes(old)?old:''}
+function options(){monthOptions();for(let [id,field] of [['line','line'],['model','defect']]){let el=$('#'+id),old=el.value,values=[...new Set(records.filter(r=>r.page===page).map(r=>r[field]).filter(Boolean))].sort();
 el.innerHTML='<option value="">ทั้งหมด</option>'+values.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
 el.value=values.includes(old)?old:''}}function group(rows,by){let map=new Map;
 for(let r of rows){let k=by(r),v=map.get(k)||{key:k,production:0,scrap:0};
@@ -726,12 +730,13 @@ $('#entryDialog').close();
 $('#line').value='';
 $('#model').value='';
 render()});
-document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period=b.dataset.period;
+document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period=b.dataset.period;scrapPeriod=period;
 document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('active',x===b));
 render()});
-document.querySelectorAll('[data-scrap-period]').forEach(b=>b.onclick=()=>{scrapPeriod=b.dataset.scrapPeriod;document.querySelectorAll('[data-scrap-period]').forEach(x=>x.classList.toggle('active',x===b));render()});
 document.querySelectorAll('[data-trend-metric]').forEach(b=>b.onclick=()=>{trendMetric=b.dataset.trendMetric;document.querySelectorAll('[data-trend-metric]').forEach(x=>x.classList.toggle('active',x===b));render()});
-['start','end','line','model'].forEach(id=>$('#'+id).onchange=render);
+['line','model'].forEach(id=>$('#'+id).onchange=render);
+['start','end'].forEach(id=>$('#'+id).onchange=()=>{$('#monthFilter').value='';render()});
+$('#monthFilter').onchange=()=>{$('#start').value='';$('#end').value='';render()};
 $('#openEntry').onclick=()=>{if(page==='stamping'&&!$('#stampingEntryRows').children.length)addStampRow();$('#entryDialog').showModal()};
 let hrAutoTried=false;
 $('#openStampEntry').onclick=()=>{page='stamping';$('#formPage').textContent='SCRAP STAMPING';$('#foamEntryWrap').hidden=true;$('#stampingEntry').hidden=false;if(!$('#stampingEntryRows').children.length)addStampRow();$('#hrNamesNotice').textContent=rosterStatus();$('#entryDialog').showModal();if(!Object.keys(hrNames).length&&!hrAutoTried){hrAutoTried=true;$('#loadHrNames').click()}};
@@ -779,7 +784,7 @@ $('#stampScrapFile').onchange=async e=>{const file=e.target.files[0];e.target.va
 function closeStampPreview(){pendingStampFile=null;$('#stampScrapPreview').close()}
 $('#closeStampScrapPreview').onclick=closeStampPreview;$('#cancelStampScrap').onclick=closeStampPreview;
 $('#stampScrapPreview').onclick=e=>{if(e.target===$('#stampScrapPreview'))closeStampPreview()};
-$('#confirmStampScrap').onclick=()=>{if(!pendingStampFile)return;const sourceTag=pendingStampFile.sourceTag,result=uniqueScrapRows(pendingStampFile.rows,records),rows=result.rows;if(!rows.length){$('#stampScrapPreviewNotice').textContent='ไม่มีรายการใหม่ ข้อมูลทั้งหมดซ้ำกับที่บันทึกแล้ว';$('#confirmStampScrap').disabled=true;return}const previous=records;records=[...records,...rows.map((r,i)=>({...r,id:'csv:'+sourceTag+':'+i,sourceTag}))];try{save()}catch(err){records=previous;$('#stampScrapPreviewNotice').textContent='บันทึกไม่ได้: พื้นที่เก็บข้อมูลเบราว์เซอร์อาจเต็ม';return}for(const r of rows)partModels[r.partCode.toUpperCase()]=r.model;try{localStorage.setItem(PART_MAP_KEY,JSON.stringify(partModels))}catch{}$('#start').value='';$('#end').value='';$('#line').value='';$('#model').value='';$('#notice').textContent=`บันทึกรายการใหม่ ${rows.length} รายการ · ข้ามข้อมูลซ้ำ ${result.duplicates} รายการแล้ว · รีเฟรชหน้าได้ ข้อมูลยังอยู่ในเบราว์เซอร์นี้`;closeStampPreview();render()};
+$('#confirmStampScrap').onclick=()=>{if(!pendingStampFile)return;const sourceTag=pendingStampFile.sourceTag,result=uniqueScrapRows(pendingStampFile.rows,records),rows=result.rows;if(!rows.length){$('#stampScrapPreviewNotice').textContent='ไม่มีรายการใหม่ ข้อมูลทั้งหมดซ้ำกับที่บันทึกแล้ว';$('#confirmStampScrap').disabled=true;return}const previous=records;records=[...records,...rows.map((r,i)=>({...r,id:'csv:'+sourceTag+':'+i,sourceTag}))];try{save()}catch(err){records=previous;$('#stampScrapPreviewNotice').textContent='บันทึกไม่ได้: พื้นที่เก็บข้อมูลเบราว์เซอร์อาจเต็ม';return}for(const r of rows)partModels[r.partCode.toUpperCase()]=r.model;try{localStorage.setItem(PART_MAP_KEY,JSON.stringify(partModels))}catch{}$('#monthFilter').value='';$('#start').value='';$('#end').value='';$('#line').value='';$('#model').value='';$('#notice').textContent=`บันทึกรายการใหม่ ${rows.length} รายการ · ข้ามข้อมูลซ้ำ ${result.duplicates} รายการแล้ว · รีเฟรชหน้าได้ ข้อมูลยังอยู่ในเบราว์เซอร์นี้`;closeStampPreview();render()};
 $('#closeEntry').onclick=()=>$('#entryDialog').close();
 $('#entryDialog').onclick=e=>{if(e.target===$('#entryDialog'))$('#entryDialog').close()};
 $('#addStampRow').onclick=()=>addStampRow();
@@ -909,7 +914,7 @@ $('#clearRecordData').onclick=()=>{
  try{save()}catch(err){records=previous;alert('ล้างข้อมูลไม่สำเร็จ: '+err.message);return}
  pendingStampFile=null;if($('#stampScrapPreview').open)$('#stampScrapPreview').close();
  editRecordIndex=-1;summaryKeys=[];
- $('#start').value='';$('#end').value='';$('#line').value='';$('#model').value='';
+ $('#monthFilter').value='';$('#start').value='';$('#end').value='';$('#line').value='';$('#model').value='';
  render();adminShowAll();$('#notice').textContent='ล้าง Data แล้ว · ฐานข้อมูลยังอยู่ สามารถนำเข้าข้อมูลใหม่ได้';
  alert('ล้างยอดผลิตและของเสียทั้งหมดแล้ว ฐานข้อมูลยังอยู่');
 };
