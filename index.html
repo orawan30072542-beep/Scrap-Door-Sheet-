@@ -597,7 +597,7 @@ body:not(.admin-unlocked) #openEntry,body:not(.admin-unlocked) #openStampEntry,b
 <th>กะ</th>
 <th>ไลน์ / พื้นที่</th>
 <th>Model</th>
-<th>ประเภทของเสีย</th>
+
 <th class="num">ยอดผลิต</th>
 <th class="num">ของเสีย</th>
 <th class="num">อัตราของเสีย</th>
@@ -754,6 +754,11 @@ function renderStamping(rows){
 }
 function renderIssues(){const all=issueCases.length,done=issueCases.filter(x=>x.status==='Finish').length,open=all-done,pct=all?done/all*100:0;$('#issueAll').textContent=fmt(all);$('#issueOpen').textContent=fmt(open);$('#issueDone').textContent=fmt(done);$('#issueOpenPct').textContent=(all?open/all*100:0).toFixed(1)+'%';$('#issueDonePct').textContent=pct.toFixed(1)+'%';$('#issueDonut').style.background=all?`conic-gradient(#339dff 0 ${pct}%,#8bcaff ${pct}% 100%)`:'conic-gradient(#344c67 0 100%)';$('#issueDonut').innerHTML=`<span>${fmt(all)} งาน<br><small>Finish ${pct.toFixed(1)}%</small></span>`;$('#issueList').innerHTML=issueCases.length?`<div class="issue-register"><div class="issue-register-head"><span>ทะเบียนปัญหาและการแก้ไข</span><small>${fmt(all)} รายการ · เลื่อนแนวนอนเพื่อดูข้อมูลทั้งหมด</small></div><div class="issue-table-scroll"><table class="issue-register-table"><colgroup><col style="width:55px"><col style="width:185px"><col style="width:95px"><col style="width:135px"><col style="width:235px"><col style="width:210px"><col style="width:210px"><col style="width:125px"><col style="width:105px"><col style="width:110px"><col style="width:90px"></colgroup><thead><tr>${['ลำดับ','จุดงาน / ปัญหา','Model','รูปภาพ','สาเหตุ / วิเคราะห์ 4M1H','วิธีดำเนินงานชั่วคราว','วิธีแก้ไขถาวร','หน่วยงานรับผิดชอบ','สถานะ','วันที่','จัดการ'].map(h=>`<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${issueCases.map((x,i)=>`<tr><td>${i+1}</td><td><div class="issue-row-point">${esc(x.workPoint||'ยังไม่ระบุจุดงาน')}</div><div class="issue-row-title">${esc(x.problem)}</div></td><td>${esc(x.model||'—')}</td><td>${x.image?`<img src="${esc(x.image)}" alt="ภาพปัญหา ${esc(x.problem)}" loading="lazy">`:'—'}</td><td>${esc(x.cause||'—')}<details><summary>รายละเอียด 4M1H</summary>${[['Man · คน','analysisMan'],['Machine · เครื่องจักร','analysisMachine'],['Material · วัตถุดิบ','analysisMaterial'],['Method · วิธีการ','analysisMethod'],['H / How · เกิดขึ้นอย่างไร','analysisHow']].map(([label,name])=>`<p><b>${label}</b><br>${esc(x[name]||'—')}</p>`).join('')}</details></td><td>${esc(x.temporaryAction||'—')}</td><td>${esc(x.permanentAction||x.action||'—')}</td><td>${esc(x.department||'—')}</td><td><span class="issue-chip ${x.status==='Finish'?'finish':'process'}">${esc(x.status)}</span></td><td>${esc(x.date||x.resolvedAt?.slice(0,10)||'—')}</td><td><div class="issue-row-tools"><button class="btn" type="button" data-issue-edit="${i}">แก้ไข</button><button class="btn danger" type="button" data-issue-delete="${i}">ลบ</button></div></td></tr>`).join('')}</tbody></table></div></div>`:'<p class="panel muted">ยังไม่มีรายการปัญหา · กด “+ เพิ่มปัญหา” เพื่อเริ่มบันทึก</p>'}
 
+function stampingPeriodSummary(rows){
+ const machines=new Map;
+ for(const r of rows){const id=[key(r.date),r.shift||'',dashboardLine(r)].join('\u0001');let machine=machines.get(id);if(!machine){machine={key:id,production:0,scrap:0,rows:[]};machines.set(id,machine)}machine.production+=Number(r.production)||0;machine.scrap+=Number(r.scrap)||0;machine.rows.push(r)}
+ return [...machines.values()].sort((a,b)=>b.key.localeCompare(a.key)).map(machine=>({...machine,models:group(machine.rows.filter(r=>Number(r.scrap)>0),recordModel).sort((a,b)=>a.key.localeCompare(b.key))}));
+}
 function render(){if(page==='issues'){ $('#dashboardPage').hidden=true;$('#issuesPage').hidden=false;$('#openEntry').hidden=true;renderIssues();return}$('#dashboardPage').hidden=false;$('#issuesPage').hidden=true;options();$('#openEntry').hidden=page==='stamping';$('#stampingToolbar').hidden=page!=='stamping';$('#stampingAnalytics').hidden=page!=='stamping';$('#generalCharts').hidden=page==='stamping';
 let rows=filtered(),p=rows.reduce((a,r)=>a+(Number(r.production)||0),0),s=rows.reduce((a,r)=>a+(Number(r.scrap)||0),0);
 $('#production').textContent=fmt(p);
@@ -764,9 +769,17 @@ $('#count').textContent=fmt(rows.length)+' รายการ';
 if(page==='stamping')renderStamping(rows);else chart(rows);
 let types=group(rows,r=>r.defect||'ไม่ระบุ').sort((a,b)=>b.scrap-a.scrap).slice(0,7),max=Math.max(1,...types.map(x=>x.scrap));
 $('#pareto').innerHTML=types.length?types.map(x=>`<div class="barrow"><span title="${esc(x.key)}">${esc(x.key)}</span><div class="track"><div class="fill" style="width:${x.scrap/max*100}%"></div></div><b>${fmt(x.scrap)}</b></div>`).join(''):'<p class="muted">ยังไม่มีข้อมูลในช่วงที่เลือก</p>';
-let summary=group(rows,r=>[key(r.date),r.shift||'',dashboardLine(r),recordModel(r),r.defect].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
-summaryKeys=summary.map(v=>v.key);$('#summary').innerHTML=summary.length?summary.map((v,i)=>{let [d,shift,l,m,t]=v.key.split('\u0001');
-return `<tr><td>${esc(period==='week'?weekLabel(d):d)}</td><td>${esc(shift||'—')}</td><td>${esc(l)}</td><td>${esc(m||'ไม่ระบุ Model')}</td><td>${esc(t||'—')}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td></tr>`}).join(''):'<tr><td colspan="8" class="muted">ยังไม่มีข้อมูล</td></tr>';
+if(page==='stamping'){
+ const machines=stampingPeriodSummary(rows);summaryKeys=[];
+ $('#summary').innerHTML=machines.length?machines.map(machine=>{
+  const [date,shift,line]=machine.key.split('\u0001'),label=period==='week'?weekLabel(date):date;
+  const total=`<tr style="background:#173b59;font-weight:700"><td>${esc(label)}</td><td>${esc(shift||'—')}</td><td>${esc(line)}</td><td>รวมทุก Model</td><td class="num">${fmt(machine.production)}</td><td class="num">${fmt(machine.scrap)}</td><td class="num">${rateText(machine.scrap,machine.production)}</td></tr>`;
+  return total+machine.models.map(model=>`<tr><td>${esc(label)}</td><td>${esc(shift||'—')}</td><td>${esc(line)}</td><td>${esc(model.key||'ไม่ระบุ Model')}</td><td class="num">—</td><td class="num">${fmt(model.scrap)}</td><td class="num">—</td></tr>`).join('');
+ }).join(''):'<tr><td colspan="7" class="muted">ยังไม่มีข้อมูล</td></tr>';return;
+}
+let summary=group(rows,r=>[key(r.date),r.shift||'',dashboardLine(r),recordModel(r)].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
+summaryKeys=summary.map(v=>v.key);$('#summary').innerHTML=summary.length?summary.map((v,i)=>{let [d,shift,l,m]=v.key.split('\u0001');
+return `<tr><td>${esc(period==='week'?weekLabel(d):d)}</td><td>${esc(shift||'—')}</td><td>${esc(l)}</td><td>${esc(m||'ไม่ระบุ Model')}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td></tr>`}).join(''):'<tr><td colspan="7" class="muted">ยังไม่มีข้อมูล</td></tr>';
 }
 // Refresh the edited record's dashboard without closing the database manager.
 function refreshEditedDashboard(record){
@@ -781,7 +794,7 @@ window.addEventListener('storage',event=>{
  if(event.key!==KEY)return;
  try{const latest=JSON.parse(event.newValue||'[]');if(!Array.isArray(latest))return;records=latest;render();if(adminUnlocked&&$('#adminDataDialog').open)adminShowAll()}catch(error){console.error('Cannot refresh dashboard data',error)}
 });
-function showSummaryGroup(index){const selected=summaryKeys[index];if(selected===undefined)return;const matches=filtered().filter(r=>[key(r.date),r.shift||'',dashboardLine(r),recordModel(r),r.defect].join('\u0001')===selected);$('#summaryEditHelp').textContent=`กลุ่มนี้มี ${matches.length} รายการ · แสดงรายละเอียดสำหรับดูข้อมูลเท่านั้น`;$('#summaryEditList').innerHTML=matches.map(r=>{const i=records.indexOf(r);return `<div class="panel" style="margin:8px 0;padding:12px;display:flex;gap:12px;align-items:center;justify-content:space-between"><span>${esc(r.date)} · ${esc(r.shift||'—')} · ${esc(r.line||'—')} · ${esc(r.partCode||r.model||'ยอดผลิต')} · ผลิต ${fmt(Number(r.production)||0)} · เสีย ${fmt(Number(r.scrap)||0)}</span></div>`}).join('');$('#summaryEditList').hidden=false;$('#summaryEditForm').hidden=true}
+function showSummaryGroup(index){const selected=summaryKeys[index];if(selected===undefined)return;const matches=filtered().filter(r=>[key(r.date),r.shift||'',dashboardLine(r),recordModel(r)].join('\u0001')===selected);$('#summaryEditHelp').textContent=`กลุ่มนี้มี ${matches.length} รายการ · แสดงรายละเอียดสำหรับดูข้อมูลเท่านั้น`;$('#summaryEditList').innerHTML=matches.map(r=>{const i=records.indexOf(r);return `<div class="panel" style="margin:8px 0;padding:12px;display:flex;gap:12px;align-items:center;justify-content:space-between"><span>${esc(r.date)} · ${esc(r.shift||'—')} · ${esc(r.line||'—')} · ${esc(r.partCode||r.model||'ยอดผลิต')} · ผลิต ${fmt(Number(r.production)||0)} · เสีย ${fmt(Number(r.scrap)||0)}</span></div>`}).join('');$('#summaryEditList').hidden=false;$('#summaryEditForm').hidden=true}
 $('#summary').onclick=e=>{const button=e.target.closest('[data-summary-view]');if(!button)return;showSummaryGroup(Number(button.dataset.summaryView));$('#summaryEditDialog').showModal()};
 $('#summaryEditList').onclick=e=>{const button=e.target.closest('[data-edit-record]');if(!button)return;editRecordIndex=Number(button.dataset.editRecord);const r=records[editRecordIndex];if(!r)return;const form=$('#summaryEditForm');for(const name of ['date','shift','line','partCode','model','defect','production','scrap']){const field=form.elements.namedItem(name);field.value=r[name]??''}$('#summaryEditNotice').textContent='';$('#summaryEditList').hidden=true;form.hidden=false};
 $('#cancelSummaryEdit').onclick=()=>{$('#summaryEditForm').hidden=true;$('#summaryEditList').hidden=false};$('#closeSummaryEdit').onclick=()=>$('#summaryEditDialog').close();
