@@ -883,7 +883,7 @@ function productionSlotInput(machine,phase,index,value=''){
 function showProductionMachines(drafts){
  const form=$('#stampProductionForm'),names=productionMachines(form.elements.line.value),previous=new Map(names.map(name=>[name,records.find(r=>r.page==='stamping'&&r.kind==='production'&&r.date===form.elements.date.value&&r.shift===form.elements.shift.value&&r.line===name)]));
  const slotsFor=name=>{const slots=drafts instanceof Map?drafts.get(name):previous.get(name)?.productionSlots;if(slots?.afternoon?.length===4)return {...slots,afternoon:['',...slots.afternoon]};return slots};
- const otCount=Math.max(1,...names.map(name=>slotsFor(name)?.ot?.length||1));
+ const otCount=Math.max(4,...names.map(name=>slotsFor(name)?.ot?.length||1));
  const phases=[['morning',4],['afternoon',5],['ot',otCount]];
  const headings=phases.map(([phase,count])=>Array.from({length:count},(_,i)=>`<th scope="col" class="${phase!=='morning'&&i===0?'phase-start':''}">${productionTimeLabel(phase,i)}</th>`).join('')).join('');
  const rows=names.map(name=>{
