@@ -400,6 +400,22 @@ body:not(.admin-unlocked) #openEntry,body:not(.admin-unlocked) #openStampEntry,b
 @media(max-width:1000px){.filter-panel .filters{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:640px){.filter-panel{padding:16px}.filter-panel .filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.filter-panel .periods{display:flex}.filter-panel .periods .btn{min-width:0;flex:1;padding:10px 8px;font-size:14px}.filter-heading span{font-size:12px}.filter-heading strong{font-size:18px}}
 @media(max-width:380px){.filter-panel .filters{grid-template-columns:1fr}}
+
+#productionMachineFields{display:block!important}
+.production-machine-card{padding:20px;margin:16px 0;background:#102c48;border:1px solid #315575;border-radius:16px}
+.production-machine-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;font-size:22px;font-weight:800}
+.production-slots-scroll{overflow-x:auto;padding-bottom:8px}
+.production-slots-row{display:flex;align-items:stretch;gap:16px;min-width:970px}
+.production-slot-group{flex:4;padding:14px;background:#0a2038;border:1px solid #284968;border-radius:12px}
+.production-slot-group.ot{flex:1;min-width:150px;background:#103451}
+.production-slot-grid{display:grid;grid-template-columns:repeat(4,minmax(70px,1fr));gap:8px;margin-top:12px}
+.production-slot-group.ot .production-slot-grid{grid-template-columns:repeat(auto-fit,minmax(80px,1fr))}
+.production-slot-grid label{display:block;font-size:14px;font-weight:700;color:#c5e0fa;margin-bottom:6px}
+.production-slot-grid input{width:100%;box-sizing:border-box;text-align:center;font-size:20px;font-weight:800;font-style:normal}
+.production-slot-title{display:flex;justify-content:space-between;gap:12px;font-size:18px;font-weight:800}
+.production-day-total{white-space:nowrap;color:#64e3ff;background:#071d32;padding:12px 18px;border-radius:10px}
+.production-grand-total{display:flex;justify-content:space-between;gap:16px;padding:20px;border:1px solid #3784bb;background:#123a5b;border-radius:12px;font-size:24px;font-weight:800;margin-top:20px}
+@media(max-width:600px){.production-machine-head{align-items:flex-start;flex-direction:column}.production-machine-card{padding:12px}}
 </style>
 </head>
 <body>
@@ -747,7 +763,7 @@ function showSummaryGroup(index){const selected=summaryKeys[index];if(selected==
 $('#summary').onclick=e=>{const button=e.target.closest('[data-summary-view]');if(!button)return;showSummaryGroup(Number(button.dataset.summaryView));$('#summaryEditDialog').showModal()};
 $('#summaryEditList').onclick=e=>{const button=e.target.closest('[data-edit-record]');if(!button)return;editRecordIndex=Number(button.dataset.editRecord);const r=records[editRecordIndex];if(!r)return;const form=$('#summaryEditForm');for(const name of ['date','shift','line','partCode','model','defect','production','scrap']){const field=form.elements.namedItem(name);field.value=r[name]??''}$('#summaryEditNotice').textContent='';$('#summaryEditList').hidden=true;form.hidden=false};
 $('#cancelSummaryEdit').onclick=()=>{$('#summaryEditForm').hidden=true;$('#summaryEditList').hidden=false};$('#closeSummaryEdit').onclick=()=>$('#summaryEditDialog').close();
-$('#summaryEditForm').onsubmit=e=>{e.preventDefault();const r=records[editRecordIndex],x=Object.fromEntries(new FormData(e.target)),production=Number(x.production),scrap=Number(x.scrap);if(!r||!x.date||!x.line.trim()||!Number.isInteger(production)||production<0||!Number.isInteger(scrap)||scrap<0){$('#summaryEditNotice').textContent='ตรวจวันที่ เครื่องจักร ยอดผลิต และยอดของเสีย';return}const backup={...r};Object.assign(r,{date:x.date,shift:x.shift,line:x.line.trim(),partCode:x.partCode.trim().toUpperCase(),model:x.model.trim(),defect:x.defect.trim(),production,scrap});if(r.shiftLeader&&shiftForLeader(r.shiftLeader)!==r.shift)r.shiftLeader='';if(r.unitPrice!==null&&r.unitPrice!==undefined)r.scrapValue=Number((Number(r.unitPrice)*scrap).toFixed(2));try{save()}catch{Object.assign(r,backup);$('#summaryEditNotice').textContent='บันทึกไม่ได้: พื้นที่เก็บข้อมูลเต็ม';return}refreshEditedDashboard(r);$('#summaryEditDialog').close();$('#notice').textContent='บันทึกการแก้ไขแล้ว · ยอดผลิต ของเสีย และกราฟอัปเดตตามข้อมูลล่าสุด'};
+$('#summaryEditForm').onsubmit=e=>{e.preventDefault();const r=records[editRecordIndex],x=Object.fromEntries(new FormData(e.target)),production=Number(x.production),scrap=Number(x.scrap);if(!r||!x.date||!x.line.trim()||!Number.isInteger(production)||production<0||!Number.isInteger(scrap)||scrap<0){$('#summaryEditNotice').textContent='ตรวจวันที่ เครื่องจักร ยอดผลิต และยอดของเสีย';return}const backup={...r};if(r.productionSlots&&Number(r.production)!==production)delete r.productionSlots;Object.assign(r,{date:x.date,shift:x.shift,line:x.line.trim(),partCode:x.partCode.trim().toUpperCase(),model:x.model.trim(),defect:x.defect.trim(),production,scrap});if(r.shiftLeader&&shiftForLeader(r.shiftLeader)!==r.shift)r.shiftLeader='';if(r.unitPrice!==null&&r.unitPrice!==undefined)r.scrapValue=Number((Number(r.unitPrice)*scrap).toFixed(2));try{save()}catch{Object.assign(r,backup);$('#summaryEditNotice').textContent='บันทึกไม่ได้: พื้นที่เก็บข้อมูลเต็ม';return}refreshEditedDashboard(r);$('#summaryEditDialog').close();$('#notice').textContent='บันทึกการแก้ไขแล้ว · ยอดผลิต ของเสีย และกราฟอัปเดตตามข้อมูลล่าสุด'};
 function openIssue(index=-1){currentIssue=index;const form=$('#issueForm');form.reset();const item=issueCases[index];$('#issueDialogTitle').textContent=item?'แก้ไขการวิเคราะห์ปัญหา':'เพิ่มการวิเคราะห์ปัญหา';const fields=['workPoint','problem','model','department','date','status','cause','temporaryAction','permanentAction','analysisMan','analysisMachine','analysisMaterial','analysisMethod','analysisHow'];for(const name of fields){let value=item?.[name]||'';if(name==='date')value=item?.date||item?.resolvedAt?.slice(0,10)||new Date().toLocaleDateString('en-CA');if(name==='status')value=item?.status||'On process';if(name==='permanentAction')value=item?.permanentAction||item?.action||'';form.elements.namedItem(name).value=value}$('#issueImagePreview').src=item?.image||'';$('#issueImagePreview').hidden=!item?.image;$('#issueFormNotice').textContent='';$('#issueDialog').showModal()}
 $('#addIssue').onclick=()=>openIssue();$('#issueList').onclick=e=>{const del=e.target.closest('[data-issue-delete]');if(del){const index=Number(del.dataset.issueDelete),item=issueCases[index];if(!item||!confirm(`ลบรายการปัญหา “${item.problem}” ใช่หรือไม่?`))return;const next=issueCases.filter((_,i)=>i!==index);try{localStorage.setItem(ISSUE_KEY,JSON.stringify(next));issueCases=next;$('#issueNotice').textContent='ลบรายการปัญหาแล้ว';renderIssues()}catch{$('#issueNotice').textContent='ลบไม่ได้: โปรดลองรีเฟรชแล้วลบอีกครั้ง'}return}const button=e.target.closest('[data-issue-edit]');if(button)openIssue(Number(button.dataset.issueEdit))};$('#closeIssue').onclick=()=>$('#issueDialog').close();
 $('#issueForm [name="image"]').onchange=e=>{const file=e.target.files[0];if(!file)return;const preview=$('#issueImagePreview');preview.src=URL.createObjectURL(file);preview.hidden=false};
@@ -840,14 +856,45 @@ $('#openStampProduction').onclick=()=>{const form=$('#stampProductionForm'),scra
 $('#closeStampProduction').onclick=()=>$('#stampProductionDialog').close();
 $('#stampProductionDialog').onclick=e=>{if(e.target===$('#stampProductionDialog'))e.target.close()};
 function productionMachines(line){return line==='400T'?['400T']:['100T','200T'].includes(line)?Array.from({length:line==='100T'?5:4},(_,i)=>line+' #MC'+String(i+1).padStart(2,'0')):[]}
-function showProductionMachines(){const form=$('#stampProductionForm'),names=productionMachines(form.elements.line.value);$('#productionMachineFields').innerHTML=names.map((name,i)=>`<div class="field" style="padding:16px;background:#102c48;border:1px solid #315575;border-radius:12px"><label style="font-size:18px;font-weight:800">${name}</label><input name="machineProduction${i}" data-production-machine="${name}" type="number" min="0" step="1" required placeholder="ยอดผลิต (ชิ้น)"></div>`).join('');}
+function productionSlotInput(machine,phase,index,value=''){
+ return `<div><label>${phase==='ot'?'OT':'ช่อง'} ${index+1}</label><input type="number" min="0" step="1" ${phase==='ot'?'':'required'} data-slot-phase="${phase}" data-slot-index="${index}" aria-label="${esc(machine)} ${phase==='morning'?'ช่วงเช้า':phase==='afternoon'?'ช่วงบ่าย':'OT'} ช่อง ${index+1}" value="${value}" placeholder="0"></div>`;
+}
+function showProductionMachines(){
+ const form=$('#stampProductionForm'),names=productionMachines(form.elements.line.value);
+ $('#productionMachineFields').innerHTML=names.map(name=>{
+  const old=records.find(r=>r.page==='stamping'&&r.kind==='production'&&r.date===form.elements.date.value&&r.shift===form.elements.shift.value&&r.line===name),slots=old?.productionSlots;
+  return `<section class="production-machine-card" data-production-machine="${name}"><div class="production-machine-head"><span>${name}</span><div class="production-day-total">รวมรายวัน <output data-machine-total>0</output> ชิ้น</div></div>${old&&!slots?`<p class="stamping-help">ยอดเดิม ${fmt(Number(old.production)||0)} ชิ้น · ยังไม่มีรายละเอียดช่วงเวลา กรุณากรอกแต่ละช่องเพื่อแทนยอดเดิม</p>`:''}<div class="production-slots-scroll"><div class="production-slots-row">${[['morning','ช่วงเช้า'],['afternoon','ช่วงบ่าย'],['ot','ช่วง OT']].map(([phase,label])=>`<div class="production-slot-group ${phase==='ot'?'ot':''}"><div class="production-slot-title"><span>${label}</span><span><output data-phase-total="${phase}">0</output> ชิ้น</span></div><div class="production-slot-grid" data-slot-grid="${phase}">${(phase==='ot'?(slots?.ot?.length?slots.ot:['']):Array.from({length:4},(_,i)=>slots?.[phase]?.[i]??'')).map((value,i)=>productionSlotInput(name,phase,i,value)).join('')}</div>${phase==='ot'?'<button type="button" class="btn" data-add-ot style="margin-top:12px">+ ช่อง OT</button>':''}</div>`).join('')}</div></div></section>`;
+ }).join('')+(names.length?'<div class="production-grand-total"><span>สรุปรวมรายวัน · ทุกเครื่อง</span><span><output id="productionGrandTotal">0</output> ชิ้น</span></div><p class="stamping-help">กรอกยอดผลิตเป็นชิ้น · ช่องเช้าและบ่ายที่ไม่ผลิตให้กรอก 0 · OT เว้นว่างได้</p>':'');
+ updateProductionSlotTotals();
+}
+function readProductionSlots(card){
+ const result={};for(const phase of ['morning','afternoon','ot'])result[phase]=[...card.querySelectorAll(`[data-slot-phase="${phase}"]`)].map(input=>Number(input.value)||0);return result;
+}
+function productionSlotsTotal(slots){return Object.values(slots).flat().reduce((sum,n)=>sum+n,0)}
+function updateProductionSlotTotals(){
+ let total=0;for(const card of $('#productionMachineFields').querySelectorAll('[data-production-machine]')){
+  const slots=readProductionSlots(card),sum=productionSlotsTotal(slots);total+=sum;card.querySelector('[data-machine-total]').textContent=fmt(sum);
+  for(const phase of ['morning','afternoon','ot'])card.querySelector(`[data-phase-total="${phase}"]`).textContent=fmt(slots[phase].reduce((a,b)=>a+b,0));
+ }const out=$('#productionGrandTotal');if(out)out.textContent=fmt(total);
+}
+$('#productionMachineFields').addEventListener('input',updateProductionSlotTotals);
+$('#productionMachineFields').addEventListener('click',event=>{
+ const button=event.target.closest('[data-add-ot]');if(!button)return;const card=button.closest('[data-production-machine]'),grid=card.querySelector('[data-slot-grid="ot"]'),index=grid.children.length;
+ grid.insertAdjacentHTML('beforeend',productionSlotInput(card.dataset.productionMachine,'ot',index));grid.lastElementChild.querySelector('input').focus();
+});
 $('#stampProductionForm').elements.line.onchange=showProductionMachines;
+$('#stampProductionForm').elements.date.addEventListener('change',showProductionMachines);
+$('#stampProductionForm').elements.shiftLeader.addEventListener('change',showProductionMachines);
 $('#stampProductionForm').onsubmit=e=>{
- e.preventDefault();const form=e.target,x=Object.fromEntries(new FormData(form)),fields=[...form.querySelectorAll('[data-production-machine]')];
- if(!x.date||!x.shift||x.shift!==shiftForLeader(x.shiftLeader)||!fields.length||fields.some(f=>f.value===''||!Number.isInteger(Number(f.value))||Number(f.value)<0)){$('#stampProductionNotice').textContent='กรุณาตรวจวันที่ Leader และกรอกยอดผลิตครบทุกเครื่อง (ไม่ผลิตให้กรอก 0)';return}
- const next=records.map(r=>({...r}));for(const field of fields){const line=field.dataset.productionMachine,production=Number(field.value),old=next.find(r=>r.page==='stamping'&&r.kind==='production'&&r.date===x.date&&r.shift===x.shift&&r.line===line);if(old){old.production=production;old.shiftLeader=x.shiftLeader.trim()}else next.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'production',date:x.date,shift:x.shift,shiftLeader:x.shiftLeader.trim(),line,production,scrap:0,model:'',defect:'',note:''})}
+ e.preventDefault();const form=e.target,x=Object.fromEntries(new FormData(form)),cards=[...form.querySelectorAll('[data-production-machine]')],inputs=[...form.querySelectorAll('[data-slot-phase]')];
+ if(!x.date||!x.shift||x.shift!==shiftForLeader(x.shiftLeader)||!cards.length||inputs.some(input=>(input.required&&input.value==='')||!Number.isSafeInteger(Number(input.value))||Number(input.value)<0)){$('#stampProductionNotice').textContent='ตรวจวันที่ Leader และยอดแต่ละช่วงเวลา (ช่องที่ไม่ผลิตให้กรอก 0)';return}
+ const next=records.map(r=>({...r}));for(const card of cards){
+  const line=card.dataset.productionMachine,productionSlots=readProductionSlots(card),production=productionSlotsTotal(productionSlots),old=next.find(r=>r.page==='stamping'&&r.kind==='production'&&r.date===x.date&&r.shift===x.shift&&r.line===line);
+  if(!Number.isSafeInteger(production)){$('#stampProductionNotice').textContent='ยอดรวมมากเกินไป กรุณาตรวจข้อมูล';return}
+  if(old)Object.assign(old,{production,productionSlots,shiftLeader:x.shiftLeader.trim()});else next.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'production',date:x.date,shift:x.shift,shiftLeader:x.shiftLeader.trim(),line,production,productionSlots,scrap:0,model:'',defect:'',note:''});
+ }
  const backup=records;records=next;try{save()}catch{records=backup;$('#stampProductionNotice').textContent='บันทึกไม่ได้ พื้นที่เก็บข้อมูลเต็ม';return}
- $('#notice').textContent=`บันทึกยอดผลิต ${x.line} ครบ ${fields.length} เครื่องแล้ว`;$('#stampProductionDialog').close();render();
+ $('#notice').textContent=`บันทึกยอดผลิตรายช่วงเวลา ${x.line} ครบ ${cards.length} เครื่องแล้ว`;$('#stampProductionDialog').close();render();
 };
 $('#stampingEntry').onsubmit=e=>{
  e.preventDefault();const form=e.target,meta=Object.fromEntries(new FormData(form)),partRows=[...$('#stampingEntryRows').children];
