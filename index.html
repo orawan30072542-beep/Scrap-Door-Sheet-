@@ -596,7 +596,7 @@ body:not(.admin-unlocked) #openEntry,body:not(.admin-unlocked) #openStampEntry,b
 <th>ช่วงเวลา</th>
 <th>กะ</th>
 <th>ไลน์ / พื้นที่</th>
-<th>Model</th>
+
 
 <th class="num">ยอดผลิต</th>
 <th class="num">ของเสีย</th>
@@ -773,13 +773,13 @@ if(page==='stamping'){
  const machines=stampingPeriodSummary(rows);summaryKeys=[];
  $('#summary').innerHTML=machines.length?machines.map(machine=>{
   const [date,shift,line]=machine.key.split('\u0001'),label=period==='week'?weekLabel(date):date;
-  const total=`<tr style="background:#173b59;font-weight:700"><td>${esc(label)}</td><td>${esc(shift||'—')}</td><td>${esc(line)}</td><td>รวมทุก Model</td><td class="num">${fmt(machine.production)}</td><td class="num">${fmt(machine.scrap)}</td><td class="num">${rateText(machine.scrap,machine.production)}</td></tr>`;
-  return total+machine.models.map(model=>`<tr><td>${esc(label)}</td><td>${esc(shift||'—')}</td><td>${esc(line)}</td><td>${esc(model.key||'ไม่ระบุ Model')}</td><td class="num">—</td><td class="num">${fmt(model.scrap)}</td><td class="num">—</td></tr>`).join('');
- }).join(''):'<tr><td colspan="7" class="muted">ยังไม่มีข้อมูล</td></tr>';return;
+  const total=`<tr style="background:#173b59;font-weight:700"><td>${esc(label)}</td><td>${esc(shift||'—')}</td><td>${esc(line)}</td><td class="num">${fmt(machine.production)}</td><td class="num">${fmt(machine.scrap)}</td><td class="num">${rateText(machine.scrap,machine.production)}</td></tr>`;
+  return total;
+ }).join(''):'<tr><td colspan="6" class="muted">ยังไม่มีข้อมูล</td></tr>';return;
 }
-let summary=group(rows,r=>[key(r.date),r.shift||'',dashboardLine(r),recordModel(r)].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
-summaryKeys=summary.map(v=>v.key);$('#summary').innerHTML=summary.length?summary.map((v,i)=>{let [d,shift,l,m]=v.key.split('\u0001');
-return `<tr><td>${esc(period==='week'?weekLabel(d):d)}</td><td>${esc(shift||'—')}</td><td>${esc(l)}</td><td>${esc(m||'ไม่ระบุ Model')}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td></tr>`}).join(''):'<tr><td colspan="7" class="muted">ยังไม่มีข้อมูล</td></tr>';
+let summary=group(rows,r=>[key(r.date),r.shift||'',dashboardLine(r)].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
+summaryKeys=summary.map(v=>v.key);$('#summary').innerHTML=summary.length?summary.map((v,i)=>{let [d,shift,l]=v.key.split('\u0001');
+return `<tr><td>${esc(period==='week'?weekLabel(d):d)}</td><td>${esc(shift||'—')}</td><td>${esc(l)}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td></tr>`}).join(''):'<tr><td colspan="6" class="muted">ยังไม่มีข้อมูล</td></tr>';
 }
 // Refresh the edited record's dashboard without closing the database manager.
 function refreshEditedDashboard(record){
@@ -794,7 +794,7 @@ window.addEventListener('storage',event=>{
  if(event.key!==KEY)return;
  try{const latest=JSON.parse(event.newValue||'[]');if(!Array.isArray(latest))return;records=latest;render();if(adminUnlocked&&$('#adminDataDialog').open)adminShowAll()}catch(error){console.error('Cannot refresh dashboard data',error)}
 });
-function showSummaryGroup(index){const selected=summaryKeys[index];if(selected===undefined)return;const matches=filtered().filter(r=>[key(r.date),r.shift||'',dashboardLine(r),recordModel(r)].join('\u0001')===selected);$('#summaryEditHelp').textContent=`กลุ่มนี้มี ${matches.length} รายการ · แสดงรายละเอียดสำหรับดูข้อมูลเท่านั้น`;$('#summaryEditList').innerHTML=matches.map(r=>{const i=records.indexOf(r);return `<div class="panel" style="margin:8px 0;padding:12px;display:flex;gap:12px;align-items:center;justify-content:space-between"><span>${esc(r.date)} · ${esc(r.shift||'—')} · ${esc(r.line||'—')} · ${esc(r.partCode||r.model||'ยอดผลิต')} · ผลิต ${fmt(Number(r.production)||0)} · เสีย ${fmt(Number(r.scrap)||0)}</span></div>`}).join('');$('#summaryEditList').hidden=false;$('#summaryEditForm').hidden=true}
+function showSummaryGroup(index){const selected=summaryKeys[index];if(selected===undefined)return;const matches=filtered().filter(r=>[key(r.date),r.shift||'',dashboardLine(r)].join('\u0001')===selected);$('#summaryEditHelp').textContent=`กลุ่มนี้มี ${matches.length} รายการ · แสดงรายละเอียดสำหรับดูข้อมูลเท่านั้น`;$('#summaryEditList').innerHTML=matches.map(r=>{const i=records.indexOf(r);return `<div class="panel" style="margin:8px 0;padding:12px;display:flex;gap:12px;align-items:center;justify-content:space-between"><span>${esc(r.date)} · ${esc(r.shift||'—')} · ${esc(r.line||'—')} · ${esc(r.partCode||r.model||'ยอดผลิต')} · ผลิต ${fmt(Number(r.production)||0)} · เสีย ${fmt(Number(r.scrap)||0)}</span></div>`}).join('');$('#summaryEditList').hidden=false;$('#summaryEditForm').hidden=true}
 $('#summary').onclick=e=>{const button=e.target.closest('[data-summary-view]');if(!button)return;showSummaryGroup(Number(button.dataset.summaryView));$('#summaryEditDialog').showModal()};
 $('#summaryEditList').onclick=e=>{const button=e.target.closest('[data-edit-record]');if(!button)return;editRecordIndex=Number(button.dataset.editRecord);const r=records[editRecordIndex];if(!r)return;const form=$('#summaryEditForm');for(const name of ['date','shift','line','partCode','model','defect','production','scrap']){const field=form.elements.namedItem(name);field.value=r[name]??''}$('#summaryEditNotice').textContent='';$('#summaryEditList').hidden=true;form.hidden=false};
 $('#cancelSummaryEdit').onclick=()=>{$('#summaryEditForm').hidden=true;$('#summaryEditList').hidden=false};$('#closeSummaryEdit').onclick=()=>$('#summaryEditDialog').close();
