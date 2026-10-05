@@ -924,7 +924,7 @@ $('#stampingEntryRows').onclick=e=>{
 $('#stampingEntry').querySelector('[name=date]').value=new Date().toLocaleDateString('en-CA');
 function shiftForLeader(value){const key=String(value||'').trim().toLowerCase().replace(/[^a-z]/g,'');return key==='kamnuai'||key==='amnuai'?'Shift B':key==='kthawatchai'||key==='thawatchai'?'Shift A':''}
 for(const form of [$('#stampingEntry')]){form.querySelector('[name="shiftLeader"]').addEventListener('input',e=>{form.querySelector('[name="shift"]').value=shiftForLeader(e.target.value);const notice=form.querySelector('[role="alert"]');if(notice)notice.textContent=e.target.value&&!shiftForLeader(e.target.value)?'ไม่พบชื่อ Leader นี้ · ใช้ K.Amnuai หรือ K.Thawatchai':''})}
-$('#openStampProduction').onclick=()=>{const form=$('#stampProductionForm'),scrap=$('#stampingEntry');form.querySelector('[name=date]').value=scrap.querySelector('[name=date]').value||new Date().toLocaleDateString('en-CA');form.querySelector('[name=shiftLeader]').value=scrap.querySelector('[name=shiftLeader]').value;form.querySelector('[name=shift]').value=scrap.querySelector('[name=shift]').value||'';form.querySelector('[name=line]').value=scrap.querySelector('[name=line]').value;showProductionMachines();$('#stampProductionNotice').textContent='';$('#stampProductionDialog').showModal()};
+$('#openStampProduction').onclick=()=>{const form=$('#stampProductionForm'),scrap=$('#stampingEntry');form.querySelector('[name=date]').value=scrap.querySelector('[name=date]').value||new Date().toLocaleDateString('en-CA');form.querySelector('[name=shiftLeader]').value=scrap.querySelector('[name=shiftLeader]').value;form.querySelector('[name=shift]').value=shiftForLeader(form.querySelector('[name=shiftLeader]').value)||scrap.querySelector('[name=shift]').value||'';form.querySelector('[name=line]').value=scrap.querySelector('[name=line]').value;showProductionMachines();$('#stampProductionNotice').textContent='';$('#stampProductionDialog').showModal()};
 $('#closeStampProduction').onclick=()=>$('#stampProductionDialog').close();
 $('#stampProductionDialog').onclick=e=>{if(e.target===$('#stampProductionDialog'))e.target.close()};
 function productionMachines(line){return line==='400T'?['400T']:['100T','200T'].includes(line)?Array.from({length:line==='100T'?5:4},(_,i)=>line+' #MC'+String(i+1).padStart(2,'0')):[]}
@@ -966,6 +966,12 @@ $('#productionMachineFields').addEventListener('keydown',event=>{
 $('#stampProductionForm').elements.line.onchange=showProductionMachines;
 $('#stampProductionForm').elements.date.addEventListener('change',showProductionMachines);
 $('#stampProductionForm').elements.shift.addEventListener('change',showProductionMachines);
+$('#stampProductionForm').elements.shiftLeader.addEventListener('input',event=>{
+ const form=$('#stampProductionForm'),shift=shiftForLeader(event.target.value);
+ $('#stampProductionNotice').textContent=event.target.value.trim()&&!shift?'ไม่พบชื่อ Leader นี้ · สามารถเลือกกะการผลิตเองได้':'';
+ if(shift&&form.elements.shift.value!==shift){form.elements.shift.value=shift;showProductionMachines()}
+});
+
 $('#stampProductionForm').onsubmit=e=>{
  e.preventDefault();const form=e.target,x=Object.fromEntries(new FormData(form)),cards=[...form.querySelectorAll('[data-production-machine]')].filter(card=>[...card.querySelectorAll('[data-slot-phase]')].some(input=>input.value!=='')),inputs=cards.flatMap(card=>[...card.querySelectorAll('[data-slot-phase]')]);
  if(!x.date||!x.shift||!cards.length||inputs.some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<0)){$('#stampProductionNotice').textContent='เลือกวันที่ กะการผลิต และกรอกยอดอย่างน้อย 1 เครื่อง · ใช้จำนวนเต็มตั้งแต่ 0';return}
