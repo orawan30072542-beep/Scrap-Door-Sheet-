@@ -401,21 +401,35 @@ body:not(.admin-unlocked) #openEntry,body:not(.admin-unlocked) #openStampEntry,b
 @media(max-width:640px){.filter-panel{padding:16px}.filter-panel .filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.filter-panel .periods{display:flex}.filter-panel .periods .btn{min-width:0;flex:1;padding:10px 8px;font-size:14px}.filter-heading span{font-size:12px}.filter-heading strong{font-size:18px}}
 @media(max-width:380px){.filter-panel .filters{grid-template-columns:1fr}}
 
-#productionMachineFields{display:block!important}
-.production-machine-card{padding:20px;margin:16px 0;background:#102c48;border:1px solid #315575;border-radius:16px}
-.production-machine-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;font-size:22px;font-weight:800}
-.production-slots-scroll{overflow-x:auto;padding-bottom:8px}
-.production-slots-row{display:flex;align-items:stretch;gap:16px;min-width:970px}
-.production-slot-group{flex:4;padding:14px;background:#0a2038;border:1px solid #284968;border-radius:12px}
-.production-slot-group.ot{flex:1;min-width:150px;background:#103451}
-.production-slot-grid{display:grid;grid-template-columns:repeat(4,minmax(70px,1fr));gap:8px;margin-top:12px}
-.production-slot-group.ot .production-slot-grid{grid-template-columns:repeat(auto-fit,minmax(80px,1fr))}
-.production-slot-grid label{display:block;font-size:14px;font-weight:700;color:#c5e0fa;margin-bottom:6px}
-.production-slot-grid input{width:100%;box-sizing:border-box;text-align:center;font-size:20px;font-weight:800;font-style:normal}
-.production-slot-title{display:flex;justify-content:space-between;gap:12px;font-size:18px;font-weight:800}
-.production-day-total{white-space:nowrap;color:#64e3ff;background:#071d32;padding:12px 18px;border-radius:10px}
-.production-grand-total{display:flex;justify-content:space-between;gap:16px;padding:20px;border:1px solid #3784bb;background:#123a5b;border-radius:12px;font-size:24px;font-weight:800;margin-top:20px}
-@media(max-width:600px){.production-machine-head{align-items:flex-start;flex-direction:column}.production-machine-card{padding:12px}}
+#stampProductionDialog{width:min(1440px,calc(100vw - 32px));max-width:none;padding:28px;background:#0c1d33;border:1px solid #294766;border-radius:22px}
+#productionMachineFields{display:block!important;margin-top:24px!important}
+.production-table-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:20px 0 14px}
+.production-table-toolbar h3{font-size:22px;margin:0;font-weight:800;color:#f1f7ff}
+.production-table-toolbar p{margin:6px 0 0;color:#9dbad8;font-size:14px}
+.production-table-scroll{overflow:auto;border:1px solid #2d4c6d;border-radius:16px;background:#0b2037}
+.production-input-table{width:100%;min-width:940px;border-collapse:separate;border-spacing:0;table-layout:fixed}
+.production-input-table th,.production-input-table td{text-align:center;padding:14px 6px;border-bottom:1px solid #28415b;white-space:normal}
+.production-input-table thead th{font-size:16px;color:#dceeff;background:#12314f;font-weight:800}
+.production-input-table thead tr:first-child th{font-size:19px;padding:18px 8px}
+.production-input-table .morning-head{background:#16446a;color:#d3f3ff}
+.production-input-table .afternoon-head{background:#173e70;color:#e0eaff}
+.production-input-table .ot-head{background:#12465c;color:#c2fff4}
+.production-input-table .phase-start{border-left:10px solid #0c1d33}
+.production-input-table tbody tr:nth-child(even){background:#102940}
+.production-input-table .machine-cell{text-align:left;padding:18px 14px;font-size:18px;font-weight:800;color:#fff}
+.production-input-table .machine-cell small{display:block;font-size:12px;font-weight:600;color:#9fbcd7;margin-top:7px;line-height:1.7}
+.production-input-table input[data-slot-phase]{display:block;width:100%;height:52px;box-sizing:border-box;min-width:0;margin:0;padding:8px 3px;border:1px solid #466d91;border-radius:9px;background:#1b3956;color:#f4faff;font-size:21px;font-weight:800;font-style:normal;text-align:center;font-family:inherit;appearance:textfield}
+.production-input-table input[data-slot-phase]::-webkit-inner-spin-button,.production-input-table input[data-slot-phase]::-webkit-outer-spin-button{appearance:none;margin:0}
+.production-input-table input[data-slot-phase]::placeholder{color:#7496b4}
+.production-input-table input[data-slot-phase]:focus{outline:2px solid #59ceff;outline-offset:1px;background:#244e72}
+.production-input-table .total-cell{background:#103b51;color:#70e9ff;font-size:24px;font-weight:800;border-left:10px solid #0c1d33}
+.production-input-table tfoot td,.production-input-table tfoot th{background:#153650;color:#b8e8ff;font-weight:800;font-size:16px;border-bottom:0}
+.production-input-table tfoot .total-cell{font-size:24px;color:#70e9ff}
+.production-grand-total{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:18px;padding:20px 24px;border:1px solid #3586b6;background:linear-gradient(110deg,#123852,#15516c);border-radius:14px;font-size:22px;font-weight:800;color:#fff}
+.production-grand-total output{font-size:32px;color:#86efff}
+#stampProductionForm>button[type=submit]{float:right;min-height:48px;padding:12px 24px;font-size:18px;font-weight:800}
+#stampProductionNotice{clear:both;padding-top:12px}
+@media(max-width:600px){#stampProductionDialog{padding:16px;width:calc(100vw - 16px)}.production-table-toolbar{align-items:flex-start}.production-grand-total{font-size:17px;padding:16px}.production-grand-total output{font-size:26px}}
 </style>
 </head>
 <body>
@@ -857,14 +871,20 @@ $('#closeStampProduction').onclick=()=>$('#stampProductionDialog').close();
 $('#stampProductionDialog').onclick=e=>{if(e.target===$('#stampProductionDialog'))e.target.close()};
 function productionMachines(line){return line==='400T'?['400T']:['100T','200T'].includes(line)?Array.from({length:line==='100T'?5:4},(_,i)=>line+' #MC'+String(i+1).padStart(2,'0')):[]}
 function productionSlotInput(machine,phase,index,value=''){
- return `<div><label>${phase==='ot'?'OT':'ช่อง'} ${index+1}</label><input type="number" min="0" step="1" ${phase==='ot'?'':'required'} data-slot-phase="${phase}" data-slot-index="${index}" aria-label="${esc(machine)} ${phase==='morning'?'ช่วงเช้า':phase==='afternoon'?'ช่วงบ่าย':'OT'} ช่อง ${index+1}" value="${value}" placeholder="0"></div>`;
+ return `<input type="number" min="0" step="1" ${phase==='ot'?'':'required'} data-slot-phase="${phase}" data-slot-index="${index}" aria-label="${esc(machine)} ${phase==='morning'?'ช่วงเช้า':phase==='afternoon'?'ช่วงบ่าย':'OT'} ช่อง ${index+1}" value="${esc(value)}" placeholder="0">`;
 }
-function showProductionMachines(){
- const form=$('#stampProductionForm'),names=productionMachines(form.elements.line.value);
- $('#productionMachineFields').innerHTML=names.map(name=>{
-  const old=records.find(r=>r.page==='stamping'&&r.kind==='production'&&r.date===form.elements.date.value&&r.shift===form.elements.shift.value&&r.line===name),slots=old?.productionSlots;
-  return `<section class="production-machine-card" data-production-machine="${name}"><div class="production-machine-head"><span>${name}</span><div class="production-day-total">รวมรายวัน <output data-machine-total>0</output> ชิ้น</div></div>${old&&!slots?`<p class="stamping-help">ยอดเดิม ${fmt(Number(old.production)||0)} ชิ้น · ยังไม่มีรายละเอียดช่วงเวลา กรุณากรอกแต่ละช่องเพื่อแทนยอดเดิม</p>`:''}<div class="production-slots-scroll"><div class="production-slots-row">${[['morning','ช่วงเช้า'],['afternoon','ช่วงบ่าย'],['ot','ช่วง OT']].map(([phase,label])=>`<div class="production-slot-group ${phase==='ot'?'ot':''}"><div class="production-slot-title"><span>${label}</span><span><output data-phase-total="${phase}">0</output> ชิ้น</span></div><div class="production-slot-grid" data-slot-grid="${phase}">${(phase==='ot'?(slots?.ot?.length?slots.ot:['']):Array.from({length:4},(_,i)=>slots?.[phase]?.[i]??'')).map((value,i)=>productionSlotInput(name,phase,i,value)).join('')}</div>${phase==='ot'?'<button type="button" class="btn" data-add-ot style="margin-top:12px">+ ช่อง OT</button>':''}</div>`).join('')}</div></div></section>`;
- }).join('')+(names.length?'<div class="production-grand-total"><span>สรุปรวมรายวัน · ทุกเครื่อง</span><span><output id="productionGrandTotal">0</output> ชิ้น</span></div><p class="stamping-help">กรอกยอดผลิตเป็นชิ้น · ช่องเช้าและบ่ายที่ไม่ผลิตให้กรอก 0 · OT เว้นว่างได้</p>':'');
+function showProductionMachines(drafts){
+ const form=$('#stampProductionForm'),names=productionMachines(form.elements.line.value),previous=new Map(names.map(name=>[name,records.find(r=>r.page==='stamping'&&r.kind==='production'&&r.date===form.elements.date.value&&r.shift===form.elements.shift.value&&r.line===name)]));
+ const slotsFor=name=>drafts instanceof Map?drafts.get(name):previous.get(name)?.productionSlots;
+ const otCount=Math.max(1,...names.map(name=>slotsFor(name)?.ot?.length||1));
+ const phases=[['morning',4],['afternoon',4],['ot',otCount]];
+ const headings=phases.map(([phase,count])=>Array.from({length:count},(_,i)=>`<th scope="col" class="${phase!=='morning'&&i===0?'phase-start':''}">${phase==='ot'?'OT':'ช่อง'} ${i+1}</th>`).join('')).join('');
+ const rows=names.map(name=>{
+  const old=previous.get(name),slots=slotsFor(name);
+  return `<tr data-production-machine="${name}"><th scope="row" class="machine-cell">${name}<small>เช้า <output data-phase-total="morning">0</output> · บ่าย <output data-phase-total="afternoon">0</output> · OT <output data-phase-total="ot">0</output></small>${old&&!slots?`<small>ยอดเดิม ${fmt(Number(old.production)||0)} ชิ้น<br>กรอกช่วงเวลาเพื่อแทนยอดเดิม</small>`:''}</th>${phases.map(([phase,count])=>Array.from({length:count},(_,i)=>`<td class="${phase!=='morning'&&i===0?'phase-start':''}">${productionSlotInput(name,phase,i,slots?.[phase]?.[i]??'')}</td>`).join('')).join('')}<td class="total-cell"><output data-machine-total>0</output></td></tr>`;
+ }).join('');
+ const foot=phases.map(([phase,count])=>Array.from({length:count},(_,i)=>`<td class="${phase!=='morning'&&i===0?'phase-start':''}"><output data-column-phase="${phase}" data-column-index="${i}">0</output></td>`).join('')).join('');
+ $('#productionMachineFields').innerHTML=names.length?`<div class="production-table-toolbar"><div><h3>ยอดผลิตรายเครื่อง</h3><p>หน่วย: ชิ้น · กรอกยอดผลิตแต่ละช่วงเวลา</p></div><button type="button" class="btn" data-add-ot>+ เพิ่มช่อง OT</button></div><div class="production-table-scroll"><table class="production-input-table"><colgroup><col style="width:170px">${Array.from({length:8+otCount},()=>'<col>').join('')}<col style="width:125px"></colgroup><thead><tr><th rowspan="2" scope="col">เครื่องจักร</th><th colspan="4" scope="colgroup" class="morning-head">ช่วงเช้า</th><th colspan="4" scope="colgroup" class="afternoon-head phase-start">ช่วงบ่าย</th><th colspan="${otCount}" scope="colgroup" class="ot-head phase-start">ช่วง OT</th><th rowspan="2" scope="col" class="total-cell">รวมรายวัน</th></tr><tr>${headings}</tr></thead><tbody>${rows}</tbody><tfoot><tr><th scope="row" class="machine-cell">รวมทุกเครื่อง</th>${foot}<td class="total-cell"><output id="productionTableTotal">0</output></td></tr></tfoot></table></div><div class="production-grand-total"><span>สรุปรวมรายวัน · ${names.length} เครื่อง</span><span><output id="productionGrandTotal">0</output> ชิ้น</span></div><p class="stamping-help">ช่องเช้าและบ่ายที่ไม่ผลิตให้กรอก 0 · OT เว้นว่างได้</p>`:'';
  updateProductionSlotTotals();
 }
 function readProductionSlots(card){
@@ -875,12 +895,16 @@ function updateProductionSlotTotals(){
  let total=0;for(const card of $('#productionMachineFields').querySelectorAll('[data-production-machine]')){
   const slots=readProductionSlots(card),sum=productionSlotsTotal(slots);total+=sum;card.querySelector('[data-machine-total]').textContent=fmt(sum);
   for(const phase of ['morning','afternoon','ot'])card.querySelector(`[data-phase-total="${phase}"]`).textContent=fmt(slots[phase].reduce((a,b)=>a+b,0));
- }const out=$('#productionGrandTotal');if(out)out.textContent=fmt(total);
+ }for(const id of ['#productionGrandTotal','#productionTableTotal']){const out=$(id);if(out)out.textContent=fmt(total)}
+ for(const out of $('#productionMachineFields').querySelectorAll('[data-column-phase]')){let sum=0;for(const card of $('#productionMachineFields').querySelectorAll('[data-production-machine]'))sum+=Number(card.querySelector(`[data-slot-phase="${out.dataset.columnPhase}"][data-slot-index="${out.dataset.columnIndex}"]`)?.value)||0;out.textContent=fmt(sum)}
 }
 $('#productionMachineFields').addEventListener('input',updateProductionSlotTotals);
 $('#productionMachineFields').addEventListener('click',event=>{
- const button=event.target.closest('[data-add-ot]');if(!button)return;const card=button.closest('[data-production-machine]'),grid=card.querySelector('[data-slot-grid="ot"]'),index=grid.children.length;
- grid.insertAdjacentHTML('beforeend',productionSlotInput(card.dataset.productionMachine,'ot',index));grid.lastElementChild.querySelector('input').focus();
+ const button=event.target.closest('[data-add-ot]');if(!button)return;
+ const cards=[...$('#productionMachineFields').querySelectorAll('[data-production-machine]')],drafts=new Map;
+ for(const card of cards){const slots={};for(const phase of ['morning','afternoon','ot'])slots[phase]=[...card.querySelectorAll(`[data-slot-phase="${phase}"]`)].map(input=>input.value);slots.ot.push('');drafts.set(card.dataset.productionMachine,slots)}
+ showProductionMachines(drafts);
+
 });
 $('#stampProductionForm').elements.line.onchange=showProductionMachines;
 $('#stampProductionForm').elements.date.addEventListener('change',showProductionMachines);
