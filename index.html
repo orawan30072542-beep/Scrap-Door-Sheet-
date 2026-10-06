@@ -436,6 +436,18 @@ body:not(.admin-unlocked) #openEntry,body:not(.admin-unlocked) #openStampEntry,b
 .production-shift-section{margin-top:28px}
 .production-shift-label{display:inline-block;padding:6px 12px;border-radius:8px;background:#16446a;color:#b9edff;font-size:15px}
 .production-shift-section.night .production-shift-label{background:#343754;color:#e0deff}
+
+#stampingScrapTrend.production-table-view{height:auto;min-height:180px}
+.production-overview-scroll{width:100%;overflow:auto;max-height:520px;border:1px solid #315476;border-radius:10px}
+.production-overview-table{width:100%;min-width:760px;border-collapse:collapse;font-size:17px;font-style:normal}
+.production-overview-table th{position:sticky;top:0;background:#174d7d;color:#fff;padding:15px 12px;font-weight:700;z-index:1}
+.production-overview-table td{padding:13px 12px;border-bottom:1px solid #284766;border-right:1px solid #243e59;text-align:right;font-weight:500;color:#e5f0ff}
+.production-overview-table td:nth-child(-n+3){text-align:center}
+.production-overview-table tbody tr:nth-child(odd){background:#102a45}
+.production-overview-table tbody tr:nth-child(even){background:#0c2038}
+.production-overview-table tbody tr:hover{background:#194267}
+.production-overview-table .production-overview-total{color:#75d5ff;font-weight:700}
+.production-overview-table tfoot td{position:sticky;bottom:0;background:#174d7d;color:#fff;font-weight:700;border-top:2px solid #48abeb}
 </style>
 </head>
 <body>
@@ -710,9 +722,22 @@ function machineName(value){
  const text=String(value||'').toUpperCase().replace(/\s+/g,'');if(text.includes('/')||text==='ไม่ระบุเครื่องจักร')return text;const found=text.match(/(?:400T|200T|100T)/);
  return found?found[0]:null
 }
+function renderProductionOverview(rows,box){
+ const machines=['100T','200T','400T'],groups=new Map();
+ for(const r of rows){const machine=machineName(r.line);if(!machines.includes(machine)||!/^\d{4}-\d{2}-\d{2}$/.test(r.date))continue;
+  const date=scrapPeriod==='month'?r.date.slice(0,7):scrapPeriod==='week'?weekKey(r.date):r.date,shift=summaryShift(r.shift),id=date+'\u0001'+shift;
+  let item=groups.get(id);if(!item){item={date,shift,values:[0,0,0]};groups.set(id,item)}item.values[machines.indexOf(machine)]+=Number(r.production)||0;
+ }
+ const entries=[...groups.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.shift.localeCompare(b.shift)),totals=[0,0,0];
+ const label=date=>scrapPeriod==='week'?weekLabel(date):scrapPeriod==='month'?date.slice(5)+'/'+date.slice(0,4):date.slice(8)+'/'+date.slice(5,7)+'/'+date.slice(0,4);
+ entries.forEach(item=>item.values.forEach((n,i)=>totals[i]+=n));
+ box.innerHTML=entries.length?`<div class="production-overview-scroll"><table class="production-overview-table"><thead><tr><th>ลำดับ</th><th>ช่วงเวลา</th><th>กะการผลิต</th>${machines.map(m=>`<th>${m}</th>`).join('')}<th>ยอดผลิตรวม (ชิ้น)</th></tr></thead><tbody>${entries.map((item,i)=>`<tr><td>${i+1}</td><td>${esc(label(item.date))}</td><td>${esc(item.shift)}</td>${item.values.map(n=>`<td>${fmt(n)}</td>`).join('')}<td class="production-overview-total">${fmt(item.values.reduce((a,b)=>a+b,0))}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="3">ยอดผลิตรวมทั้งหมด</td>${totals.map(n=>`<td>${fmt(n)}</td>`).join('')}<td>${fmt(totals.reduce((a,b)=>a+b,0))}</td></tr></tfoot></table></div>`:'<span class="stamping-empty">ยังไม่มีข้อมูลยอดผลิตในช่วงที่เลือก</span>';
+}
 function renderScrapTrend(rows){
- const box=$('#stampingScrapTrend'),titles={production:'ยอดผลิต',scrap:'ยอดของเสีย',rate:'Percent Rate'};
- $('#stampingTrendTitle').textContent='แนวโน้ม'+titles[trendMetric]+' · SCRAP STAMPING';
+ const box=$('#stampingScrapTrend'),titles={production:'ยอดผลิต',scrap:'ยอดของเสีย',rate:'อัตราของเสีย (%)'};
+ box.classList.toggle('production-table-view',trendMetric==='production');
+ $('#stampingTrendTitle').textContent=(trendMetric==='production'?'ตารางยอดผลิต':'แนวโน้ม'+titles[trendMetric])+' · SCRAP STAMPING';
+ if(trendMetric==='production'){$('#stampingTrendNote').textContent='ยอดผลิตรวมตามช่วงเวลาที่เลือก · แยกกะ · 100T / 200T / 400T · Week นับวันจันทร์–อาทิตย์';renderProductionOverview(rows,box);return} 
  const totals=new Map();
  for(const r of rows){if(!/^\d{4}-\d{2}-\d{2}$/.test(r.date))continue;const k=scrapPeriod==='month'?r.date.slice(0,7):scrapPeriod==='week'?weekKey(r.date):r.date,v=totals.get(k)||{production:0,scrap:0};v.production+=Number(r.production)||0;v.scrap+=Number(r.scrap)||0;totals.set(k,v)}
  const periods=[...totals].sort((a,b)=>a[0].localeCompare(b[0])).slice(scrapPeriod==='day'?-21:-12);
@@ -720,10 +745,15 @@ function renderScrapTrend(rows){
  const missing=values.filter(v=>v.amount===null).length;
  $('#stampingTrendNote').textContent='แสดงสูงสุด 21 วัน / 12 สัปดาห์ / 12 เดือน · Week นับวันจันทร์–อาทิตย์'+(trendMetric==='rate'&&missing?' · '+missing+' ช่วงไม่มีข้อมูลยอดผลิต จึงไม่คำนวณ Percent Rate':'');
  if(!values.length||values.every(v=>v.amount===null)){box.innerHTML='<span class="stamping-empty">'+(trendMetric==='rate'?'ยังไม่มียอดผลิตสำหรับคำนวณ Percent Rate':'ยังไม่มีข้อมูล'+titles[trendMetric]+'ในช่วงที่เลือก')+'</span>';return}
- const W=900,H=300,L=65,R=20,T=34,B=65,iw=W-L-R,ih=H-T-B,max=Math.max(1,...values.map(v=>v.amount??0)),step=iw/values.length,width=Math.min(34,step*.65),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#69baff':'#339dff';
+ const W=900,H=300,L=65,R=20,T=46,B=65,iw=W-L-R,ih=H-T-B,max=Math.max(1,...values.map(v=>v.amount??0)),step=iw/values.length,width=Math.min(34,step*.65),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#69baff':'#339dff';
  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="none" aria-label="${titles[trendMetric]}${scrapPeriod==='month'?'รายเดือน':scrapPeriod==='week'?'รายสัปดาห์':'รายวัน'}">`;
- for(let n=0;n<=4;n++){const y=T+ih*n/4,scale=max*(4-n)/4;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#2c4058"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#9db5ca" font-size="11">${trendMetric==='rate'?scale.toFixed(1)+'%':fmt(Math.round(scale))}</text>`}
- values.forEach(({label,amount},i)=>{const x=L+step*(i+.5),short=scrapPeriod==='week'?weekLabel(label):scrapPeriod==='month'?label.slice(5)+'/'+label.slice(2,4):label.slice(8)+'/'+label.slice(5,7);if(amount!==null){const h=amount/max*ih,display=trendMetric==='rate'?amount.toFixed(2)+'%':fmt(amount);svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${Math.max(h,1)}" rx="4" fill="${color}"><title>${esc(label)}: ${display}</title></rect><text x="${x}" y="${Math.max(T+12,T+ih-h-7)}" text-anchor="middle" fill="#dce9fa" font-size="10">${display}</text>`}else svg+=`<text x="${x}" y="${T+ih-8}" text-anchor="middle" fill="#9db5ca" font-size="13">—</text>`;svg+=`<text x="${x}" y="${H-30}" text-anchor="middle" fill="#a9bdd1" font-size="11">${short}</text>`});
+ for(let n=0;n<=4;n++){const y=T+ih*n/4,scale=max*(4-n)/4;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#2c4058"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#9db5ca" font-size="14">${trendMetric==='rate'?scale.toFixed(2)+'%':fmt(Math.round(scale))}</text>`}
+ if(trendMetric==='rate'){
+  let path='',connected=false;
+  values.forEach(({amount},i)=>{if(amount===null){connected=false;return}const x=L+step*(i+.5),y=T+ih-amount/max*ih;path+=(connected?' L ':' M ')+x+' '+y;connected=true});
+  svg+=`<defs><linearGradient id="scrapRateLineGradient" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#268ff0"/><stop offset="100%" stop-color="#43efd6"/></linearGradient></defs><path d="${path}" fill="none" stroke="url(#scrapRateLineGradient)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`;
+ }
+ values.forEach(({label,amount},i)=>{const x=L+step*(i+.5),short=scrapPeriod==='week'?weekLabel(label):scrapPeriod==='month'?label.slice(5)+'/'+label.slice(2,4):label.slice(8)+'/'+label.slice(5,7);if(amount!==null){const h=amount/max*ih,display=trendMetric==='rate'?amount.toFixed(2)+'%':fmt(amount);svg+=(trendMetric==='rate'?`<circle cx="${x}" cy="${T+ih-h}" r="5" fill="#d5fff8" stroke="#43efd6" stroke-width="2"><title>${esc(label)}: ${display}</title></circle>`:`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${Math.max(h,1)}" rx="4" fill="${color}"><title>${esc(label)}: ${display}</title></rect>`)+`<text x="${x}" y="${Math.max(24,T+ih-h-10)}" text-anchor="middle" fill="#dce9fa" font-size="16" font-weight="600">${display}</text>`}else svg+=`<text x="${x}" y="${T+ih-8}" text-anchor="middle" fill="#9db5ca" font-size="13">—</text>`;svg+=`<text x="${x}" y="${H-30}" text-anchor="middle" fill="#a9bdd1" font-size="11">${short}</text>`});
  box.innerHTML=svg+'</svg>'
 }
 function renderStamping(rows){
