@@ -525,6 +525,20 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 .machine-rate-donut small{font-size:10px;font-weight:400;color:#a1b8d0}
 .machine-donut-details{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;font-size:12px;color:#a9bfd6}
 .machine-donut-details b{font-weight:500;color:#e7f4ff}
+
+/* Single-row filters with vertically stacked view choices. */
+.filter-panel .filters{grid-template-columns:130px repeat(5,minmax(0,1fr));gap:14px;align-items:center}
+.filter-panel .field:first-child{grid-column:auto;padding:0;border:0}
+.filter-panel .periods{display:flex;flex-direction:column;gap:3px;width:100%;padding:4px}
+.filter-panel .periods .btn{min-width:0;width:100%;padding:6px 10px;font-size:12px;font-weight:400}
+.filter-panel label{font-size:12px;margin-bottom:6px}
+.filter-panel select,.filter-panel input{min-height:40px;padding:8px 10px;font-size:13px}
+.filter-heading{margin-bottom:14px}
+#stampingScrapTrend{height:310px}
+#stampingScrapTrend svg{height:100%}
+#stampingScrapTrend text[font-weight="600"]{font-size:13px;font-weight:400}
+@media(max-width:1000px){.filter-panel .filters{grid-template-columns:120px repeat(5,minmax(130px,1fr));overflow-x:auto;padding-bottom:6px}}
+@media(max-width:620px){#stampingScrapTrend{height:260px}}
 </style>
 </head>
 <body>
@@ -814,7 +828,7 @@ function renderScrapTrend(rows){
  $('#stampingTrendNote').textContent='แสดงสูงสุด 21 วัน / 12 สัปดาห์ / 12 เดือน · Week นับวันจันทร์–อาทิตย์'+(trendMetric==='rate'&&missing?' · '+missing+' ช่วงไม่มีข้อมูลยอดผลิต จึงไม่คำนวณ Percent Rate':'');
  if(!values.length||values.every(v=>v.amount===null)){box.innerHTML='<span class="stamping-empty">'+(trendMetric==='rate'?'ยังไม่มียอดผลิตสำหรับคำนวณ Percent Rate':'ยังไม่มีข้อมูล'+titles[trendMetric]+'ในช่วงที่เลือก')+'</span>';return}
  const W=900,H=300,L=65,R=20,T=46,B=65,iw=W-L-R,ih=H-T-B,max=trendMetric==='rate'?Math.max(6,...values.map(v=>(v.amount??0)*1.1)):Math.max(1,...values.map(v=>v.amount??0)),step=iw/values.length,width=Math.min(34,step*.65),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#69baff':'#339dff';
- let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="none" aria-label="${titles[trendMetric]}${scrapPeriod==='month'?'รายเดือน':scrapPeriod==='week'?'รายสัปดาห์':'รายวัน'}">`;
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet" aria-label="${titles[trendMetric]}${scrapPeriod==='month'?'รายเดือน':scrapPeriod==='week'?'รายสัปดาห์':'รายวัน'}">`;
  if(trendMetric!=='rate')svg+=`<defs><linearGradient id="trendBarGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#28d9f2"/><stop offset="48%" stop-color="#268ff0"/><stop offset="100%" stop-color="#2548b7"/></linearGradient></defs>`;
  for(let n=0;n<=4;n++){const y=T+ih*n/4,scale=max*(4-n)/4;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#2c4058"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#9db5ca" font-size="14">${trendMetric==='rate'?scale.toFixed(2)+'%':fmt(Math.round(scale))}</text>`}
  if(trendMetric==='rate'){
