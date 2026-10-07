@@ -976,9 +976,8 @@ document.querySelectorAll('[data-trend-metric]').forEach(b=>b.onclick=()=>{trend
 ['start','end'].forEach(id=>$('#'+id).onchange=()=>{$('#monthFilter').value='';viewAnchorDate=$('#'+id).value;render()});
 $('#monthButtons').onclick=e=>{const button=e.target.closest('[data-month]');if(!button)return;$('#monthFilter').value=button.dataset.month;$('#monthFilter').onchange()};
 $('#monthFilter').onchange=()=>{
+ // Month selection filters records only; view buttons control their grouping.
  viewAnchorDate='';$('#start').value='';$('#end').value='';
- period=$('#monthFilter').value?'day':'month';scrapPeriod=period;
- document.querySelectorAll('[data-period]').forEach(b=>b.classList.toggle('active',b.dataset.period===period));
  render();
 };
 $('#openEntry').onclick=()=>{if(page==='stamping'&&!$('#stampingEntryRows').children.length)addStampRow();$('#entryDialog').showModal()};
