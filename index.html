@@ -841,7 +841,7 @@ function renderScrapTrend(rows){
  const periods=[...totals].sort((a,b)=>a[0].localeCompare(b[0]));
  const values=periods.map(([label,v])=>({label,amount:trendMetric==='rate'?(v.production>0?rate(v.scrap,v.production):null):v[trendMetric]}));
  const missing=values.filter(v=>v.amount===null).length;
- $('#stampingTrendNote').textContent=(selectedMonth?'ข้อมูลทั้งเดือน · แสดงวันที่ 1–'+new Date(Number(selectedMonth.slice(0,4)),Number(selectedMonth.slice(5)),0).getDate():scrapPeriod==='month'?'ข้อมูลทุกเดือน · สรุปรายเดือน':scrapPeriod==='week'?'สรุปรายสัปดาห์ · วันจันทร์–อาทิตย์':'ข้อมูลรายวัน')+(trendMetric==='rate'&&missing?' · '+missing+' ช่วงไม่มีข้อมูลยอดผลิต จึงไม่คำนวณ Percent Rate':'');
+ $('#stampingTrendNote').textContent=(scrapPeriod==='month'?'สรุปรายเดือน':scrapPeriod==='week'?'สรุปรายสัปดาห์ · วันจันทร์–อาทิตย์':selectedMonth?'ข้อมูลทั้งเดือน · แสดงวันที่ 1–'+new Date(Number(selectedMonth.slice(0,4)),Number(selectedMonth.slice(5)),0).getDate():'ข้อมูลรายวัน')+(trendMetric==='rate'&&missing?' · '+missing+' ช่วงไม่มีข้อมูลยอดผลิต จึงไม่คำนวณ Percent Rate':'');
  if(!values.length||values.every(v=>v.amount===null)){box.innerHTML='<span class="stamping-empty">'+(trendMetric==='rate'?'ยังไม่มียอดผลิตสำหรับคำนวณ Percent Rate':'ยังไม่มีข้อมูล'+titles[trendMetric]+'ในช่วงที่เลือก')+'</span>';return}
  const W=900,H=300,L=65,R=20,T=46,B=65,iw=W-L-R,ih=H-T-B,max=trendMetric==='rate'?Math.max(6,...values.map(v=>(v.amount??0)*1.1)):Math.max(1,...values.map(v=>v.amount??0)),step=iw/values.length,width=Math.min(34,step*.65),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#69baff':'#339dff';
  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet" aria-label="${titles[trendMetric]}${scrapPeriod==='month'?'รายเดือน':scrapPeriod==='week'?'รายสัปดาห์':'รายวัน'}">`;
@@ -968,7 +968,7 @@ function applyViewRange(){
  const anchor=viewAnchorDate||$('#end').value||$('#start').value||candidates.at(-1)||new Date().toLocaleDateString('en-CA');viewAnchorDate=anchor;
  const range=viewDateRange(anchor,period);if(range){$('#monthFilter').value='';$('#start').value=range[0];$('#end').value=range[1]}
 }
-document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period=b.dataset.period;scrapPeriod=period;applyViewRange();
+document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period=b.dataset.period;scrapPeriod=period;
 document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('active',x===b));
 render()});
 document.querySelectorAll('[data-trend-metric]').forEach(b=>b.onclick=()=>{trendMetric=b.dataset.trendMetric;document.querySelectorAll('[data-trend-metric]').forEach(x=>x.classList.toggle('active',x===b));render()});
