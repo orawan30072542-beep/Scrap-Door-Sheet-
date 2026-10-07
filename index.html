@@ -557,6 +557,8 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 #stampingPareto svg{display:block;width:100%;height:auto}
 #stampingScrapTrend svg text.trend-date-label{font-size:10px;font-weight:400;font-style:normal;fill:#e6f1ff}
 @media(max-width:900px){.stamping-dashboard-layout{grid-template-columns:1fr}}
+#stampingPareto svg text{font-size:12px;font-weight:400;font-style:normal}
+#stampingPareto svg text.pareto-value{font-size:13px;font-weight:400;fill:#e3effa}
 </style>
 </head>
 <body>
@@ -894,10 +896,10 @@ function renderStamping(rows){
  if(!problem.length){$('#stampingPareto').innerHTML='<span class="stamping-empty">ยังไม่มีข้อมูลของเสียในช่วงที่เลือก</span>';return}
  let top=problem.slice(0,10);
  const W=900,H=380,L=35,R=55,T=38,B=100,iw=W-L-R,ih=H-T-B,maxScrap=Math.max(...top.map(p=>p.scrap),1);
- let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="none" aria-label="พาเรโตจำนวนของเสียตามประเภทปัญหาและเปอร์เซ็นต์สะสม"><defs><linearGradient id="stampingParetoBlueGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#28d9f2"/><stop offset="48%" stop-color="#268ff0"/><stop offset="100%" stop-color="#2548b7"/></linearGradient></defs>`,sum=0,points=[];
- [0,25,50,75,100].forEach(n=>{let y=T+ih*(1-n/100);svg+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#2c4058"/><text x="${W-R+9}" y="${y+6}" fill="#c4e4ff" font-size="16" font-weight="700">${n}%</text>`});
- top.forEach((p,i)=>{let x=L+iw*(i+.5)/top.length,h=ih*p.scrap/maxScrap,width=Math.min(62,iw/top.length*.52);sum+=p.scrap;let y=T+ih-ih*sum/total;points.push([x,y]);const label=p.key,segments=Array.from(label.matchAll(/.{1,9}/gu),m=>m[0]);svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${h}" rx="5" fill="url(#stampingParetoBlueGradient)"><title>${esc(label)}: ${fmt(p.scrap)} ชิ้น</title></rect><text x="${x}" y="${Math.max(22,T+ih-h-10)}" text-anchor="middle" fill="#ecf7ff" font-size="18" font-weight="800">${fmt(p.scrap)}</text><text x="${x}" y="${T+ih+29}" text-anchor="middle" fill="#dcecff" font-size="16" font-weight="700">${segments.slice(0,3).map((part,j)=>`<tspan x="${x}" dy="${j?22:0}">${esc(part)}${j===2&&segments.length>3?'…':''}</tspan>`).join('')}</text>`});
- svg+=`<polyline points="${points.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#43efd6" stroke-width="4"/>`;
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet" aria-label="พาเรโตจำนวนของเสียตามประเภทปัญหาและเปอร์เซ็นต์สะสม"><defs><linearGradient id="stampingParetoBlueGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#28d9f2"/><stop offset="48%" stop-color="#268ff0"/><stop offset="100%" stop-color="#2548b7"/></linearGradient></defs>`,sum=0,points=[];
+ [0,25,50,75,100].forEach(n=>{let y=T+ih*(1-n/100);svg+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#2c4058"/><text x="${W-R+9}" y="${y+6}" fill="#c4e4ff" font-size="12" font-weight="400">${n}%</text>`});
+ top.forEach((p,i)=>{let x=L+iw*(i+.5)/top.length,h=ih*p.scrap/maxScrap,width=Math.min(62,iw/top.length*.52);sum+=p.scrap;let y=T+ih-ih*sum/total;points.push([x,y]);const label=p.key,segments=Array.from(label.matchAll(/.{1,9}/gu),m=>m[0]);svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${h}" rx="5" fill="url(#stampingParetoBlueGradient)"><title>${esc(label)}: ${fmt(p.scrap)} ชิ้น</title></rect><text x="${x}" y="${Math.max(22,T+ih-h-10)}" text-anchor="middle" fill="#ecf7ff" class="pareto-value" font-size="13" font-weight="400">${fmt(p.scrap)}</text><text x="${x}" y="${T+ih+29}" text-anchor="middle" fill="#dcecff" font-size="12" font-weight="400">${segments.slice(0,3).map((part,j)=>`<tspan x="${x}" dy="${j?18:0}">${esc(part)}${j===2&&segments.length>3?'…':''}</tspan>`).join('')}</text>`});
+ svg+=`<polyline points="${points.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#43efd6" stroke-width="3"/>`;
  points.forEach(p=>svg+=`<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="#b0fff1" stroke="#43efd6" stroke-width="2"/>`);
  $('#stampingPareto').innerHTML=svg+'</svg>'
 }
