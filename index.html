@@ -559,6 +559,9 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 @media(max-width:900px){.stamping-dashboard-layout{grid-template-columns:1fr}}
 #stampingPareto svg text{font-size:12px;font-weight:400;font-style:normal}
 #stampingPareto svg text.pareto-value{font-size:13px;font-weight:400;fill:#e3effa}
+.line-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;max-height:145px;overflow:auto;align-content:start}
+.line-buttons .month-choice{min-width:0;white-space:normal;overflow-wrap:anywhere}
+#line[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -574,14 +577,15 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 <label>เลือกเดือน</label><input type="hidden" id="monthFilter"><div id="monthButtons" class="month-buttons" aria-label="เลือกเดือน"></div>
 </div>
 <div class="field">
+<label>ไลน์ / พื้นที่</label><select id="line" hidden><option value="">ทั้งหมด</option></select><div id="lineButtons" class="line-buttons" aria-label="เลือกไลน์หรือพื้นที่"></div>
+</div>
+<div class="field">
 <label>ตั้งแต่วันที่</label><input type="date" id="start">
 </div>
 <div class="field">
 <label>ถึงวันที่</label><input type="date" id="end">
 </div>
-<div class="field">
-<label>ไลน์ / พื้นที่</label><select id="line"><option value="">ทั้งหมด</option></select>
-</div>
+
 <div class="field">
 <label>ปัญหา</label><select id="model"><option value="">ทั้งหมด</option></select>
 </div>
@@ -782,7 +786,9 @@ function filtered(){return records.filter(r=>r.page===page&&(!$('#monthFilter').
 
 function options(){monthOptions();for(let [id,field] of [['line','line'],['model','defect']]){let el=$('#'+id),old=el.value,values=[...new Set(records.filter(r=>r.page===page).map(r=>field==='line'?dashboardLine(r):r[field]).filter(Boolean))].sort();
 el.innerHTML='<option value="">ทั้งหมด</option>'+values.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
-el.value=values.includes(old)?old:''}}function group(rows,by){let map=new Map;
+el.value=values.includes(old)?old:'';
+if(id==='line')$('#lineButtons').innerHTML=['',...values].map(v=>`<button type="button" class="month-choice ${el.value===v?'active':''}" data-line="${esc(v)}" aria-pressed="${el.value===v}">${esc(v||'All')}</button>`).join('');
+}}function group(rows,by){let map=new Map;
 for(let r of rows){let k=by(r),v=map.get(k)||{key:k,production:0,scrap:0};
 v.production+=Number(r.production)||0;
 v.scrap+=Number(r.scrap)||0;
@@ -1000,6 +1006,7 @@ render()});
 document.querySelectorAll('[data-trend-metric]').forEach(b=>b.onclick=()=>{trendMetric=b.dataset.trendMetric;document.querySelectorAll('[data-trend-metric]').forEach(x=>x.classList.toggle('active',x===b));render()});
 ['line','model'].forEach(id=>$('#'+id).onchange=render);
 ['start','end'].forEach(id=>$('#'+id).onchange=()=>{$('#monthFilter').value='';viewAnchorDate=$('#'+id).value;render()});
+$('#lineButtons').onclick=e=>{const button=e.target.closest('[data-line]');if(!button)return;$('#line').value=button.dataset.line;render()};
 $('#monthButtons').onclick=e=>{const button=e.target.closest('[data-month]');if(!button)return;$('#monthFilter').value=button.dataset.month;$('#monthFilter').onchange()};
 $('#monthFilter').onchange=()=>{
  // Month selection filters records only; view buttons control their grouping.
