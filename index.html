@@ -895,17 +895,15 @@ $('#count').textContent=fmt(rows.length)+' รายการ';
 if(page==='stamping')renderStamping(rows);else chart(rows);
 let types=group(rows,r=>r.defect||'ไม่ระบุ').sort((a,b)=>b.scrap-a.scrap).slice(0,7),max=Math.max(1,...types.map(x=>x.scrap));
 $('#pareto').innerHTML=types.length?types.map(x=>`<div class="barrow"><span title="${esc(x.key)}">${esc(x.key)}</span><div class="track"><div class="fill" style="width:${x.scrap/max*100}%"></div></div><b>${fmt(x.scrap)}</b></div>`).join(''):'<p class="muted">ยังไม่มีข้อมูลในช่วงที่เลือก</p>';
-const detailRows=records.filter(r=>r.page===page&&(!$('#line').value||dashboardLine(r)===$('#line').value)&&(!$('#model').value||r.defect===$('#model').value));
-$('#count').textContent=fmt(detailRows.length)+' รายการ · ทุกช่วงเวลา';
 if(page==='stamping'){
- const machines=stampingPeriodSummary(detailRows);summaryKeys=[];
+ const machines=stampingPeriodSummary(rows);summaryKeys=[];
  $('#summary').innerHTML=machines.length?machines.map(machine=>{
   const [date,shift,line]=machine.key.split('\u0001'),label=summaryPeriodLabel(date);
   const total=`<tr style="background:#173b59;font-weight:700"><td>${esc(label)}</td><td>${esc(shift||'—')}</td><td>${esc(line)}</td><td class="num">${fmt(machine.production)}</td><td class="num">${fmt(machine.scrap)}</td><td class="num">${rateText(machine.scrap,machine.production)}</td></tr>`;
   return total;
  }).join(''):'<tr><td colspan="6" class="muted">ยังไม่มีข้อมูล</td></tr>';return;
 }
-let summary=group(detailRows,r=>[key(r.date),r.shift||'',dashboardLine(r)].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
+let summary=group(rows,r=>[key(r.date),r.shift||'',dashboardLine(r)].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
 summaryKeys=summary.map(v=>v.key);$('#summary').innerHTML=summary.length?summary.map((v,i)=>{let [d,shift,l]=v.key.split('\u0001');
 return `<tr><td>${esc(summaryPeriodLabel(d))}</td><td>${esc(shift||'—')}</td><td>${esc(l)}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td></tr>`}).join(''):'<tr><td colspan="6" class="muted">ยังไม่มีข้อมูล</td></tr>';
 }
