@@ -562,7 +562,7 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 <small>อัตราของเสีย</small><strong id="rate">0.00%</strong><em>ของเสีย ÷ ยอดผลิต × 100</em>
 </div>
 <div class="metric">
-<small>จำนวนวันที่มีข้อมูล</small><strong id="days">0</strong><em>วัน</em>
+<small>มูลค่าความเสียหาย</small><strong id="scrapCost">0.00</strong><em>บาท</em>
 </div></section><section id="stampingAnalytics" hidden>
 <div class="machine-list" id="machineCards"></div>
 <div class="stamping-dashboard-layout"><div id="stampingSummarySlot"></div><div class="stamping-right-charts"><section class="panel" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
@@ -571,12 +571,12 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 <div id="stampingScrapTrend" class="stamping-chart"></div><div class="chart-note" id="stampingTrendNote">แสดงสูงสุด 21 วัน / 12 สัปดาห์ / 12 เดือน · Week นับวันจันทร์–อาทิตย์</div>
 </section>
 <div class="panel">
-<h2>Pareto · ประเภทปัญหา</h2>
+<h2>Pareto · ประเภทปัญหา Top 10</h2>
 <div class="stamping-legend">
 <span><i style="background:#339dff"></i>จำนวนของเสีย</span><span><i style="background:#43efd6"></i>สะสม (%)</span>
 </div>
 <div id="stampingPareto" class="stamping-chart"></div>
-<div class="chart-note">เรียงจากของเสียมากไปน้อย · อัตราสะสมเทียบกับของเสียทั้งหมด</div>
+<div class="chart-note">แสดงปัญหา Top 10 เรียงจากของเสียมากไปน้อย · อัตราสะสมเทียบกับของเสียทั้งหมด</div>
 </div>
 </div></div>
 </section><section class="grid cols" id="generalCharts"><div class="panel">
@@ -838,7 +838,7 @@ function renderStamping(rows){
  $('#machineCards').innerHTML=machines.map(m=>{const pct=m.production>0?rate(m.scrap,m.production):0,arc=Math.max(0,Math.min(100,pct)),available=m.production>0;return `<div class="machine-card machine-donut-card"><strong>${esc(m.name)}</strong><div class="machine-rate-donut" role="img" aria-label="${esc(m.name)} อัตราของเสีย ${rateText(m.scrap,m.production)}" style="background:conic-gradient(#46baff 0 ${arc}%,#203c59 ${arc}% 100%)"><div><span>${rateText(m.scrap,m.production)}</span><small>${available?'อัตราของเสีย':'ยังไม่มียอดผลิต'}</small></div></div><div class="machine-donut-details"><span>ยอดผลิต <b>${fmt(m.production)}</b> ชิ้น</span><span>ของเสีย <b>${fmt(m.scrap)}</b> ชิ้น</span></div></div>`}).join('');
  let problem=group(rows,r=>r.defect?.trim()||'ไม่ระบุประเภท').filter(p=>p.scrap>0).sort((a,b)=>b.scrap-a.scrap),total=problem.reduce((n,p)=>n+p.scrap,0);
  if(!problem.length){$('#stampingPareto').innerHTML='<span class="stamping-empty">ยังไม่มีข้อมูลของเสียในช่วงที่เลือก</span>';return}
- let top=problem.slice(0,6);if(problem.length>6)top.push({key:'อื่น ๆ',scrap:problem.slice(6).reduce((n,p)=>n+p.scrap,0)});
+ let top=problem.slice(0,10);
  const W=900,H=380,L=35,R=55,T=38,B=100,iw=W-L-R,ih=H-T-B,maxScrap=Math.max(...top.map(p=>p.scrap),1);
  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="none" aria-label="พาเรโตจำนวนของเสียตามประเภทปัญหาและเปอร์เซ็นต์สะสม"><defs><linearGradient id="stampingParetoBlueGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#28d9f2"/><stop offset="48%" stop-color="#268ff0"/><stop offset="100%" stop-color="#2548b7"/></linearGradient></defs>`,sum=0,points=[];
  [0,25,50,75,100].forEach(n=>{let y=T+ih*(1-n/100);svg+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#2c4058"/><text x="${W-R+9}" y="${y+6}" fill="#c4e4ff" font-size="16" font-weight="700">${n}%</text>`});
@@ -850,6 +850,12 @@ function renderStamping(rows){
 function renderIssues(){const all=issueCases.length,done=issueCases.filter(x=>x.status==='Finish').length,open=all-done,pct=all?done/all*100:0;$('#issueAll').textContent=fmt(all);$('#issueOpen').textContent=fmt(open);$('#issueDone').textContent=fmt(done);$('#issueOpenPct').textContent=(all?open/all*100:0).toFixed(1)+'%';$('#issueDonePct').textContent=pct.toFixed(1)+'%';$('#issueDonut').style.background=all?`conic-gradient(#339dff 0 ${pct}%,#8bcaff ${pct}% 100%)`:'conic-gradient(#344c67 0 100%)';$('#issueDonut').innerHTML=`<span>${fmt(all)} งาน<br><small>Finish ${pct.toFixed(1)}%</small></span>`;$('#issueList').innerHTML=issueCases.length?`<div class="issue-register"><div class="issue-register-head"><span>ทะเบียนปัญหาและการแก้ไข</span><small>${fmt(all)} รายการ · เลื่อนแนวนอนเพื่อดูข้อมูลทั้งหมด</small></div><div class="issue-table-scroll"><table class="issue-register-table"><colgroup><col style="width:55px"><col style="width:185px"><col style="width:95px"><col style="width:135px"><col style="width:235px"><col style="width:210px"><col style="width:210px"><col style="width:125px"><col style="width:105px"><col style="width:110px"><col style="width:90px"></colgroup><thead><tr>${['ลำดับ','จุดงาน / ปัญหา','Model','รูปภาพ','สาเหตุ / วิเคราะห์ 4M1H','วิธีดำเนินงานชั่วคราว','วิธีแก้ไขถาวร','หน่วยงานรับผิดชอบ','สถานะ','วันที่','จัดการ'].map(h=>`<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${issueCases.map((x,i)=>`<tr><td>${i+1}</td><td><div class="issue-row-point">${esc(x.workPoint||'ยังไม่ระบุจุดงาน')}</div><div class="issue-row-title">${esc(x.problem)}</div></td><td>${esc(x.model||'—')}</td><td>${x.image?`<img src="${esc(x.image)}" alt="ภาพปัญหา ${esc(x.problem)}" loading="lazy">`:'—'}</td><td>${esc(x.cause||'—')}<details><summary>รายละเอียด 4M1H</summary>${[['Man · คน','analysisMan'],['Machine · เครื่องจักร','analysisMachine'],['Material · วัตถุดิบ','analysisMaterial'],['Method · วิธีการ','analysisMethod'],['H / How · เกิดขึ้นอย่างไร','analysisHow']].map(([label,name])=>`<p><b>${label}</b><br>${esc(x[name]||'—')}</p>`).join('')}</details></td><td>${esc(x.temporaryAction||'—')}</td><td>${esc(x.permanentAction||x.action||'—')}</td><td>${esc(x.department||'—')}</td><td><span class="issue-chip ${x.status==='Finish'?'finish':'process'}">${esc(x.status)}</span></td><td>${esc(x.date||x.resolvedAt?.slice(0,10)||'—')}</td><td><div class="issue-row-tools"><button class="btn" type="button" data-issue-edit="${i}">แก้ไข</button><button class="btn danger" type="button" data-issue-delete="${i}">ลบ</button></div></td></tr>`).join('')}</tbody></table></div></div>`:'<p class="panel muted">ยังไม่มีรายการปัญหา · กด “+ เพิ่มปัญหา” เพื่อเริ่มบันทึก</p>'}
 
 function summaryShift(value){const shift=String(value||'').trim();return /^shift\s*a$|^day$/i.test(shift)?'Shift A':/^shift\s*b$|^night$/i.test(shift)?'Shift B':shift||'ไม่ระบุกะ'}
+function recordScrapCost(r){
+ const valid=value=>value!==null&&value!==undefined&&String(value).trim()!==''&&Number.isFinite(Number(value))&&Number(value)>=0;
+ if(valid(r.scrapValue))return Number(r.scrapValue);
+ const unit=valid(r.unitPrice)?Number(r.unitPrice):partsDb[r.partCode]?.price;
+ return valid(unit)?Math.round((Number(r.scrap)||0)*Number(unit)*100)/100:0;
+}
 function summaryPeriodLabel(value){
  if(/^\d{4}-W\d{2}$/.test(value))return 'Week '+Number(value.slice(6));
  if(/^\d{4}-\d{2}-\d{2}$/.test(value))return value.slice(8)+'/'+value.slice(5,7);
@@ -870,7 +876,7 @@ let rows=filtered(),p=rows.reduce((a,r)=>a+(Number(r.production)||0),0),s=rows.r
 $('#production').textContent=fmt(p);
 $('#scrap').textContent=fmt(s);
 $('#rate').textContent=rateText(s,p);
-$('#days').textContent=fmt(new Set(rows.map(r=>r.date)).size);
+$('#scrapCost').textContent=rows.reduce((sum,r)=>sum+recordScrapCost(r),0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 $('#count').textContent=fmt(rows.length)+' รายการ';
 if(page==='stamping')renderStamping(rows);else chart(rows);
 let types=group(rows,r=>r.defect||'ไม่ระบุ').sort((a,b)=>b.scrap-a.scrap).slice(0,7),max=Math.max(1,...types.map(x=>x.scrap));
