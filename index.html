@@ -553,7 +553,7 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 <section class="panel filter-panel"><div class="filter-heading"><div><strong>ตัวกรองข้อมูล</strong><span>เลือกมุมมองและช่วงเวลาที่ต้องการ</span></div><button class="btn" type="button" id="resetFilters">รีเซ็ตตัวกรอง</button></div><div class="grid filters">
 <div class="field">
 <label>มุมมอง</label><div class="periods">
-<button class="btn active" data-period="day">รายวัน</button><button class="btn" data-period="week">รายสัปดาห์</button><button class="btn" data-period="month">รายเดือน</button>
+<button class="btn" data-period="day">รายวัน</button><button class="btn" data-period="week">รายสัปดาห์</button><button class="btn active" data-period="month">รายเดือน</button>
 </div>
 </div>
 <div class="field">
@@ -673,8 +673,7 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 <th>ปัญหา *</th>
 <th>สาเหตุ</th>
 <th>การแก้ไข</th>
-<th>Leader</th>
-<th>ชื่อ</th>
+
 <th>ราคาต่อชิ้น</th><th>มูลค่าของเสีย</th><th>Model *</th>
 <th></th>
 </tr></thead>
@@ -752,7 +751,7 @@ function recordModel(r){
 function savePartsDb(){localStorage.setItem(PARTS_DB_KEY,JSON.stringify(partsDb));$('#partsDbNotice').textContent=`มี ${Object.keys(partsDb).length} Part ในฐานข้อมูล`}
 function renderPartsDb(){$('#partsDbRows').innerHTML=Object.entries(partsDb).sort(([a],[b])=>a.localeCompare(b)).map(([code,p])=>`<tr><td>${esc(code)}</td><td>${esc(p.name)}</td><td class="num">${Number(p.price).toFixed(2)}</td><td>${esc(p.model||'')}</td></tr>`).join('')||'<tr><td colspan="4">ยังไม่มีข้อมูล Part</td></tr>'}
 for(const old of records)if(old.partCode&&old.model)partModels[String(old.partCode).trim().toUpperCase()]=old.model;
-let page='foam',period='day',scrapPeriod='day',trendMetric='scrap',summaryKeys=[],editRecordIndex=-1;
+let page='foam',period='month',scrapPeriod='month',trendMetric='scrap',summaryKeys=[],editRecordIndex=-1;
 const $=s=>document.querySelector(s),fmt=n=>new Intl.NumberFormat('th-TH').format(n),rate=(s,p)=>p>0?100*s/p:0,esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),save=()=>localStorage.setItem(KEY,JSON.stringify(records));
 $('input[name=date]').value=new Date().toLocaleDateString('en-CA');
 function weekKey(date){let d=new Date(date+'T12:00:00Z'),day=(d.getUTCDay()+6)%7;
@@ -773,7 +772,7 @@ el.value=values.includes(old)?old:''}}function group(rows,by){let map=new Map;
 for(let r of rows){let k=by(r),v=map.get(k)||{key:k,production:0,scrap:0};
 v.production+=Number(r.production)||0;
 v.scrap+=Number(r.scrap)||0;
-map.set(k,v)}return [...map.values()]}function chart(rows){let a=group(rows,r=>key(r.date)).sort((x,y)=>x.key.localeCompare(y.key)).slice(-12),box=$('#trend');
+map.set(k,v)}return [...map.values()]}function chart(rows){let a=group(rows,r=>key(r.date)).sort((x,y)=>x.key.localeCompare(y.key)),box=$('#trend');
 if(!a.length){box.innerHTML='<span class="muted">ยังไม่มีข้อมูลในช่วงที่เลือก</span>';
 return}let W=720,H=270,L=46,R=45,T=20,B=52,iw=W-L-R,ih=H-T-B,maxP=Math.max(1,...a.map(x=>x.production)),maxR=Math.max(1,...a.map(x=>rate(x.scrap,x.production))),bw=Math.min(26,iw/a.length*.22),step=iw/a.length;
 let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="กราฟยอดผลิต ของเสีย และอัตราของเสีย">`;
@@ -789,7 +788,7 @@ pts.forEach(p=>{let [x,y]=p.split(',');
 s+=`<circle cx="${x}" cy="${y}" r="4" fill="#a1d7ff"/>`});
 box.innerHTML=s+'</svg>'}function addStampRow(value={}){
  const tr=document.createElement('tr');
- tr.innerHTML=`<td><input name="partCode" inputmode="text" placeholder="เช่น 0060134560BT" required></td><td><input name="partName" placeholder="Part name" readonly></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td><input name="employeeId" placeholder="กรอกรหัส Leader"></td><td><input name="responsibleName" placeholder="กรอกชื่อ"></td><td><input name="unitPrice" placeholder="บาท/ชิ้น" readonly></td><td><input name="scrapValue" placeholder="บาท" readonly></td><td><input name="model" placeholder="รุ่น" required></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td>`;
+ tr.innerHTML=`<td><input name="partCode" inputmode="text" placeholder="เช่น 0060134560BT" required></td><td><input name="partName" placeholder="Part name" readonly></td><td><input name="quantity" type="number" min="1" step="1" required></td><td><input name="defect" placeholder="ประเภทปัญหา" required></td><td><input name="cause" placeholder="สาเหตุ"></td><td><input name="action" placeholder="การแก้ไข"></td><td hidden><input type="hidden" name="employeeId"></td><td hidden><input type="hidden" name="responsibleName"></td><td><input name="unitPrice" placeholder="บาท/ชิ้น" readonly></td><td><input name="scrapValue" placeholder="บาท" readonly></td><td><input name="model" placeholder="รุ่น" required></td><td><button class="btn danger removeStampRow" type="button" aria-label="ลบแถว">✕</button></td>`;
  for(const name of ['partCode','model','quantity','defect','cause','action','employeeId','responsibleName'])tr.querySelector(`[name="${name}"]`).value=value[name]||'';
  $('#stampingEntryRows').append(tr);fillLeaderName(tr);refreshStampPart(tr)
 }
@@ -834,10 +833,15 @@ function renderScrapTrend(rows){
  $('#stampingTrendTitle').textContent='แนวโน้ม'+titles[trendMetric]+' · SCRAP STAMPING';
  const totals=new Map();
  for(const r of rows){if(!/^\d{4}-\d{2}-\d{2}$/.test(r.date))continue;const k=scrapPeriod==='month'?r.date.slice(0,7):scrapPeriod==='week'?weekKey(r.date):r.date,v=totals.get(k)||{production:0,scrap:0};v.production+=Number(r.production)||0;v.scrap+=Number(r.scrap)||0;totals.set(k,v)}
- const periods=[...totals].sort((a,b)=>a[0].localeCompare(b[0])).slice(scrapPeriod==='day'?-21:-12);
+ const selectedMonth=$('#monthFilter').value;
+ if(selectedMonth&&scrapPeriod==='day'){
+  const [year,month]=selectedMonth.split('-').map(Number),days=new Date(Date.UTC(year,month,0)).getUTCDate();
+  for(let day=1;day<=days;day++){const date=selectedMonth+'-'+String(day).padStart(2,'0');if(!totals.has(date))totals.set(date,{production:0,scrap:0})}
+ }
+ const periods=[...totals].sort((a,b)=>a[0].localeCompare(b[0]));
  const values=periods.map(([label,v])=>({label,amount:trendMetric==='rate'?(v.production>0?rate(v.scrap,v.production):null):v[trendMetric]}));
  const missing=values.filter(v=>v.amount===null).length;
- $('#stampingTrendNote').textContent='แสดงสูงสุด 21 วัน / 12 สัปดาห์ / 12 เดือน · Week นับวันจันทร์–อาทิตย์'+(trendMetric==='rate'&&missing?' · '+missing+' ช่วงไม่มีข้อมูลยอดผลิต จึงไม่คำนวณ Percent Rate':'');
+ $('#stampingTrendNote').textContent=(selectedMonth?'ข้อมูลทั้งเดือน · แสดงวันที่ 1–'+new Date(Number(selectedMonth.slice(0,4)),Number(selectedMonth.slice(5)),0).getDate():scrapPeriod==='month'?'ข้อมูลทุกเดือน · สรุปรายเดือน':scrapPeriod==='week'?'สรุปรายสัปดาห์ · วันจันทร์–อาทิตย์':'ข้อมูลรายวัน')+(trendMetric==='rate'&&missing?' · '+missing+' ช่วงไม่มีข้อมูลยอดผลิต จึงไม่คำนวณ Percent Rate':'');
  if(!values.length||values.every(v=>v.amount===null)){box.innerHTML='<span class="stamping-empty">'+(trendMetric==='rate'?'ยังไม่มียอดผลิตสำหรับคำนวณ Percent Rate':'ยังไม่มีข้อมูล'+titles[trendMetric]+'ในช่วงที่เลือก')+'</span>';return}
  const W=900,H=300,L=65,R=20,T=46,B=65,iw=W-L-R,ih=H-T-B,max=trendMetric==='rate'?Math.max(6,...values.map(v=>(v.amount??0)*1.1)):Math.max(1,...values.map(v=>v.amount??0)),step=iw/values.length,width=Math.min(34,step*.65),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#69baff':'#339dff';
  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet" aria-label="${titles[trendMetric]}${scrapPeriod==='month'?'รายเดือน':scrapPeriod==='week'?'รายสัปดาห์':'รายวัน'}">`;
@@ -960,7 +964,7 @@ function viewDateRange(date,view){
  return [iso(new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),1))),iso(new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)))];
 }
 function applyViewRange(){
- const month=$('#monthFilter').value,candidates=records.filter(r=>r.page===page&&(!month||String(r.date).slice(0,7)===month)).map(r=>r.date).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+ const month=$('#monthFilter').value;if(month){$('#start').value='';$('#end').value='';return}if(period==='month'){viewAnchorDate='';$('#start').value='';$('#end').value='';return}const candidates=records.filter(r=>r.page===page&&(!month||String(r.date).slice(0,7)===month)).map(r=>r.date).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
  const anchor=viewAnchorDate||$('#end').value||$('#start').value||candidates.at(-1)||new Date().toLocaleDateString('en-CA');viewAnchorDate=anchor;
  const range=viewDateRange(anchor,period);if(range){$('#monthFilter').value='';$('#start').value=range[0];$('#end').value=range[1]}
 }
@@ -971,7 +975,12 @@ document.querySelectorAll('[data-trend-metric]').forEach(b=>b.onclick=()=>{trend
 ['line','model'].forEach(id=>$('#'+id).onchange=render);
 ['start','end'].forEach(id=>$('#'+id).onchange=()=>{$('#monthFilter').value='';viewAnchorDate=$('#'+id).value;render()});
 $('#monthButtons').onclick=e=>{const button=e.target.closest('[data-month]');if(!button)return;$('#monthFilter').value=button.dataset.month;$('#monthFilter').onchange()};
-$('#monthFilter').onchange=()=>{viewAnchorDate='';$('#start').value='';$('#end').value='';render()};
+$('#monthFilter').onchange=()=>{
+ viewAnchorDate='';$('#start').value='';$('#end').value='';
+ period=$('#monthFilter').value?'day':'month';scrapPeriod=period;
+ document.querySelectorAll('[data-period]').forEach(b=>b.classList.toggle('active',b.dataset.period===period));
+ render();
+};
 $('#openEntry').onclick=()=>{if(page==='stamping'&&!$('#stampingEntryRows').children.length)addStampRow();$('#entryDialog').showModal()};
 let hrAutoTried=false;
 $('#openStampEntry').onclick=()=>{page='stamping';$('#formPage').textContent='SCRAP STAMPING';$('#foamEntryWrap').hidden=true;$('#stampingEntry').hidden=false;if(!$('#stampingEntryRows').children.length)addStampRow();$('#hrNamesNotice').textContent=rosterStatus();$('#entryDialog').showModal();if(!Object.keys(hrNames).length&&!hrAutoTried){hrAutoTried=true;$('#loadHrNames').click()}};
