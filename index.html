@@ -940,13 +940,25 @@ $('#entryDialog').close();
 $('#line').value='';
 $('#model').value='';
 render()});
-document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period=b.dataset.period;scrapPeriod=period;
+let viewAnchorDate='';
+function viewDateRange(date,view){
+ const d=new Date(date+'T00:00:00Z'),iso=x=>x.toISOString().slice(0,10);if(!Number.isFinite(d.getTime()))return null;
+ if(view==='day')return [date,date];
+ if(view==='week'){const first=new Date(d);first.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7));const last=new Date(first);last.setUTCDate(first.getUTCDate()+6);return [iso(first),iso(last)]}
+ return [iso(new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),1))),iso(new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)))];
+}
+function applyViewRange(){
+ const month=$('#monthFilter').value,candidates=records.filter(r=>r.page===page&&(!month||String(r.date).slice(0,7)===month)).map(r=>r.date).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+ const anchor=viewAnchorDate||$('#end').value||$('#start').value||candidates.at(-1)||new Date().toLocaleDateString('en-CA');viewAnchorDate=anchor;
+ const range=viewDateRange(anchor,period);if(range){$('#monthFilter').value='';$('#start').value=range[0];$('#end').value=range[1]}
+}
+document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period=b.dataset.period;scrapPeriod=period;applyViewRange();
 document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('active',x===b));
 render()});
 document.querySelectorAll('[data-trend-metric]').forEach(b=>b.onclick=()=>{trendMetric=b.dataset.trendMetric;document.querySelectorAll('[data-trend-metric]').forEach(x=>x.classList.toggle('active',x===b));render()});
 ['line','model'].forEach(id=>$('#'+id).onchange=render);
-['start','end'].forEach(id=>$('#'+id).onchange=()=>{$('#monthFilter').value='';render()});
-$('#monthFilter').onchange=()=>{$('#start').value='';$('#end').value='';render()};
+['start','end'].forEach(id=>$('#'+id).onchange=()=>{$('#monthFilter').value='';viewAnchorDate=$('#'+id).value;render()});
+$('#monthFilter').onchange=()=>{viewAnchorDate='';$('#start').value='';$('#end').value='';render()};
 $('#openEntry').onclick=()=>{if(page==='stamping'&&!$('#stampingEntryRows').children.length)addStampRow();$('#entryDialog').showModal()};
 let hrAutoTried=false;
 $('#openStampEntry').onclick=()=>{page='stamping';$('#formPage').textContent='SCRAP STAMPING';$('#foamEntryWrap').hidden=true;$('#stampingEntry').hidden=false;if(!$('#stampingEntryRows').children.length)addStampRow();$('#hrNamesNotice').textContent=rosterStatus();$('#entryDialog').showModal();if(!Object.keys(hrNames).length&&!hrAutoTried){hrAutoTried=true;$('#loadHrNames').click()}};
