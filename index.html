@@ -491,6 +491,31 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 .production-input-table tfoot td,.production-input-table tfoot th{font-size:13px;font-weight:400!important}
 .production-grand-total{font-size:17px;font-weight:400!important}
 .production-grand-total strong,.production-grand-total b,.production-grand-total small{font-weight:400}
+
+/* Closely spaced hourly entry cells. */
+.production-input-table th,.production-input-table td{padding:5px 2px}
+.production-input-table input[data-slot-phase]{height:34px;padding:3px 2px;border-radius:5px;font-size:15px}
+.production-input-table .machine-cell{padding:7px 9px;font-size:13px}
+.production-input-table .machine-cell small{margin-top:2px;font-size:10px;line-height:1.4}
+.production-input-table .phase-start,.production-input-table .total-cell{border-left-width:5px}
+.production-input-table thead tr:first-child th{padding:10px 5px;font-size:14px;font-weight:400}
+.production-input-table thead tr:nth-child(2) th{padding:8px 2px;font-size:11px;font-weight:400}
+.production-input-table tfoot td,.production-input-table tfoot th{padding:9px 2px}
+.production-input-table .total-cell,.production-input-table tfoot .total-cell{font-size:16px}
+.production-table-scroll{border-radius:10px}
+
+.stamping-dashboard-layout{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,7fr);gap:16px;align-items:stretch;margin-bottom:16px}
+.stamping-right-charts{display:grid;grid-template-rows:auto auto;gap:16px;min-width:0}
+#stampingSummarySlot{display:flex;min-width:0}
+#stampingSummarySlot>#periodSummaryPanel{width:100%;display:flex;flex-direction:column;min-height:0}
+#stampingSummarySlot .top{align-items:flex-start;gap:6px}
+#stampingSummarySlot h2{font-size:16px}
+#stampingSummarySlot #count{font-size:11px}
+#stampingSummarySlot .tablewrap{flex:1;overflow:auto;max-height:960px}
+#stampingSummarySlot table{width:100%;min-width:0;table-layout:fixed}
+#stampingSummarySlot th,#stampingSummarySlot td{font-size:11px;padding:10px 4px;white-space:normal;overflow-wrap:anywhere}
+#stampingSummarySlot th{position:sticky;top:0;background:#16324e;z-index:1}
+@media(max-width:900px){.stamping-dashboard-layout{grid-template-columns:1fr}#stampingSummarySlot .tablewrap{max-height:440px}#stampingSummarySlot th,#stampingSummarySlot td{font-size:12px}}
 </style>
 </head>
 <body>
@@ -531,18 +556,11 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 <small>จำนวนวันที่มีข้อมูล</small><strong id="days">0</strong><em>วัน</em>
 </div></section><section id="stampingAnalytics" hidden>
 <div class="machine-list" id="machineCards"></div>
-<section class="panel" style="margin-bottom:16px" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
+<div class="stamping-dashboard-layout"><div id="stampingSummarySlot"></div><div class="stamping-right-charts"><section class="panel" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
 <div class="top"><h2 id="stampingTrendTitle">แนวโน้มยอดของเสีย · SCRAP STAMPING</h2></div>
 <div class="periods" style="margin-bottom:10px" aria-label="เลือกข้อมูลในกราฟ"><button class="btn" type="button" data-trend-metric="production">ยอดผลิต</button><button class="btn active" type="button" data-trend-metric="scrap">ยอดของเสีย</button><button class="btn" type="button" data-trend-metric="rate">Percent Rate</button></div>
 <div id="stampingScrapTrend" class="stamping-chart"></div><div class="chart-note" id="stampingTrendNote">แสดงสูงสุด 21 วัน / 12 สัปดาห์ / 12 เดือน · Week นับวันจันทร์–อาทิตย์</div>
 </section>
-<div class="stamping-layout">
-<div class="panel">
-<h2>ยอดของเสียรายเครื่อง</h2>
-<div class="chart-note">จำนวนของเสีย · 400T / 200T / 100T</div>
-<div id="machineChart" class="machine-scrap-chart"></div>
-<div class="chart-note">เปอร์เซ็นต์ = ของเสียเครื่องนี้ ÷ ของเสียรวม × 100</div>
-</div>
 <div class="panel">
 <h2>Pareto · ประเภทปัญหา</h2>
 <div class="stamping-legend">
@@ -551,7 +569,7 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 <div id="stampingPareto" class="stamping-chart"></div>
 <div class="chart-note">เรียงจากของเสียมากไปน้อย · อัตราสะสมเทียบกับของเสียทั้งหมด</div>
 </div>
-</div>
+</div></div>
 </section><section class="grid cols" id="generalCharts"><div class="panel">
 <h2>แนวโน้มยอดผลิตและของเสีย</h2>
 <div class="legend">
@@ -642,7 +660,7 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 <button class="btn" type="button" id="addStampRow">+ เพิ่มแถว</button><button class="btn primary" type="submit">บันทึกรายการของเสีย</button>
 </div>
 </div>
-<p id="stampFormNotice" role="alert" style="color:#ffcb83;font-size:13px;margin:10px 0 0"></p></form></dialog><dialog id="stampProductionDialog" class="entry-dialog"><div class="dialog-head"><h2>บันทึกยอดผลิต · SCRAP STAMPING</h2><button class="btn" id="closeStampProduction" type="button">✕ ปิด</button></div><form id="stampProductionForm"><div class="stamping-head-fields"><div class="field"><label>วันที่ *</label><input type="date" name="date" required></div><div class="field"><label>Leader ประจำกะ *</label><input name="shiftLeader" list="shiftLeaders" autocomplete="off" placeholder="K.Amnuai / K.Thawatchai"></div><div class="field"><label>กะการผลิต *</label><select name="shift" required><option value="">เลือกกะการผลิต</option><option>Shift A</option><option>Shift B</option></select></div><div class="field"><label>เครื่องจักร *</label><select name="line" required><option value="">เลือกเครื่อง</option><option>400T</option><option>100T</option><option>200T</option></select></div></div><div id="productionMachineFields" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-top:20px"></div><button class="btn primary" type="submit" style="margin-top:20px">บันทึกยอดผลิตทุกเครื่อง</button><p id="stampProductionNotice" role="alert" class="stamping-help"></p></form></dialog><dialog id="stampScrapPreview" class="entry-dialog" style="width:min(1000px,calc(100% - 24px))"><div class="dialog-head"><h2>ตรวจสอบไฟล์ยอดของเสียก่อนบันทึก</h2><button class="btn" id="closeStampScrapPreview" type="button">✕ ปิด</button></div><p id="stampScrapPreviewSummary" class="stamping-help"></p><div class="tablewrap"><table><thead><tr><th>วันที่</th><th>กะ</th><th>เครื่อง</th><th>Part Code</th><th>Model</th><th>ปัญหา</th><th class="num">จำนวนของเสีย</th></tr></thead><tbody id="stampScrapPreviewRows"></tbody></table></div><p class="stamping-help">แสดงตัวอย่าง 20 แถวแรก · เมื่อกดยืนยันจะบันทึกทุกแถวในเบราว์เซอร์เครื่องนี้</p><p id="stampScrapPreviewNotice" role="alert" class="stamping-help" style="color:#ffcb83"></p><div class="actions" style="justify-content:flex-end"><button class="btn" id="cancelStampScrap" type="button">ยกเลิก</button><button class="btn primary" id="confirmStampScrap" type="button">ตกลง · บันทึกข้อมูล</button></div></dialog><section class="panel"><div class="top">
+<p id="stampFormNotice" role="alert" style="color:#ffcb83;font-size:13px;margin:10px 0 0"></p></form></dialog><dialog id="stampProductionDialog" class="entry-dialog"><div class="dialog-head"><h2>บันทึกยอดผลิต · SCRAP STAMPING</h2><button class="btn" id="closeStampProduction" type="button">✕ ปิด</button></div><form id="stampProductionForm"><div class="stamping-head-fields"><div class="field"><label>วันที่ *</label><input type="date" name="date" required></div><div class="field"><label>Leader ประจำกะ *</label><input name="shiftLeader" list="shiftLeaders" autocomplete="off" placeholder="K.Amnuai / K.Thawatchai"></div><div class="field"><label>กะการผลิต *</label><select name="shift" required><option value="">เลือกกะการผลิต</option><option>Shift A</option><option>Shift B</option></select></div><div class="field"><label>เครื่องจักร *</label><select name="line" required><option value="">เลือกเครื่อง</option><option>400T</option><option>100T</option><option>200T</option></select></div></div><div id="productionMachineFields" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-top:20px"></div><button class="btn primary" type="submit" style="margin-top:20px">บันทึกยอดผลิตทุกเครื่อง</button><p id="stampProductionNotice" role="alert" class="stamping-help"></p></form></dialog><dialog id="stampScrapPreview" class="entry-dialog" style="width:min(1000px,calc(100% - 24px))"><div class="dialog-head"><h2>ตรวจสอบไฟล์ยอดของเสียก่อนบันทึก</h2><button class="btn" id="closeStampScrapPreview" type="button">✕ ปิด</button></div><p id="stampScrapPreviewSummary" class="stamping-help"></p><div class="tablewrap"><table><thead><tr><th>วันที่</th><th>กะ</th><th>เครื่อง</th><th>Part Code</th><th>Model</th><th>ปัญหา</th><th class="num">จำนวนของเสีย</th></tr></thead><tbody id="stampScrapPreviewRows"></tbody></table></div><p class="stamping-help">แสดงตัวอย่าง 20 แถวแรก · เมื่อกดยืนยันจะบันทึกทุกแถวในเบราว์เซอร์เครื่องนี้</p><p id="stampScrapPreviewNotice" role="alert" class="stamping-help" style="color:#ffcb83"></p><div class="actions" style="justify-content:flex-end"><button class="btn" id="cancelStampScrap" type="button">ยกเลิก</button><button class="btn primary" id="confirmStampScrap" type="button">ตกลง · บันทึกข้อมูล</button></div></dialog><div id="summaryHomeSlot"></div><section class="panel" id="periodSummaryPanel"><div class="top">
 <h2>รายละเอียดตามช่วงเวลา</h2>
 <span class="muted" id="count"></span>
 </div>
@@ -786,7 +804,7 @@ function renderScrapTrend(rows){
  const missing=values.filter(v=>v.amount===null).length;
  $('#stampingTrendNote').textContent='แสดงสูงสุด 21 วัน / 12 สัปดาห์ / 12 เดือน · Week นับวันจันทร์–อาทิตย์'+(trendMetric==='rate'&&missing?' · '+missing+' ช่วงไม่มีข้อมูลยอดผลิต จึงไม่คำนวณ Percent Rate':'');
  if(!values.length||values.every(v=>v.amount===null)){box.innerHTML='<span class="stamping-empty">'+(trendMetric==='rate'?'ยังไม่มียอดผลิตสำหรับคำนวณ Percent Rate':'ยังไม่มีข้อมูล'+titles[trendMetric]+'ในช่วงที่เลือก')+'</span>';return}
- const W=900,H=300,L=65,R=20,T=46,B=65,iw=W-L-R,ih=H-T-B,max=Math.max(1,...values.map(v=>v.amount??0)),step=iw/values.length,width=Math.min(34,step*.65),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#69baff':'#339dff';
+ const W=900,H=300,L=65,R=20,T=46,B=65,iw=W-L-R,ih=H-T-B,max=trendMetric==='rate'?Math.max(6,...values.map(v=>(v.amount??0)*1.1)):Math.max(1,...values.map(v=>v.amount??0)),step=iw/values.length,width=Math.min(34,step*.65),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#69baff':'#339dff';
  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="none" aria-label="${titles[trendMetric]}${scrapPeriod==='month'?'รายเดือน':scrapPeriod==='week'?'รายสัปดาห์':'รายวัน'}">`;
  if(trendMetric!=='rate')svg+=`<defs><linearGradient id="trendBarGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#28d9f2"/><stop offset="48%" stop-color="#268ff0"/><stop offset="100%" stop-color="#2548b7"/></linearGradient></defs>`;
  for(let n=0;n<=4;n++){const y=T+ih*n/4,scale=max*(4-n)/4;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#2c4058"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#9db5ca" font-size="14">${trendMetric==='rate'?scale.toFixed(2)+'%':fmt(Math.round(scale))}</text>`}
@@ -797,6 +815,9 @@ function renderScrapTrend(rows){
   segments.forEach(points=>{const path=points.map((p,i)=>(i?'L':'M')+p.join(' ')).join(' '),area=path+' L '+points.at(-1)[0]+' '+(T+ih)+' L '+points[0][0]+' '+(T+ih)+' Z';svg+=`<path d="${area}" fill="url(#trendAreaGradient)"/><path d="${path}" fill="none" stroke="url(#trendLineGradient)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`});
  }
  values.forEach(({label,amount},i)=>{const x=L+step*(i+.5),short=scrapPeriod==='week'?weekLabel(label):scrapPeriod==='month'?label.slice(5)+'/'+label.slice(2,4):label.slice(8)+'/'+label.slice(5,7);if(amount!==null){const h=amount/max*ih,display=trendMetric==='rate'?amount.toFixed(2)+'%':fmt(amount);svg+=(trendMetric==='rate'?`<circle cx="${x}" cy="${T+ih-h}" r="5" fill="${i/(Math.max(1,values.length-1))<.5?'#20ddff':'#bb67ff'}" stroke="#dce9ff" stroke-width="1.5"><title>${esc(label)}: ${display}</title></circle>`:`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${Math.max(h,1)}" rx="4" fill="url(#trendBarGradient)"><title>${esc(label)}: ${display}</title></rect>`)+`<text x="${x}" y="${Math.max(24,T+ih-h-10)}" text-anchor="middle" fill="#dce9fa" font-size="16" font-weight="600">${display}</text>`}else svg+=`<text x="${x}" y="${T+ih-8}" text-anchor="middle" fill="#9db5ca" font-size="13">—</text>`;svg+=`<text x="${x}" y="${H-30}" text-anchor="middle" fill="#a9bdd1" font-size="11">${short}</text>`});
+ if(trendMetric==='rate'){
+  for(const target of [3,5]){const y=T+ih-target/max*ih;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#ff596b" stroke-width="2" ${target===3?'stroke-dasharray="8 6"':''}/><text x="${W-R-5}" y="${y-7}" text-anchor="end" fill="#ff8794" font-size="12" font-weight="400">Target ${target}%</text>`}
+ }
  box.innerHTML=svg+'</svg>'
 }
 function renderStamping(rows){
@@ -806,14 +827,6 @@ function renderStamping(rows){
  const byMachine=new Map(machines.map(m=>[m.name,m]));
  for(const row of rows){const name=machineName(row.line);if(name){let m=byMachine.get(name);m.production+=row.production;m.scrap+=row.scrap}}
  $('#machineCards').innerHTML=machines.map(m=>`<div class="machine-card"><strong>${m.name}</strong><div class="rate">${rateText(m.scrap,m.production)}</div><div class="small">ยอดผลิต ${fmt(m.production)} ชิ้น<br>ของเสีย ${fmt(m.scrap)} ชิ้น</div></div>`).join('');
- if(!rows.length){$('#machineChart').innerHTML='<span class="stamping-empty">ยังไม่มีข้อมูลเครื่องจักรในช่วงที่เลือก</span>'}
- else{
- const maxScrap=Math.max(1,...machines.map(m=>m.scrap));
- const totalScrap=machines.reduce((sum,m)=>sum+m.scrap,0);
- const colors=['#339dff','#67b9ff','#a1d7ff'];
- $('#machineChart').innerHTML=`<div class="machine-scrap-total"><span>ของเสียรวม</span><strong>${fmt(totalScrap)} <small>ชิ้น</small></strong></div><div class="machine-scrap-bars">${machines.map((m,i)=>`<div class="machine-scrap-row" style="--bar-color:${colors[i]}"><div class="machine-scrap-label"><b>${m.name}</b><span>${fmt(m.scrap)} <small>ชิ้น · ${totalScrap?(m.scrap/totalScrap*100).toFixed(1):'0.0'}%</small></span></div><div class="machine-scrap-track" role="img" aria-label="${m.name} ของเสีย ${fmt(m.scrap)} ชิ้น"><div class="machine-scrap-fill" style="width:${m.scrap/maxScrap*100}%"></div></div></div>`).join('')}</div>`;
-
- }
  let problem=group(rows,r=>r.defect?.trim()||'ไม่ระบุประเภท').filter(p=>p.scrap>0).sort((a,b)=>b.scrap-a.scrap),total=problem.reduce((n,p)=>n+p.scrap,0);
  if(!problem.length){$('#stampingPareto').innerHTML='<span class="stamping-empty">ยังไม่มีข้อมูลของเสียในช่วงที่เลือก</span>';return}
  let top=problem.slice(0,6);if(problem.length>6)top.push({key:'อื่น ๆ',scrap:problem.slice(6).reduce((n,p)=>n+p.scrap,0)});
@@ -834,6 +847,8 @@ function stampingPeriodSummary(rows){
  return [...machines.values()].sort((a,b)=>b.key.localeCompare(a.key));
 }
 function render(){if(page==='issues'){ $('#dashboardPage').hidden=true;$('#issuesPage').hidden=false;$('#openEntry').hidden=true;renderIssues();return}$('#dashboardPage').hidden=false;$('#issuesPage').hidden=true;options();$('#openEntry').hidden=page==='stamping';$('#stampingToolbar').hidden=page!=='stamping';$('#stampingAnalytics').hidden=page!=='stamping';$('#generalCharts').hidden=page==='stamping';
+const summaryPanel=$('#periodSummaryPanel');
+if(page==='stamping')$('#stampingSummarySlot').append(summaryPanel);else $('#summaryHomeSlot').after(summaryPanel);
 const summaryHeaders=page==='stamping'?['ช่วงเวลา','กะ','เครื่องจักร','ยอดผลิตรวม','ยอดเสียรวม','อัตราของเสียรวม']:['ช่วงเวลา','กะ','ไลน์ / พื้นที่','ยอดผลิต','ยอดเสีย','อัตราของเสีย'];
 $('#summary').closest('table').querySelector('thead').innerHTML='<tr>'+summaryHeaders.map(label=>`<th>${label}</th>`).join('')+'</tr>';
 let rows=filtered(),p=rows.reduce((a,r)=>a+(Number(r.production)||0),0),s=rows.reduce((a,r)=>a+(Number(r.scrap)||0),0);
