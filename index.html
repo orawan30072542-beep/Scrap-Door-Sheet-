@@ -539,6 +539,12 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 #stampingScrapTrend text[font-weight="600"]{font-size:13px;font-weight:400}
 @media(max-width:1000px){.filter-panel .filters{grid-template-columns:120px repeat(5,minmax(130px,1fr));overflow-x:auto;padding-bottom:6px}}
 @media(max-width:620px){#stampingScrapTrend{height:260px}}
+.month-buttons{display:flex;flex-direction:column;gap:5px;max-height:145px;overflow:auto}
+.month-year>span{display:block;font-size:10px;color:#97b4cf;margin-bottom:3px}
+.month-year>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.month-choice{border:1px solid #335675;border-radius:6px;background:#091c31;color:#bdd1e7;padding:5px 3px;font-size:12px;font-weight:400;min-width:0}
+.month-choice:hover{background:#153e63;border-color:#65b6f3}
+.month-choice.active{background:#167ac0;color:#fff;border-color:#59beff}
 </style>
 </head>
 <body>
@@ -551,7 +557,7 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 </div>
 </div>
 <div class="field">
-<label>เลือกเดือน</label><select id="monthFilter"><option value="">ทุกเดือน</option></select>
+<label>เลือกเดือน</label><input type="hidden" id="monthFilter"><div id="monthButtons" class="month-buttons" aria-label="เลือกเดือน"></div>
 </div>
 <div class="field">
 <label>ตั้งแต่วันที่</label><input type="date" id="start">
@@ -754,7 +760,13 @@ d.setUTCDate(d.getUTCDate()-day+3);
 let y=d.getUTCFullYear(),first=new Date(Date.UTC(y,0,4)),w=1+Math.round(((d-first)/86400000-3+(first.getUTCDay()+6)%7)/7);
 return `${y}-W${String(w).padStart(2,'0')}`}function weekLabel(value){return /^\d{4}-W\d{2}$/.test(value)?'Week '+Number(value.slice(6))+' / '+value.slice(0,4):value}
 function key(d){return period==='month'?d.slice(0,7):period==='week'?weekKey(d):d}function dashboardLine(r){return r.page==='stamping'?(machineName(r.line)||r.line):r.line}
-function filtered(){return records.filter(r=>r.page===page&&(!$('#monthFilter').value||String(r.date||'').slice(0,7)===$('#monthFilter').value)&&(!$('#start').value||r.date>=$('#start').value)&&(!$('#end').value||r.date<=$('#end').value)&&(!$('#line').value||dashboardLine(r)===$('#line').value)&&(!$('#model').value||r.defect===$('#model').value))}function monthOptions(){const el=$('#monthFilter'),old=el.value,months=[...new Set(records.filter(r=>r.page===page&&/^\d{4}-\d{2}-\d{2}$/.test(r.date)).map(r=>r.date.slice(0,7)))].sort().reverse();el.innerHTML='<option value="">ทุกเดือน</option>'+months.map(m=>{const label=new Intl.DateTimeFormat('th-TH',{month:'long',year:'numeric'}).format(new Date(Number(m.slice(0,4)),Number(m.slice(5))-1,1));return `<option value="${m}">${label}</option>`}).join('');el.value=months.includes(old)?old:''}
+function filtered(){return records.filter(r=>r.page===page&&(!$('#monthFilter').value||String(r.date||'').slice(0,7)===$('#monthFilter').value)&&(!$('#start').value||r.date>=$('#start').value)&&(!$('#end').value||r.date<=$('#end').value)&&(!$('#line').value||dashboardLine(r)===$('#line').value)&&(!$('#model').value||r.defect===$('#model').value))}function monthOptions(){
+ const el=$('#monthFilter'),months=[...new Set(records.filter(r=>r.page===page&&/^\d{4}-\d{2}-\d{2}$/.test(r.date)).map(r=>r.date.slice(0,7)))].sort(),names=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+ if(!months.includes(el.value))el.value='';
+ const years=[...new Set(months.map(m=>m.slice(0,4)))].reverse();
+ $('#monthButtons').innerHTML=`<button type="button" class="month-choice ${!el.value?'active':''}" data-month="" aria-pressed="${!el.value}">All</button>`+years.map(year=>`<div class="month-year"><span>${year}</span><div>${months.filter(m=>m.startsWith(year)).map(m=>`<button type="button" class="month-choice ${el.value===m?'active':''}" data-month="${m}" aria-pressed="${el.value===m}">${names[Number(m.slice(5))-1]}</button>`).join('')}</div></div>`).join('');
+}
+
 function options(){monthOptions();for(let [id,field] of [['line','line'],['model','defect']]){let el=$('#'+id),old=el.value,values=[...new Set(records.filter(r=>r.page===page).map(r=>field==='line'?dashboardLine(r):r[field]).filter(Boolean))].sort();
 el.innerHTML='<option value="">ทั้งหมด</option>'+values.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
 el.value=values.includes(old)?old:''}}function group(rows,by){let map=new Map;
@@ -958,6 +970,7 @@ render()});
 document.querySelectorAll('[data-trend-metric]').forEach(b=>b.onclick=()=>{trendMetric=b.dataset.trendMetric;document.querySelectorAll('[data-trend-metric]').forEach(x=>x.classList.toggle('active',x===b));render()});
 ['line','model'].forEach(id=>$('#'+id).onchange=render);
 ['start','end'].forEach(id=>$('#'+id).onchange=()=>{$('#monthFilter').value='';viewAnchorDate=$('#'+id).value;render()});
+$('#monthButtons').onclick=e=>{const button=e.target.closest('[data-month]');if(!button)return;$('#monthFilter').value=button.dataset.month;$('#monthFilter').onchange()};
 $('#monthFilter').onchange=()=>{viewAnchorDate='';$('#start').value='';$('#end').value='';render()};
 $('#openEntry').onclick=()=>{if(page==='stamping'&&!$('#stampingEntryRows').children.length)addStampRow();$('#entryDialog').showModal()};
 let hrAutoTried=false;
