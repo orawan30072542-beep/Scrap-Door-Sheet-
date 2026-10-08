@@ -723,6 +723,23 @@ html body{top:0!important}
 .shift-kpi-values em{font-size:10px;font-style:normal;color:#9eb6cd}
 @media(max-width:900px){.metrics.stamping-metrics{grid-template-columns:1fr}.shift-kpi-group{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.shift-kpi-group{grid-template-columns:1fr}}
+
+/* Compact vertical line/area selector. */
+.filter-panel .line-buttons{width:120px;max-width:100%;box-sizing:border-box;padding:3px;gap:1px;border-radius:9px}
+.filter-panel .line-buttons .month-choice{min-height:21px;padding:3px 7px;font-size:10px;line-height:1.25;border-radius:6px}
+
+.filter-panel{position:sticky;top:var(--dashboard-filter-top,150px);z-index:35;box-shadow:0 8px 24px #0006;background:linear-gradient(125deg,#102b48,#0b1b30)}
+
+#openRangeCalendar{width:100%;min-height:32px;text-align:left;font-size:11px;font-weight:400}
+#rangeCalendar{width:min(360px,calc(100vw - 32px));padding:18px;border:1px solid #335675;border-radius:16px;color:#e5f2ff;background:#0c2036}
+#rangeCalendar::backdrop{background:#020b19aa}
+.range-calendar-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.range-calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.range-calendar-grid>small{text-align:center;color:#9eb6cd;padding:5px 0}
+.range-calendar-grid button{border:0;border-radius:7px;background:#142e48;color:#e5f2ff;padding:9px 0;font-size:12px;cursor:pointer}
+.range-calendar-grid button.in-range{background:#164d77}.range-calendar-grid button.selected{background:#258ed7;color:white}
+.range-calendar-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:15px}
+#rangeCalendarHint{font-size:12px;color:#a9bfd6;margin:10px 0}
 </style>
 </head>
 <body>
@@ -745,12 +762,7 @@ html body{top:0!important}
 <div class="field">
 <label>ไลน์ / พื้นที่</label><select id="line" hidden><option value="">ทั้งหมด</option></select><div id="lineButtons" class="line-buttons" aria-label="เลือกไลน์หรือพื้นที่"></div>
 </div>
-<div class="field">
-<label>ตั้งแต่วันที่</label><input type="date" id="start">
-</div>
-<div class="field">
-<label>ถึงวันที่</label><input type="date" id="end">
-</div>
+<div class="field date-range-field"><label>ช่วงวันที่</label><input type="hidden" id="start"><input type="hidden" id="end"><button class="btn" type="button" id="openRangeCalendar">เลือกช่วงวันที่</button></div>
 
 <div class="field">
 <label>ปัญหา</label><select id="model"><option value="">ทั้งหมด</option></select>
@@ -1551,5 +1563,24 @@ $('#resetFilters').onclick=()=>{['monthFilter','start','end','line','model'].for
  apply();
 })();
 </script>
-</body>
+<script>
+(()=>{const header=document.querySelector('.dashboard-header'),bar=document.querySelector('.dashboard-language-bar');
+const sync=()=>{const barHeight=bar?.getBoundingClientRect().height||0;document.documentElement.style.setProperty('--dashboard-filter-top',(barHeight+(header?.getBoundingClientRect().height||0)+8)+'px');if(header)header.style.top=barHeight+'px'};
+sync();window.addEventListener('resize',sync);if(window.ResizeObserver){const observer=new ResizeObserver(sync);if(header)observer.observe(header);if(bar)observer.observe(bar)}
+})();
+</script><dialog id="rangeCalendar"><div class="range-calendar-head"><button class="btn" id="rangePrev" type="button" aria-label="เดือนก่อน">‹</button><span id="rangeMonthTitle"></span><button class="btn" id="rangeNext" type="button" aria-label="เดือนถัดไป">›</button></div><div id="rangeCalendarGrid" class="range-calendar-grid"></div><p id="rangeCalendarHint"></p><div class="range-calendar-actions"><button class="btn" id="rangeClear" type="button">ล้าง</button><button class="btn" id="rangeClose" type="button">ยกเลิก</button><button class="btn primary" id="rangeApply" type="button">ใช้ช่วงวันที่</button></div></dialog>
+<script>
+(()=>{const dialog=document.getElementById('rangeCalendar'),start=document.getElementById('start'),end=document.getElementById('end'),open=document.getElementById('openRangeCalendar');let month=new Date(),from='',to='',pickingEnd=false;
+const dateKey=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const label=d=>d?d.slice(8)+'/'+d.slice(5,7)+'/'+d.slice(0,4):'';
+function sync(){open.textContent=start.value?label(start.value)+' – '+label(end.value||start.value):'เลือกช่วงวันที่'}
+function draw(){document.getElementById('rangeMonthTitle').textContent=month.toLocaleDateString('en-GB',{month:'long',year:'numeric'});const grid=document.getElementById('rangeCalendarGrid');grid.innerHTML=['จ','อ','พ','พฤ','ศ','ส','อา'].map(x=>'<small>'+x+'</small>').join('');const year=month.getFullYear(),m=month.getMonth(),offset=(new Date(year,m,1).getDay()+6)%7;for(let i=0;i<offset;i++)grid.insertAdjacentHTML('beforeend','<span></span>');for(let day=1;day<=new Date(year,m+1,0).getDate();day++){const key=dateKey(new Date(year,m,day)),selected=key===from||key===to,inside=from&&to&&key>from&&key<to;grid.insertAdjacentHTML('beforeend','<button type="button" data-range-date="'+key+'" class="'+(selected?'selected':inside?'in-range':'')+'">'+day+'</button>')}document.getElementById('rangeCalendarHint').textContent=pickingEnd?'เลือกวันที่สิ้นสุด':from?'ช่วงวันที่: '+label(from)+' – '+label(to||from):'เลือกวันที่เริ่มต้น แล้วเลือกวันที่สิ้นสุด'}
+open.onclick=()=>{from=start.value;to=end.value;pickingEnd=false;month=from?new Date(from+'T12:00:00'):new Date();month.setDate(1);draw();dialog.showModal()};
+document.getElementById('rangePrev').onclick=()=>{month.setMonth(month.getMonth()-1);draw()};document.getElementById('rangeNext').onclick=()=>{month.setMonth(month.getMonth()+1);draw()};
+document.getElementById('rangeCalendarGrid').onclick=e=>{const b=e.target.closest('[data-range-date]');if(!b)return;const day=b.dataset.rangeDate;if(!pickingEnd){from=day;to='';pickingEnd=true}else{to=day;if(to<from)[from,to]=[to,from];pickingEnd=false}draw()};
+document.getElementById('rangeApply').onclick=()=>{start.value=from;end.value=from?(to||from):'';document.getElementById('monthFilter').value='';dialog.close();render();sync()};
+document.getElementById('rangeClear').onclick=()=>{from='';to='';pickingEnd=false;draw()};document.getElementById('rangeClose').onclick=()=>dialog.close();
+const originalRender=render;render=function(...args){const result=originalRender.apply(this,args);sync();return result};sync();
+})();
+</script></body>
 </html>
