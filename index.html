@@ -706,6 +706,23 @@ html body{top:0!important}
 .overall-rate-panel .machine-rate-donut{width:76px;height:76px}
 .overall-rate-panel .machine-rate-donut>div{width:60px;height:60px}
 @media(max-width:900px){.overall-rate-panel{height:720px;min-height:720px}.stamping-dashboard-layout>.stamping-right-charts{height:720px}}
+
+.metrics.stamping-metrics{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,7fr);gap:16px;align-items:stretch}
+.metrics.stamping-metrics>.metric{width:100%;box-sizing:border-box;min-width:0;margin:0;padding:16px;border-radius:14px}
+.cost-card-label,.shift-kpi-title{display:flex;align-items:center;gap:9px}
+.kpi-icon{width:25px;height:25px;color:#63d5ff;flex-shrink:0}
+.shift-kpi-group{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0}
+.shift-kpi-group[hidden]{display:none}
+.shift-kpi-card{padding:14px 18px;border:1px solid #254869;border-radius:14px;background:linear-gradient(145deg,#0e223a,#0b1b30);min-width:0}
+.shift-kpi-title{font-size:14px;font-weight:500;color:#dcecff;margin-bottom:10px}
+.shift-kpi-values{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.shift-kpi-values>div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.shift-kpi-values>div+div{border-left:1px solid #29445f;padding-left:12px}
+.shift-kpi-values small{font-size:11px;font-weight:400;color:#a9bfd6}
+.shift-kpi-values strong{font-size:22px;font-weight:500;color:#e5f2ff;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.shift-kpi-values em{font-size:10px;font-style:normal;color:#9eb6cd}
+@media(max-width:900px){.metrics.stamping-metrics{grid-template-columns:1fr}.shift-kpi-group{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.shift-kpi-group{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -749,8 +766,8 @@ html body{top:0!important}
 <small>อัตราของเสีย</small><strong id="rate">0.00%</strong><em>ของเสีย ÷ ยอดผลิต × 100</em>
 </div>
 <div class="metric">
-<small>มูลค่าความเสียหาย</small><strong id="scrapCost">0.00</strong><em>บาท</em>
-</div></section><section id="stampingAnalytics" hidden>
+<small class="cost-card-label"><svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 4 16 4 16 0V6M4 12v6c0 4 16 4 16 0v-6"/></svg>มูลค่าความเสียหาย</small><strong id="scrapCost">0.00</strong><em>บาท</em>
+</div><div class="shift-kpi-group" id="shiftKpiGroup" hidden><div class="shift-kpi-card"><div class="shift-kpi-title"><svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12 1 1M5 19l1-1M18 6l1-1"/></svg><span>Shift A</span></div><div class="shift-kpi-values"><div><small>ยอดของเสีย</small><strong id="shiftAScrap">0</strong><em>ชิ้น</em></div><div><small>มูลค่าความเสียหาย</small><strong id="shiftACost">0.00</strong><em>บาท</em></div></div></div><div class="shift-kpi-card"><div class="shift-kpi-title"><svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 15A9 9 0 0 1 9 4a9 9 0 1 0 11 11Z"/></svg><span>Shift B</span></div><div class="shift-kpi-values"><div><small>ยอดของเสีย</small><strong id="shiftBScrap">0</strong><em>ชิ้น</em></div><div><small>มูลค่าความเสียหาย</small><strong id="shiftBCost">0.00</strong><em>บาท</em></div></div></div></div></section><section id="stampingAnalytics" hidden>
 <div class="stamping-dashboard-layout"><div class="stamping-kpi-left">
 <section class="panel overall-rate-panel"><h2>อัตราของเสีย</h2>
 <div id="overallRateDonut" class="overall-rate-donut" role="img"><div class="overall-rate-center"><span id="overallRateValue">0.00%</span><small>อัตราของเสีย</small></div></div>
@@ -1113,6 +1130,9 @@ $('#overallRateScrap').textContent=fmt(s);$('#overallRateProduction').textConten
 $('#overallRateDonut').style.background=`conic-gradient(#36c9fa 0 ${Math.max(0,Math.min(100,totalRate))}%,#203c59 ${Math.max(0,Math.min(100,totalRate))}% 100%)`;
 $('#overallRateDonut').setAttribute('aria-label','อัตราของเสีย '+rateText(s,p));
 
+const metricGrid=$('#scrapCost').closest('.metrics');metricGrid.classList.toggle('stamping-metrics',page==='stamping');
+$('#shiftKpiGroup').hidden=page!=='stamping';
+for(const shift of ['A','B']){const shiftRows=rows.filter(r=>String(r.shift||'').trim().toUpperCase().replace(/^SHIFT\s*/, '')===shift);$('#shift'+shift+'Scrap').textContent=fmt(shiftRows.reduce((sum,r)=>sum+(Number(r.scrap)||0),0));$('#shift'+shift+'Cost').textContent=shiftRows.reduce((sum,r)=>sum+recordScrapCost(r),0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}
 $('#scrapCost').textContent=rows.reduce((sum,r)=>sum+recordScrapCost(r),0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 $('#count').textContent=fmt(rows.length)+' รายการ';
 if(page==='stamping')renderStamping(rows);else chart(rows);
