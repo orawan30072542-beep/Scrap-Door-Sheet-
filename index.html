@@ -674,6 +674,12 @@ html body{top:0!important}
 .stamping-right-charts h2{margin-bottom:8px}
 .stamping-right-charts .chart-note{font-size:10px;margin-top:5px}
 @media(max-width:900px){.stamping-dashboard-layout>.stamping-right-charts{grid-row:auto;height:600px;grid-template-rows:1fr 1fr}.overall-rate-panel{height:auto;min-height:0}.stamping-right-charts>.stamping-trend-panel,.stamping-right-charts>.stamping-pareto-panel{min-height:0}}
+
+/* Measure each plot against its available space rather than shrinking a fixed canvas. */
+.stamping-right-charts>.stamping-trend-panel,.stamping-right-charts>.stamping-pareto-panel{display:flex;flex-direction:column;gap:0}
+.stamping-right-charts #stampingScrapTrend,.stamping-right-charts #stampingPareto{display:block;height:0;min-height:0;flex:1 1 0;width:100%}
+.stamping-right-charts .stamping-chart svg{display:block;width:100%;height:100%}
+.stamping-right-charts .stamping-legend{font-size:11px;margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -985,7 +991,7 @@ function renderScrapTrend(rows){
  const missing=values.filter(v=>v.amount===null).length;
  $('#stampingTrendNote').textContent=(scrapPeriod==='month'?'สรุปรายเดือน':scrapPeriod==='week'?'สรุปรายสัปดาห์ · วันจันทร์–อาทิตย์':selectedMonth?'ข้อมูลทั้งเดือน · แสดงวันที่ 1–'+new Date(Number(selectedMonth.slice(0,4)),Number(selectedMonth.slice(5)),0).getDate():'ข้อมูลรายวัน')+(trendMetric==='rate'&&missing?' · '+missing+' ช่วงไม่มีข้อมูลยอดผลิต จึงไม่คำนวณ Percent Rate':'');
  if(!values.length||values.every(v=>v.amount===null)){box.innerHTML='<span class="stamping-empty">'+(trendMetric==='rate'?'ยังไม่มียอดผลิตสำหรับคำนวณ Percent Rate':'ยังไม่มีข้อมูล'+titles[trendMetric]+'ในช่วงที่เลือก')+'</span>';return}
- const W=900,H=320,L=55,R=12,T=30,B=85,iw=W-L-R,ih=H-T-B,max=trendMetric==='rate'?Math.max(6,...values.map(v=>(v.amount??0)*1.1)):Math.max(1,...values.map(v=>v.amount??0)),step=iw/values.length,width=Math.min(34,step*.65),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#69baff':'#339dff';
+ const W=Math.max(320,box.clientWidth||900),H=Math.max(180,box.clientHeight||250),L=55,R=12,T=25,B=55,iw=W-L-R,ih=H-T-B,max=trendMetric==='rate'?Math.max(6,...values.map(v=>(v.amount??0)*1.1)):Math.max(1,...values.map(v=>v.amount??0)),step=iw/values.length,width=Math.min(34,step*.65),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#69baff':'#339dff';
  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet" aria-label="${titles[trendMetric]}${scrapPeriod==='month'?'รายเดือน':scrapPeriod==='week'?'รายสัปดาห์':'รายวัน'}">`;
  if(trendMetric!=='rate')svg+=`<defs><linearGradient id="trendBarGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#28d9f2"/><stop offset="48%" stop-color="#268ff0"/><stop offset="100%" stop-color="#2548b7"/></linearGradient></defs>`;
  for(let n=0;n<=4;n++){const y=T+ih*n/4,scale=max*(4-n)/4;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#2c4058"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#9db5ca" font-size="14">${trendMetric==='rate'?scale.toFixed(2)+'%':fmt(Math.round(scale))}</text>`}
@@ -1018,7 +1024,7 @@ function renderScrapCostTrend(rows,box){
  for(const row of rows){const date=String(row.date||'');if(!/^\d{4}-\d{2}-\d{2}$/.test(date))continue;const label=key(date);totals.set(label,(totals.get(label)||0)+recordScrapCost(row))}
  const values=[...totals].sort((a,b)=>a[0].localeCompare(b[0]));
  if(!values.length){box.innerHTML='<span class="muted">ยังไม่มีข้อมูล</span>';return}
- const W=900,H=320,L=65,R=15,T=30,B=85,iw=W-L-R,ih=H-T-B,max=Math.max(1,...values.map(v=>v[1])),step=iw/values.length,width=Math.min(38,step*.6);
+ const W=Math.max(320,box.clientWidth||900),H=Math.max(180,box.clientHeight||250),L=65,R=15,T=25,B=55,iw=W-L-R,ih=H-T-B,max=Math.max(1,...values.map(v=>v[1])),step=iw/values.length,width=Math.min(38,step*.6);
  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="มูลค่าของเสีย" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="costGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#54d4e8"/><stop offset="1" stop-color="#3967d7"/></linearGradient></defs>`;
  for(let n=0;n<=3;n++){const y=T+ih*n/3;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#29405a"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#9eb6cb" font-size="11">${fmt(Math.round(max*(3-n)/3))}</text>`}
  values.forEach(([label,value],i)=>{const x=L+step*(i+.5),h=value/max*ih,short=period==='day'?label.slice(8):period==='week'?weekLabel(label):label.slice(5)+'/'+label.slice(2,4);svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${Math.max(1,h)}" rx="3" fill="url(#costGradient)"><title>${esc(label)}: ${value.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})} บาท</title></rect><text x="${x}" y="${Math.max(16,T+ih-h-7)}" text-anchor="middle" fill="#e0f0ff" font-size="11">${value.toLocaleString('th-TH',{maximumFractionDigits:0})}</text><text x="${x}" y="${H-18}" text-anchor="middle" fill="#b9cfe2" font-size="10">${esc(short)}</text>`});
@@ -1034,7 +1040,7 @@ function renderStamping(rows){
  let problem=group(rows,r=>r.defect?.trim()||'ไม่ระบุประเภท').filter(p=>p.scrap>0).sort((a,b)=>b.scrap-a.scrap),total=problem.reduce((n,p)=>n+p.scrap,0);
  if(!problem.length){$('#stampingPareto').innerHTML='<span class="stamping-empty">ยังไม่มีข้อมูลของเสียในช่วงที่เลือก</span>';return}
  let top=problem.slice(0,10);
- const W=900,H=380,L=35,R=55,T=38,B=100,iw=W-L-R,ih=H-T-B,maxScrap=Math.max(...top.map(p=>p.scrap),1);
+ const W=Math.max(320,$('#stampingPareto').clientWidth||900),H=Math.max(180,$('#stampingPareto').clientHeight||250),L=35,R=48,T=25,B=80,iw=W-L-R,ih=H-T-B,maxScrap=Math.max(...top.map(p=>p.scrap),1);
  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet" aria-label="พาเรโตจำนวนของเสียตามประเภทปัญหาและเปอร์เซ็นต์สะสม"><defs><linearGradient id="stampingParetoBlueGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#28d9f2"/><stop offset="48%" stop-color="#268ff0"/><stop offset="100%" stop-color="#2548b7"/></linearGradient></defs>`,sum=0,points=[];
  [0,25,50,75,100].forEach(n=>{let y=T+ih*(1-n/100);svg+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#2c4058"/><text x="${W-R+9}" y="${y+6}" fill="#c4e4ff" font-size="12" font-weight="400">${n}%</text>`});
  top.forEach((p,i)=>{let x=L+iw*(i+.5)/top.length,h=ih*p.scrap/maxScrap,width=Math.min(62,iw/top.length*.52);sum+=p.scrap;let y=T+ih-ih*sum/total;points.push([x,y]);const label=p.key,segments=Array.from(label.matchAll(/.{1,9}/gu),m=>m[0]);svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${h}" rx="5" fill="url(#stampingParetoBlueGradient)"><title>${esc(label)}: ${fmt(p.scrap)} ชิ้น</title></rect><text x="${x}" y="${Math.max(22,T+ih-h-10)}" text-anchor="middle" fill="#ecf7ff" class="pareto-value" font-size="13" font-weight="400">${fmt(p.scrap)}</text><text class="pareto-problem-label" data-problem="${esc(label)}" x="${x}" y="${T+ih+29}" text-anchor="middle" fill="#dcecff" font-size="12" font-weight="400">${segments.slice(0,3).map((part,j)=>`<tspan x="${x}" dy="${j?18:0}">${esc(part)}${j===2&&segments.length>3?'…':''}</tspan>`).join('')}</text>`});
