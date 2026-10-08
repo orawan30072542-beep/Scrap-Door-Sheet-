@@ -697,6 +697,15 @@ html body{top:0!important}
 .overall-rate-panel .machine-donut-details{gap:3px;font-size:11px;line-height:1.35}
 .overall-rate-panel .machine-rate-value{font-size:21px;line-height:1.2}
 @media(max-width:900px){.overall-rate-panel{height:600px;min-height:600px}}
+
+/* Taller machine summary rows, aligned with the adjacent charts. */
+.overall-rate-panel{height:720px;min-height:720px;grid-template-rows:auto 170px 65px minmax(0,1fr)}
+.stamping-dashboard-layout>.stamping-right-charts{height:720px}
+.overall-rate-panel #machineCards{gap:10px}
+.overall-rate-panel .machine-donut-card{padding:12px 10px}
+.overall-rate-panel .machine-rate-donut{width:76px;height:76px}
+.overall-rate-panel .machine-rate-donut>div{width:60px;height:60px}
+@media(max-width:900px){.overall-rate-panel{height:720px;min-height:720px}.stamping-dashboard-layout>.stamping-right-charts{height:720px}}
 </style>
 </head>
 <body>
