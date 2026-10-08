@@ -622,6 +622,42 @@ html body{top:0!important}
 .filter-panel .month-year>div{gap:3px}
 #resetFilters{padding:5px 9px;font-size:11px}
 @media(max-width:640px){.filter-panel{padding:10px 12px}.filter-panel .filters{gap:8px}}
+.filter-panel .line-buttons{display:flex;flex-direction:column;gap:2px;padding:3px;border:1px solid #29465f;border-radius:10px;background:#081a2b;max-height:none;overflow:visible}
+.filter-panel .line-buttons .month-choice{width:100%;min-height:25px;padding:4px 8px;font-size:11px;font-weight:400;border:0;border-radius:7px;background:transparent;color:#b9cee2;box-shadow:none}
+.filter-panel .line-buttons .month-choice:hover{background:#173650;color:#eef7ff}
+.filter-panel .line-buttons .month-choice.active{background:linear-gradient(120deg,#167cd2,#279ce9);color:#fff;box-shadow:0 2px 7px #0787db26}
+.stamping-dashboard-layout{grid-template-rows:auto auto}
+.overall-rate-panel{grid-column:1;grid-row:1;min-height:390px;box-sizing:border-box}
+.stamping-trend-panel{grid-column:2;grid-row:1;min-height:390px;box-sizing:border-box}
+#stampingSummarySlot{grid-column:1;grid-row:2;height:430px}
+.stamping-pareto-panel{grid-column:2;grid-row:2;height:430px}
+.stamping-trend-panel .periods{gap:4px;flex-wrap:wrap}
+.stamping-trend-panel .periods .btn{font-size:11px;font-weight:400;padding:5px 10px}
+#stampingScrapTrend svg{display:block;width:100%;height:auto}
+#stampingScrapTrend #costGradient~text{font-weight:400}
+@media(max-width:900px){.overall-rate-panel,.stamping-trend-panel,#stampingSummarySlot,.stamping-pareto-panel{grid-column:1;grid-row:auto}}
+
+/* Compact overall KPI with machine breakdown directly below the donut. */
+.overall-rate-panel{justify-content:flex-start;gap:12px;min-height:600px;padding:18px 14px}
+.overall-rate-donut{width:170px;flex-shrink:0;margin:2px auto 0}
+.overall-rate-center>span{font-size:29px}
+.overall-rate-totals{padding-top:10px;gap:8px;margin:0;flex-shrink:0}
+.overall-rate-totals>div{display:grid;grid-template-columns:auto auto;justify-content:center;gap:3px 5px}
+.overall-rate-totals>div>small:first-child{grid-column:1 / -1;text-align:center}
+.overall-rate-totals>div>small:last-child{align-self:center}
+.overall-rate-totals span{font-size:21px}
+.overall-rate-panel #machineCards{display:grid;grid-template-columns:1fr;gap:7px;width:100%;margin:0;padding-top:9px;border-top:1px solid #29445f}
+.overall-rate-panel .machine-donut-card{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 10px;border-radius:10px;align-items:center}
+.machine-chart-side{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0}
+.machine-chart-side>strong{font-size:12px;font-weight:500}
+.overall-rate-panel .machine-rate-donut{width:65px;height:65px}
+.overall-rate-panel .machine-rate-donut>div{width:51px;height:51px}
+.overall-rate-panel .machine-rate-donut small{font-size:9px}
+.overall-rate-panel .machine-donut-details{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;font-size:10px;line-height:1.4}
+.overall-rate-panel .machine-rate-value{font-size:20px;font-weight:500;color:#86d3ff;font-variant-numeric:tabular-nums}
+.overall-rate-panel .machine-donut-details>small{font-size:9px;color:#9eb6cd}
+.stamping-trend-panel{min-height:600px}
+@media(max-width:900px){.overall-rate-panel,.stamping-trend-panel{min-height:0}.overall-rate-panel{gap:12px}}
 </style>
 </head>
 <body>
@@ -667,14 +703,14 @@ html body{top:0!important}
 <div class="metric">
 <small>มูลค่าความเสียหาย</small><strong id="scrapCost">0.00</strong><em>บาท</em>
 </div></section><section id="stampingAnalytics" hidden>
-<div class="machine-list" id="machineCards"></div>
 <div class="stamping-dashboard-layout"><div class="stamping-kpi-left">
 <section class="panel overall-rate-panel"><h2>อัตราของเสีย</h2>
 <div id="overallRateDonut" class="overall-rate-donut" role="img"><div class="overall-rate-center"><span id="overallRateValue">0.00%</span><small>อัตราของเสีย</small></div></div>
 <div class="overall-rate-totals"><div><small>ยอดของเสีย</small><span id="overallRateScrap">0</span><small>ชิ้น</small></div><div><small>ยอดผลิต</small><span id="overallRateProduction">0</span><small>ชิ้น</small></div></div>
-</section><div id="stampingSummarySlot"></div></div><div class="stamping-right-charts"><section class="panel stamping-cost-panel"><h2>มูลค่าของเสีย</h2><div id="stampingCostTrend"></div></section><section class="panel stamping-trend-panel" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
+<div class="machine-list" id="machineCards"></div>
+</section><div id="stampingSummarySlot"></div></div><div class="stamping-right-charts"><section class="panel stamping-trend-panel" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
 <div class="top"><h2 id="stampingTrendTitle">แนวโน้มยอดของเสีย · SCRAP STAMPING</h2></div>
-<div class="periods" style="margin-bottom:10px" aria-label="เลือกข้อมูลในกราฟ"><button class="btn" type="button" data-trend-metric="production">ยอดผลิต</button><button class="btn active" type="button" data-trend-metric="scrap">ยอดของเสีย</button><button class="btn" type="button" data-trend-metric="rate">Percent Rate</button></div>
+<div class="periods" style="margin-bottom:10px" aria-label="เลือกข้อมูลในกราฟ"><button class="btn" type="button" data-trend-metric="production">ยอดผลิต</button><button class="btn active" type="button" data-trend-metric="scrap">ยอดของเสีย</button><button class="btn" type="button" data-trend-metric="rate">Percent Rate</button><button class="btn" type="button" data-trend-metric="cost">มูลค่าความเสียหาย</button></div>
 <div id="stampingScrapTrend" class="stamping-chart"></div><div class="chart-note" id="stampingTrendNote">แสดงสูงสุด 21 วัน / 12 สัปดาห์ / 12 เดือน · Week นับวันจันทร์–อาทิตย์</div>
 </section>
 <div class="panel stamping-pareto-panel">
@@ -918,8 +954,9 @@ function renderProductionOverview(rows,box){
  box.innerHTML=entries.length?`<div class="production-overview-scroll"><table class="production-overview-table"><thead><tr><th>ลำดับ</th><th>ช่วงเวลา</th><th>กะการผลิต</th>${machines.map(m=>`<th>${m}</th>`).join('')}<th>ยอดผลิตรวม (ชิ้น)</th></tr></thead><tbody>${entries.map((item,i)=>`<tr><td>${i+1}</td><td>${esc(label(item.date))}</td><td>${esc(item.shift)}</td>${item.values.map(n=>`<td>${fmt(n)}</td>`).join('')}<td class="production-overview-total">${fmt(item.values.reduce((a,b)=>a+b,0))}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="3">ยอดผลิตรวมทั้งหมด</td>${totals.map(n=>`<td>${fmt(n)}</td>`).join('')}<td>${fmt(totals.reduce((a,b)=>a+b,0))}</td></tr></tfoot></table></div>`:'<span class="stamping-empty">ยังไม่มีข้อมูลยอดผลิตในช่วงที่เลือก</span>';
 }
 function renderScrapTrend(rows){
- const box=$('#stampingScrapTrend'),titles={production:'ยอดผลิต',scrap:'ยอดของเสีย',rate:'อัตราของเสีย (%)'};
+ const box=$('#stampingScrapTrend'),titles={production:'ยอดผลิต',scrap:'ยอดของเสีย',rate:'อัตราของเสีย (%)',cost:'มูลค่าความเสียหาย (บาท)'};
  $('#stampingTrendTitle').textContent='แนวโน้ม'+titles[trendMetric]+' · SCRAP STAMPING';
+ if(trendMetric==='cost'){renderScrapCostTrend(rows,box);$('#stampingTrendNote').textContent='มูลค่าความเสียหาย (บาท)';return}
  const totals=new Map();
  for(const r of rows){if(!/^\d{4}-\d{2}-\d{2}$/.test(r.date))continue;const k=scrapPeriod==='month'?r.date.slice(0,7):scrapPeriod==='week'?weekKey(r.date):r.date,v=totals.get(k)||{production:0,scrap:0};v.production+=Number(r.production)||0;v.scrap+=Number(r.scrap)||0;totals.set(k,v)}
  const selectedMonth=$('#monthFilter').value;
@@ -960,25 +997,24 @@ function renderScrapTrend(rows){
  }
  box.innerHTML=svg+'</svg>'
 }
-function renderScrapCostTrend(rows){
- const box=$('#stampingCostTrend'),totals=new Map();
+function renderScrapCostTrend(rows,box){
+ const totals=new Map();
  for(const row of rows){const date=String(row.date||'');if(!/^\d{4}-\d{2}-\d{2}$/.test(date))continue;const label=key(date);totals.set(label,(totals.get(label)||0)+recordScrapCost(row))}
  const values=[...totals].sort((a,b)=>a[0].localeCompare(b[0]));
  if(!values.length){box.innerHTML='<span class="muted">ยังไม่มีข้อมูล</span>';return}
- const W=900,H=220,L=65,R=15,T=28,B=42,iw=W-L-R,ih=H-T-B,max=Math.max(1,...values.map(v=>v[1])),step=iw/values.length,width=Math.min(38,step*.6);
+ const W=900,H=320,L=65,R=15,T=30,B=85,iw=W-L-R,ih=H-T-B,max=Math.max(1,...values.map(v=>v[1])),step=iw/values.length,width=Math.min(38,step*.6);
  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="มูลค่าของเสีย" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="costGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#54d4e8"/><stop offset="1" stop-color="#3967d7"/></linearGradient></defs>`;
  for(let n=0;n<=3;n++){const y=T+ih*n/3;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#29405a"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#9eb6cb" font-size="11">${fmt(Math.round(max*(3-n)/3))}</text>`}
  values.forEach(([label,value],i)=>{const x=L+step*(i+.5),h=value/max*ih,short=period==='day'?label.slice(8):period==='week'?weekLabel(label):label.slice(5)+'/'+label.slice(2,4);svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${Math.max(1,h)}" rx="3" fill="url(#costGradient)"><title>${esc(label)}: ${value.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})} บาท</title></rect><text x="${x}" y="${Math.max(16,T+ih-h-7)}" text-anchor="middle" fill="#e0f0ff" font-size="11">${value.toLocaleString('th-TH',{maximumFractionDigits:0})}</text><text x="${x}" y="${H-18}" text-anchor="middle" fill="#b9cfe2" font-size="10">${esc(short)}</text>`});
  box.innerHTML=svg+'</svg>';
 }
 function renderStamping(rows){
- renderScrapCostTrend(rows);
  renderScrapTrend(rows);
  const names=[...new Set(['400T','200T','100T',...rows.map(r=>machineName(r.line)).filter(Boolean)])];
  const machines=names.map(name=>({name,production:0,scrap:0}));
  const byMachine=new Map(machines.map(m=>[m.name,m]));
  for(const row of rows){const name=machineName(row.line);if(name){let m=byMachine.get(name);m.production+=row.production;m.scrap+=row.scrap}}
- $('#machineCards').innerHTML=machines.map(m=>{const pct=m.production>0?rate(m.scrap,m.production):0,arc=Math.max(0,Math.min(100,pct)),available=m.production>0;return `<div class="machine-card machine-donut-card"><strong>${esc(m.name)}</strong><div class="machine-rate-donut" role="img" aria-label="${esc(m.name)} อัตราของเสีย ${rateText(m.scrap,m.production)}" style="background:conic-gradient(#46baff 0 ${arc}%,#203c59 ${arc}% 100%)"><div><span>${rateText(m.scrap,m.production)}</span><small>${available?'อัตราของเสีย':'ยังไม่มียอดผลิต'}</small></div></div><div class="machine-donut-details"><span>ยอดผลิต <b>${fmt(m.production)}</b> ชิ้น</span><span>ของเสีย <b>${fmt(m.scrap)}</b> ชิ้น</span></div></div>`}).join('');
+ $('#machineCards').innerHTML=machines.map(m=>{const pct=m.production>0?rate(m.scrap,m.production):0,arc=Math.max(0,Math.min(100,pct)),available=m.production>0;return `<div class="machine-card machine-donut-card"><div class="machine-chart-side"><strong>${esc(m.name)}</strong><div class="machine-rate-donut" role="img" aria-label="${esc(m.name)} อัตราของเสีย ${rateText(m.scrap,m.production)}" style="background:conic-gradient(#46baff 0 ${arc}%,#203c59 ${arc}% 100%)"><div><small>${esc(m.name)}</small></div></div></div><div class="machine-donut-details"><span class="machine-rate-value">${rateText(m.scrap,m.production)}</span><small>${available?'อัตราของเสีย':'ยังไม่มียอดผลิต'}</small><span>ของเสีย <b>${fmt(m.scrap)}</b> ชิ้น</span><span>ยอดผลิต <b>${fmt(m.production)}</b> ชิ้น</span></div></div>`}).join('');
  let problem=group(rows,r=>r.defect?.trim()||'ไม่ระบุประเภท').filter(p=>p.scrap>0).sort((a,b)=>b.scrap-a.scrap),total=problem.reduce((n,p)=>n+p.scrap,0);
  if(!problem.length){$('#stampingPareto').innerHTML='<span class="stamping-empty">ยังไม่มีข้อมูลของเสียในช่วงที่เลือก</span>';return}
  let top=problem.slice(0,10);
