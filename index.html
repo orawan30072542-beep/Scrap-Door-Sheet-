@@ -559,7 +559,7 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 @media(max-width:900px){.stamping-dashboard-layout{grid-template-columns:1fr}}
 #stampingPareto svg text{font-size:12px;font-weight:400;font-style:normal}
 #stampingPareto svg text.pareto-value{font-size:13px;font-weight:400;fill:#e3effa}
-.line-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;max-height:145px;overflow:auto;align-content:start}
+.line-buttons{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;max-height:145px;overflow:auto;align-content:start}
 .line-buttons .month-choice{min-width:0;white-space:normal;overflow-wrap:anywhere}
 #line[hidden]{display:none!important}
 .dashboard-language-bar{position:sticky;top:0;z-index:60;display:flex;justify-content:flex-end;align-items:center;gap:5px;padding:8px 20px;background:#08182b;border-bottom:1px solid #254869}
@@ -572,6 +572,19 @@ svg text{font-family:'IBM Plex Sans Thai','Noto Sans Thai',system-ui,sans-serif;
 iframe.goog-te-banner-frame,iframe.skiptranslate,.skiptranslate>iframe,.VIpgJd-ZVi9od-ORHb-OEVmcd{display:none!important;visibility:hidden!important;height:0!important}
 html body{top:0!important}
 #problemTranslationMirror{position:absolute;left:-10000px;top:0;width:400px;pointer-events:none;opacity:0}
+.stamping-kpi-left{display:flex;flex-direction:column;gap:16px;min-width:0}
+.overall-rate-panel{display:flex;flex-direction:column;align-items:center;gap:22px;padding:22px 18px}
+.overall-rate-panel h2{align-self:flex-start;margin:0;font-size:16px;font-weight:500}
+.overall-rate-donut{width:min(230px,100%);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:#203c59}
+.overall-rate-center{width:80%;height:80%;border-radius:50%;background:#0c1b2c;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px}
+.overall-rate-center>span{font-size:36px;font-weight:500;color:#8cdfff;font-variant-numeric:tabular-nums}
+.overall-rate-center small{font-size:12px;font-weight:400;color:#9eb6cd}
+.overall-rate-totals{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:12px;border-top:1px solid #29445f;padding-top:18px}
+.overall-rate-totals>div{display:flex;flex-direction:column;align-items:center;gap:6px}
+.overall-rate-totals>div+div{border-left:1px solid #29445f}
+.overall-rate-totals small{font-size:12px;color:#a9bfd6;font-weight:400}
+.overall-rate-totals span{font-size:24px;font-weight:400;color:#e5f2ff;font-variant-numeric:tabular-nums}
+.metric[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -585,7 +598,7 @@ html body{top:0!important}
 <section class="panel filter-panel"><div class="filter-heading"><div><strong>ตัวกรองข้อมูล</strong><span>เลือกมุมมองและช่วงเวลาที่ต้องการ</span></div><button class="btn" type="button" id="resetFilters">รีเซ็ตตัวกรอง</button></div><div class="grid filters">
 <div class="field">
 <label>มุมมอง</label><div class="periods">
-<button class="btn" data-period="day">รายวัน</button><button class="btn" data-period="week">รายสัปดาห์</button><button class="btn active" data-period="month">รายเดือน</button>
+<button type="button" class="btn" data-period="day">รายวัน</button><button type="button" class="btn" data-period="week">รายสัปดาห์</button><button type="button" class="btn active" data-period="month">รายเดือน</button>
 </div>
 </div>
 <div class="field">
@@ -618,7 +631,11 @@ html body{top:0!important}
 <small>มูลค่าความเสียหาย</small><strong id="scrapCost">0.00</strong><em>บาท</em>
 </div></section><section id="stampingAnalytics" hidden>
 <div class="machine-list" id="machineCards"></div>
-<div class="stamping-dashboard-layout"><div id="stampingSummarySlot"></div><div class="stamping-right-charts"><section class="panel" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
+<div class="stamping-dashboard-layout"><div class="stamping-kpi-left">
+<section class="panel overall-rate-panel"><h2>อัตราของเสีย</h2>
+<div id="overallRateDonut" class="overall-rate-donut" role="img"><div class="overall-rate-center"><span id="overallRateValue">0.00%</span><small>อัตราของเสีย</small></div></div>
+<div class="overall-rate-totals"><div><small>ยอดของเสีย</small><span id="overallRateScrap">0</span><small>ชิ้น</small></div><div><small>ยอดผลิต</small><span id="overallRateProduction">0</span><small>ชิ้น</small></div></div>
+</section><div id="stampingSummarySlot"></div></div><div class="stamping-right-charts"><section class="panel" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
 <div class="top"><h2 id="stampingTrendTitle">แนวโน้มยอดของเสีย · SCRAP STAMPING</h2></div>
 <div class="periods" style="margin-bottom:10px" aria-label="เลือกข้อมูลในกราฟ"><button class="btn" type="button" data-trend-metric="production">ยอดผลิต</button><button class="btn active" type="button" data-trend-metric="scrap">ยอดของเสีย</button><button class="btn" type="button" data-trend-metric="rate">Percent Rate</button></div>
 <div id="stampingScrapTrend" class="stamping-chart"></div><div class="chart-note" id="stampingTrendNote">แสดงสูงสุด 21 วัน / 12 สัปดาห์ / 12 เดือน · Week นับวันจันทร์–อาทิตย์</div>
@@ -946,6 +963,7 @@ function stampingPeriodSummary(rows){
 }
 function render(){if(page==='issues'){ $('#dashboardPage').hidden=true;$('#issuesPage').hidden=false;$('#openEntry').hidden=true;renderIssues();return}$('#dashboardPage').hidden=false;$('#issuesPage').hidden=true;options();$('#openEntry').hidden=page==='stamping';$('#stampingToolbar').hidden=page!=='stamping';$('#stampingAnalytics').hidden=page!=='stamping';$('#generalCharts').hidden=page==='stamping';
 const summaryPanel=$('#periodSummaryPanel');
+summaryPanel.querySelector('h2').textContent='รายละเอียดตามช่วงเวลา · '+({day:'รายวัน',week:'รายสัปดาห์',month:'รายเดือน'})[period];
 if(page==='stamping')$('#stampingSummarySlot').append(summaryPanel);else $('#summaryHomeSlot').after(summaryPanel);
 const summaryHeaders=page==='stamping'?['ช่วงเวลา','กะ','เครื่องจักร','ยอดผลิตรวม','ยอดเสียรวม','อัตราของเสียรวม']:['ช่วงเวลา','กะ','ไลน์ / พื้นที่','ยอดผลิต','ยอดเสีย','อัตราของเสีย'];
 $('#summary').closest('table').querySelector('thead').innerHTML='<tr>'+summaryHeaders.map(label=>`<th>${label}</th>`).join('')+'</tr>';
@@ -953,6 +971,13 @@ let rows=filtered(),p=rows.reduce((a,r)=>a+(Number(r.production)||0),0),s=rows.r
 $('#production').textContent=fmt(p);
 $('#scrap').textContent=fmt(s);
 $('#rate').textContent=rateText(s,p);
+$('#rate').closest('.metric').hidden=page==='stamping';
+const totalRate=p>0?rate(s,p):0;
+$('#overallRateValue').textContent=rateText(s,p);
+$('#overallRateScrap').textContent=fmt(s);$('#overallRateProduction').textContent=fmt(p);
+$('#overallRateDonut').style.background=`conic-gradient(#36c9fa 0 ${Math.max(0,Math.min(100,totalRate))}%,#203c59 ${Math.max(0,Math.min(100,totalRate))}% 100%)`;
+$('#overallRateDonut').setAttribute('aria-label','อัตราของเสีย '+rateText(s,p));
+
 $('#scrapCost').textContent=rows.reduce((sum,r)=>sum+recordScrapCost(r),0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 $('#count').textContent=fmt(rows.length)+' รายการ';
 if(page==='stamping')renderStamping(rows);else chart(rows);
@@ -1015,9 +1040,16 @@ function applyViewRange(){
  const anchor=viewAnchorDate||$('#end').value||$('#start').value||candidates.at(-1)||new Date().toLocaleDateString('en-CA');viewAnchorDate=anchor;
  const range=viewDateRange(anchor,period);if(range){$('#monthFilter').value='';$('#start').value=range[0];$('#end').value=range[1]}
 }
-document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period=b.dataset.period;scrapPeriod=period;
-document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('active',x===b));
-render()});
+function setDashboardView(view){
+ if(!['day','week','month'].includes(view))return;
+ period=view;scrapPeriod=view;
+ document.querySelectorAll('[data-period]').forEach(button=>{const active=button.dataset.period===view;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active))});
+ render();
+}
+document.addEventListener('click',event=>{
+ const button=event.target.closest?.('[data-period]');if(!button)return;
+ event.preventDefault();setDashboardView(button.dataset.period);
+},true);
 document.querySelectorAll('[data-trend-metric]').forEach(b=>b.onclick=()=>{trendMetric=b.dataset.trendMetric;document.querySelectorAll('[data-trend-metric]').forEach(x=>x.classList.toggle('active',x===b));render()});
 ['line','model'].forEach(id=>$('#'+id).onchange=render);
 ['start','end'].forEach(id=>$('#'+id).onchange=()=>{$('#monthFilter').value='';viewAnchorDate=$('#'+id).value;render()});
