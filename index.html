@@ -593,6 +593,19 @@ html body{top:0!important}
 #stampingSummarySlot{grid-column:1;grid-row:2}
 .stamping-pareto-panel{grid-column:2;grid-row:2}
 @media(max-width:900px){.overall-rate-panel,.stamping-trend-panel,#stampingSummarySlot,.stamping-pareto-panel{grid-column:1;grid-row:auto}}
+/* Cost trend above production/scrap trend; matching lower panels. */
+.stamping-dashboard-layout{grid-template-rows:auto auto auto}
+.stamping-cost-panel{grid-column:2;grid-row:1;min-width:0}
+.overall-rate-panel{grid-row:1 / span 2}
+.stamping-trend-panel{grid-row:2}
+#stampingSummarySlot{grid-row:3;min-height:0;height:460px}
+.stamping-pareto-panel{grid-row:3;height:460px;box-sizing:border-box;display:flex;flex-direction:column;min-width:0}
+#stampingSummarySlot>#periodSummaryPanel{height:100%;box-sizing:border-box}
+#stampingSummarySlot .tablewrap{min-height:0;max-height:none;flex:1}
+.stamping-pareto-panel #stampingPareto{flex:1;min-height:0;display:flex;align-items:center}
+#stampingCostTrend svg{width:100%;height:auto;display:block}
+#stampingCostTrend text{font-weight:400;font-style:normal}
+@media(max-width:900px){.stamping-cost-panel,.overall-rate-panel,.stamping-trend-panel,#stampingSummarySlot,.stamping-pareto-panel{grid-column:1;grid-row:auto}}
 </style>
 </head>
 <body>
@@ -643,7 +656,7 @@ html body{top:0!important}
 <section class="panel overall-rate-panel"><h2>อัตราของเสีย</h2>
 <div id="overallRateDonut" class="overall-rate-donut" role="img"><div class="overall-rate-center"><span id="overallRateValue">0.00%</span><small>อัตราของเสีย</small></div></div>
 <div class="overall-rate-totals"><div><small>ยอดของเสีย</small><span id="overallRateScrap">0</span><small>ชิ้น</small></div><div><small>ยอดผลิต</small><span id="overallRateProduction">0</span><small>ชิ้น</small></div></div>
-</section><div id="stampingSummarySlot"></div></div><div class="stamping-right-charts"><section class="panel stamping-trend-panel" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
+</section><div id="stampingSummarySlot"></div></div><div class="stamping-right-charts"><section class="panel stamping-cost-panel"><h2>มูลค่าของเสีย</h2><div id="stampingCostTrend"></div></section><section class="panel stamping-trend-panel" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
 <div class="top"><h2 id="stampingTrendTitle">แนวโน้มยอดของเสีย · SCRAP STAMPING</h2></div>
 <div class="periods" style="margin-bottom:10px" aria-label="เลือกข้อมูลในกราฟ"><button class="btn" type="button" data-trend-metric="production">ยอดผลิต</button><button class="btn active" type="button" data-trend-metric="scrap">ยอดของเสีย</button><button class="btn" type="button" data-trend-metric="rate">Percent Rate</button></div>
 <div id="stampingScrapTrend" class="stamping-chart"></div><div class="chart-note" id="stampingTrendNote">แสดงสูงสุด 21 วัน / 12 สัปดาห์ / 12 เดือน · Week นับวันจันทร์–อาทิตย์</div>
@@ -931,7 +944,19 @@ function renderScrapTrend(rows){
  }
  box.innerHTML=svg+'</svg>'
 }
+function renderScrapCostTrend(rows){
+ const box=$('#stampingCostTrend'),totals=new Map();
+ for(const row of rows){const date=String(row.date||'');if(!/^\d{4}-\d{2}-\d{2}$/.test(date))continue;const label=key(date);totals.set(label,(totals.get(label)||0)+recordScrapCost(row))}
+ const values=[...totals].sort((a,b)=>a[0].localeCompare(b[0]));
+ if(!values.length){box.innerHTML='<span class="muted">ยังไม่มีข้อมูล</span>';return}
+ const W=900,H=220,L=65,R=15,T=28,B=42,iw=W-L-R,ih=H-T-B,max=Math.max(1,...values.map(v=>v[1])),step=iw/values.length,width=Math.min(38,step*.6);
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="มูลค่าของเสีย" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="costGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#54d4e8"/><stop offset="1" stop-color="#3967d7"/></linearGradient></defs>`;
+ for(let n=0;n<=3;n++){const y=T+ih*n/3;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#29405a"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#9eb6cb" font-size="11">${fmt(Math.round(max*(3-n)/3))}</text>`}
+ values.forEach(([label,value],i)=>{const x=L+step*(i+.5),h=value/max*ih,short=period==='day'?label.slice(8):period==='week'?weekLabel(label):label.slice(5)+'/'+label.slice(2,4);svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${Math.max(1,h)}" rx="3" fill="url(#costGradient)"><title>${esc(label)}: ${value.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})} บาท</title></rect><text x="${x}" y="${Math.max(16,T+ih-h-7)}" text-anchor="middle" fill="#e0f0ff" font-size="11">${value.toLocaleString('th-TH',{maximumFractionDigits:0})}</text><text x="${x}" y="${H-18}" text-anchor="middle" fill="#b9cfe2" font-size="10">${esc(short)}</text>`});
+ box.innerHTML=svg+'</svg>';
+}
 function renderStamping(rows){
+ renderScrapCostTrend(rows);
  renderScrapTrend(rows);
  const names=[...new Set(['400T','200T','100T',...rows.map(r=>machineName(r.line)).filter(Boolean)])];
  const machines=names.map(name=>({name,production:0,scrap:0}));
