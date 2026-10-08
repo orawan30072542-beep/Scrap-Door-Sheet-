@@ -680,6 +680,23 @@ html body{top:0!important}
 .stamping-right-charts #stampingScrapTrend,.stamping-right-charts #stampingPareto{display:block;height:0;min-height:0;flex:1 1 0;width:100%}
 .stamping-right-charts .stamping-chart svg{display:block;width:100%;height:100%}
 .stamping-right-charts .stamping-legend{font-size:11px;margin-bottom:6px}
+
+/* Balance the KPI contents within the shared 600px chart height. */
+.overall-rate-panel{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto 170px 65px minmax(0,1fr);align-items:center;justify-items:center;gap:10px;padding:16px;overflow:hidden;box-sizing:border-box}
+.overall-rate-panel h2{width:100%;align-self:center;font-size:15px;line-height:1.4}
+.overall-rate-donut{width:170px;height:170px;margin:0;aspect-ratio:1}
+.overall-rate-totals{height:65px;padding:8px 0 0;box-sizing:border-box;align-items:center}
+.overall-rate-totals span{font-size:20px;line-height:1.25}
+.overall-rate-totals small{font-size:11px;line-height:1.3}
+.overall-rate-panel #machineCards{height:100%;min-height:0;grid-template-rows:repeat(3,minmax(0,1fr));gap:8px;padding-top:10px;box-sizing:border-box}
+.overall-rate-panel .machine-donut-card{height:100%;min-height:0;padding:8px;box-sizing:border-box;grid-template-columns:1fr 1fr}
+.machine-chart-side{flex-direction:column;gap:4px}
+.machine-chart-side>strong{font-size:11px;line-height:1.2}
+.overall-rate-panel .machine-rate-donut{width:60px;height:60px}
+.overall-rate-panel .machine-rate-donut>div{width:46px;height:46px}
+.overall-rate-panel .machine-donut-details{gap:3px;font-size:11px;line-height:1.35}
+.overall-rate-panel .machine-rate-value{font-size:21px;line-height:1.2}
+@media(max-width:900px){.overall-rate-panel{height:600px;min-height:600px}}
 </style>
 </head>
 <body>
