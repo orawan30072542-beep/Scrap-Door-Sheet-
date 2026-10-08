@@ -664,6 +664,16 @@ html body{top:0!important}
 .stamping-right-charts>.stamping-trend-panel,.stamping-right-charts>.stamping-pareto-panel{grid-column:auto;grid-row:auto;border:0;border-radius:0;background:transparent;box-shadow:none;min-width:0;min-height:0;height:auto;margin:0;box-sizing:border-box}
 .stamping-right-charts>.stamping-pareto-panel{border-top:1px solid #29445f}
 @media(max-width:900px){.stamping-dashboard-layout>.stamping-right-charts{grid-column:1;grid-row:auto;grid-template-rows:auto auto}.stamping-right-charts>.stamping-trend-panel{min-height:350px}.stamping-right-charts>.stamping-pareto-panel{min-height:350px}}
+
+/* Align the combined charts with the overall scrap-rate panel. */
+.stamping-dashboard-layout>.stamping-right-charts{grid-row:1;grid-template-rows:1fr 1fr;height:600px;align-self:stretch}
+.overall-rate-panel{height:600px;min-height:600px}
+.stamping-right-charts>.stamping-trend-panel,.stamping-right-charts>.stamping-pareto-panel{padding:14px 18px;min-height:0;height:auto;overflow:hidden}
+.stamping-right-charts .stamping-chart{min-height:0;flex:1;overflow:hidden}
+.stamping-right-charts .stamping-chart svg{width:100%;height:100%;max-height:100%;object-fit:contain}
+.stamping-right-charts h2{margin-bottom:8px}
+.stamping-right-charts .chart-note{font-size:10px;margin-top:5px}
+@media(max-width:900px){.stamping-dashboard-layout>.stamping-right-charts{grid-row:auto;height:600px;grid-template-rows:1fr 1fr}.overall-rate-panel{height:auto;min-height:0}.stamping-right-charts>.stamping-trend-panel,.stamping-right-charts>.stamping-pareto-panel{min-height:0}}
 </style>
 </head>
 <body>
