@@ -585,6 +585,14 @@ html body{top:0!important}
 .overall-rate-totals small{font-size:12px;color:#a9bfd6;font-weight:400}
 .overall-rate-totals span{font-size:24px;font-weight:400;color:#e5f2ff;font-variant-numeric:tabular-nums}
 .metric[hidden]{display:none!important}
+.stamping-dashboard-layout{align-items:stretch;grid-template-rows:auto auto}
+.stamping-kpi-left,.stamping-right-charts{display:contents}
+.overall-rate-panel{grid-column:1;grid-row:1;align-self:stretch;justify-content:space-between}
+.stamping-trend-panel{grid-column:2;grid-row:1;align-self:stretch;display:flex;flex-direction:column}
+.stamping-trend-panel #stampingScrapTrend{flex:1;display:flex;align-items:center}
+#stampingSummarySlot{grid-column:1;grid-row:2}
+.stamping-pareto-panel{grid-column:2;grid-row:2}
+@media(max-width:900px){.overall-rate-panel,.stamping-trend-panel,#stampingSummarySlot,.stamping-pareto-panel{grid-column:1;grid-row:auto}}
 </style>
 </head>
 <body>
@@ -635,12 +643,12 @@ html body{top:0!important}
 <section class="panel overall-rate-panel"><h2>อัตราของเสีย</h2>
 <div id="overallRateDonut" class="overall-rate-donut" role="img"><div class="overall-rate-center"><span id="overallRateValue">0.00%</span><small>อัตราของเสีย</small></div></div>
 <div class="overall-rate-totals"><div><small>ยอดของเสีย</small><span id="overallRateScrap">0</span><small>ชิ้น</small></div><div><small>ยอดผลิต</small><span id="overallRateProduction">0</span><small>ชิ้น</small></div></div>
-</section><div id="stampingSummarySlot"></div></div><div class="stamping-right-charts"><section class="panel" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
+</section><div id="stampingSummarySlot"></div></div><div class="stamping-right-charts"><section class="panel stamping-trend-panel" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
 <div class="top"><h2 id="stampingTrendTitle">แนวโน้มยอดของเสีย · SCRAP STAMPING</h2></div>
 <div class="periods" style="margin-bottom:10px" aria-label="เลือกข้อมูลในกราฟ"><button class="btn" type="button" data-trend-metric="production">ยอดผลิต</button><button class="btn active" type="button" data-trend-metric="scrap">ยอดของเสีย</button><button class="btn" type="button" data-trend-metric="rate">Percent Rate</button></div>
 <div id="stampingScrapTrend" class="stamping-chart"></div><div class="chart-note" id="stampingTrendNote">แสดงสูงสุด 21 วัน / 12 สัปดาห์ / 12 เดือน · Week นับวันจันทร์–อาทิตย์</div>
 </section>
-<div class="panel">
+<div class="panel stamping-pareto-panel">
 <h2>Pareto · ประเภทปัญหา Top 10</h2>
 <div class="stamping-legend">
 <span><i style="background:#339dff"></i>จำนวนของเสีย</span><span><i style="background:#43efd6"></i>สะสม (%)</span>
@@ -972,6 +980,8 @@ $('#production').textContent=fmt(p);
 $('#scrap').textContent=fmt(s);
 $('#rate').textContent=rateText(s,p);
 $('#rate').closest('.metric').hidden=page==='stamping';
+$('#production').closest('.metric').hidden=page==='stamping';
+$('#scrap').closest('.metric').hidden=page==='stamping';
 const totalRate=p>0?rate(s,p):0;
 $('#overallRateValue').textContent=rateText(s,p);
 $('#overallRateScrap').textContent=fmt(s);$('#overallRateProduction').textContent=fmt(p);
