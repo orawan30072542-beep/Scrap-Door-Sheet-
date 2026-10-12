@@ -771,6 +771,17 @@ html body{top:0!important}
 #stampingModelChart svg{display:block;width:100%;height:100%}
 .model-funnel-panel .chart-note{font-size:10px;color:#9eb6cd;margin-top:6px}
 @media(max-width:700px){.stamping-bottom-row{grid-template-columns:1fr}}
+
+.model-bar-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;font-weight:400}
+.model-bar-table th{background:#14536b;color:#eafaff;text-align:left;padding:9px 10px;font-weight:500;position:sticky;top:0;z-index:1}
+.model-bar-table th:first-child{width:30%}.model-bar-table th:last-child{width:16%}
+.model-bar-table td{padding:6px 10px;border-bottom:1px solid #28465e;overflow-wrap:anywhere;color:#d4e7f3}
+.model-bar-table tbody tr:nth-child(even){background:#122c41}
+.model-table-bar{position:relative;height:21px;display:flex;align-items:center;justify-content:flex-end;min-width:0}
+.model-table-bar>span{position:absolute;left:0;height:100%;background:linear-gradient(90deg,#286889,#54a6bc);border-radius:2px}
+.model-table-bar>b{position:relative;padding:1px 4px;background:#0c223bd9;border-radius:3px;font-size:11px;font-weight:400;font-variant-numeric:tabular-nums}
+.model-table-percent{text-align:right;font-variant-numeric:tabular-nums}
+.model-bar-table tfoot td{background:#16435b;color:#e7f7ff;font-weight:500;padding:10px}
 </style>
 </head>
 <body>
@@ -1118,11 +1129,9 @@ function renderScrapCostTrend(rows,box){
 }
 function modelScrapTotals(rows){const totals=new Map();for(const row of rows){const quantity=Number(row.scrap)||0;if(quantity<=0)continue;const name=recordModel(row)||'ไม่ระบุ Model';totals.set(name,(totals.get(name)||0)+quantity)}return [...totals].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))}
 function renderModelScrap(rows){
- const ranked=modelScrapTotals(rows),items=ranked.slice(0,10),total=ranked.reduce((sum,item)=>sum+item[1],0),box=$('#stampingModelChart');
+ const ranked=modelScrapTotals(rows),items=ranked.slice(0,10),total=ranked.reduce((sum,item)=>sum+item[1],0),box=$('#stampingModelChart'),max=items[0]?.[1]||1;
  if(!items.length){box.innerHTML='<p class="muted">ยังไม่มีข้อมูลของเสียในช่วงที่เลือก</p>';return}
- const W=600,H=Math.max(290,items.length*35),gap=5,h=(H-12)/items.length-gap,colors=['#04ccb5','#36a1e7','#1675c6','#e985aa','#fa9549','#f2c651','#9b8bea','#40c2d4','#699be2','#b49bcc'];
- let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="กราฟกรวยยอดของเสียตาม Model" preserveAspectRatio="xMidYMid meet">`;
- items.forEach(([name,quantity],i)=>{const top=490*quantity/items[0][1],bottom=i+1<items.length?490*items[i+1][1]/items[0][1]:top*.7,y=6+i*(h+gap),label=name.length>24?name.slice(0,24)+'…':name;svg+=`<polygon points="${(W-top)/2},${y} ${(W+top)/2},${y} ${(W+bottom)/2},${y+h} ${(W-bottom)/2},${y+h}" fill="${colors[i]}"><title>${esc(name)}: ${fmt(quantity)} ชิ้น (${(quantity/total*100).toFixed(1)}%)</title></polygon><text x="${W/2}" y="${y+h/2+4}" text-anchor="middle" fill="white" stroke="#10263c" stroke-width="2.5" paint-order="stroke" font-size="12" font-weight="400">${esc(label)} · ${fmt(quantity)} (${(quantity/total*100).toFixed(1)}%)</text>`});box.innerHTML=svg+'</svg>';
+ box.innerHTML=`<table class="model-bar-table"><thead><tr><th>Model</th><th>จำนวนของเสีย (ชิ้น)</th><th>สัดส่วน</th></tr></thead><tbody>${items.map(([name,quantity])=>`<tr><td title="${esc(name)}">${esc(name)}</td><td><div class="model-table-bar"><span style="width:${quantity/max*100}%"></span><b>${fmt(quantity)}</b></div></td><td class="model-table-percent">${(quantity/total*100).toFixed(1)}%</td></tr>`).join('')}</tbody><tfoot><tr><td>รวมทั้งหมด</td><td>${fmt(total)} ชิ้น</td><td>100%</td></tr></tfoot></table>`;
 }
 function renderStamping(rows){
  renderModelScrap(rows);
