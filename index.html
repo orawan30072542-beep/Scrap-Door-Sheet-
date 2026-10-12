@@ -762,6 +762,15 @@ html body{top:0!important}
 #cloudStatus{flex:1;min-width:180px}#cloudStatus[data-state="error"]{color:#ffb1a8}#cloudStatus[data-state="saved"]{color:#7de4c5}
 #cloudLoginDialog{width:min(400px,calc(100vw - 32px));background:#0c2036;color:#dcecff;border:1px solid #335675;border-radius:16px;padding:22px}
 #cloudLoginDialog::backdrop{background:#020b19aa}#cloudLoginDialog .field{margin:14px 0}#cloudLoginDialog input{width:100%;box-sizing:border-box}#cloudLoginNotice{font-size:12px;color:#ffb1a8;min-height:20px}
+
+.stamping-bottom-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:18px;align-items:stretch}
+.stamping-bottom-row>#stampingSummarySlot{grid-column:auto;grid-row:auto;width:100%;height:430px;min-width:0}
+.model-funnel-panel{height:430px;box-sizing:border-box;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.model-funnel-panel h2{font-size:15px;font-weight:500;margin-bottom:8px}
+#stampingModelChart{flex:1;min-height:0;overflow:auto}
+#stampingModelChart svg{display:block;width:100%;height:100%}
+.model-funnel-panel .chart-note{font-size:10px;color:#9eb6cd;margin-top:6px}
+@media(max-width:700px){.stamping-bottom-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -807,7 +816,7 @@ html body{top:0!important}
 <div id="overallRateDonut" class="overall-rate-donut" role="img"><div class="overall-rate-center"><span id="overallRateValue">0.00%</span><small>อัตราของเสีย</small></div></div>
 <div class="overall-rate-totals"><div><small>ยอดของเสีย</small><span id="overallRateScrap">0</span><small>ชิ้น</small></div><div><small>ยอดผลิต</small><span id="overallRateProduction">0</span><small>ชิ้น</small></div></div>
 <div class="machine-list" id="machineCards"></div>
-</section><div id="stampingSummarySlot"></div></div><div class="stamping-right-charts"><section class="panel stamping-trend-panel" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
+</section></div><div class="stamping-right-charts"><section class="panel stamping-trend-panel" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
 <div class="top"><h2 id="stampingTrendTitle">แนวโน้มยอดของเสีย · SCRAP STAMPING</h2></div>
 <div class="periods" style="margin-bottom:10px" aria-label="เลือกข้อมูลในกราฟ"><button class="btn" type="button" data-trend-metric="production">ยอดผลิต</button><button class="btn active" type="button" data-trend-metric="scrap">ยอดของเสีย</button><button class="btn" type="button" data-trend-metric="rate">Percent Rate</button><button class="btn" type="button" data-trend-metric="cost">มูลค่าความเสียหาย</button></div>
 <div id="stampingScrapTrend" class="stamping-chart"></div><div class="chart-note" id="stampingTrendNote">แสดงสูงสุด 21 วัน / 12 สัปดาห์ / 12 เดือน · Week นับวันจันทร์–อาทิตย์</div>
@@ -820,7 +829,7 @@ html body{top:0!important}
 <div id="stampingPareto" class="stamping-chart"></div>
 <div class="chart-note">แสดงปัญหา Top 10 เรียงจากของเสียมากไปน้อย · อัตราสะสมเทียบกับของเสียทั้งหมด</div>
 </div>
-</div></div>
+</div></div><div class="stamping-bottom-row"><div id="stampingSummarySlot"></div><section class="panel model-funnel-panel"><h2>ยอดของเสียตาม Model · Top 10</h2><div id="stampingModelChart"></div><div class="chart-note">จำนวนของเสีย (ชิ้น) · สัดส่วนเทียบกับของเสียทั้งหมดในช่วงที่เลือก</div></section></div>
 </section><section class="grid cols" id="generalCharts"><div class="panel">
 <h2>แนวโน้มยอดผลิตและของเสีย</h2>
 <div class="legend">
@@ -1107,7 +1116,16 @@ function renderScrapCostTrend(rows,box){
  values.forEach(([label,value],i)=>{const x=L+step*(i+.5),h=value/max*ih,short=period==='day'?label.slice(8):period==='week'?weekLabel(label):label.slice(5)+'/'+label.slice(2,4);svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${Math.max(1,h)}" rx="3" fill="url(#costGradient)"><title>${esc(label)}: ${value.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})} บาท</title></rect><text x="${x}" y="${Math.max(16,T+ih-h-7)}" text-anchor="middle" fill="#e0f0ff" font-size="11">${value.toLocaleString('th-TH',{maximumFractionDigits:0})}</text><text x="${x}" y="${H-18}" text-anchor="middle" fill="#b9cfe2" font-size="10">${esc(short)}</text>`});
  box.innerHTML=svg+'</svg>';
 }
+function modelScrapTotals(rows){const totals=new Map();for(const row of rows){const quantity=Number(row.scrap)||0;if(quantity<=0)continue;const name=recordModel(row)||'ไม่ระบุ Model';totals.set(name,(totals.get(name)||0)+quantity)}return [...totals].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))}
+function renderModelScrap(rows){
+ const ranked=modelScrapTotals(rows),items=ranked.slice(0,10),total=ranked.reduce((sum,item)=>sum+item[1],0),box=$('#stampingModelChart');
+ if(!items.length){box.innerHTML='<p class="muted">ยังไม่มีข้อมูลของเสียในช่วงที่เลือก</p>';return}
+ const W=600,H=Math.max(290,items.length*35),gap=5,h=(H-12)/items.length-gap,colors=['#04ccb5','#36a1e7','#1675c6','#e985aa','#fa9549','#f2c651','#9b8bea','#40c2d4','#699be2','#b49bcc'];
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="กราฟกรวยยอดของเสียตาม Model" preserveAspectRatio="xMidYMid meet">`;
+ items.forEach(([name,quantity],i)=>{const top=490*quantity/items[0][1],bottom=i+1<items.length?490*items[i+1][1]/items[0][1]:top*.7,y=6+i*(h+gap),label=name.length>24?name.slice(0,24)+'…':name;svg+=`<polygon points="${(W-top)/2},${y} ${(W+top)/2},${y} ${(W+bottom)/2},${y+h} ${(W-bottom)/2},${y+h}" fill="${colors[i]}"><title>${esc(name)}: ${fmt(quantity)} ชิ้น (${(quantity/total*100).toFixed(1)}%)</title></polygon><text x="${W/2}" y="${y+h/2+4}" text-anchor="middle" fill="white" stroke="#10263c" stroke-width="2.5" paint-order="stroke" font-size="12" font-weight="400">${esc(label)} · ${fmt(quantity)} (${(quantity/total*100).toFixed(1)}%)</text>`});box.innerHTML=svg+'</svg>';
+}
 function renderStamping(rows){
+ renderModelScrap(rows);
  renderScrapTrend(rows);
  const names=[...new Set(['400T','200T','100T',...rows.map(r=>machineName(r.line)).filter(Boolean)])];
  const machines=names.map(name=>({name,production:0,scrap:0}));
