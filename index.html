@@ -806,6 +806,20 @@ html body{top:0!important}
 .shift-mini-chart{height:58px;margin-top:2px}
 .metrics.stamping-metrics{align-items:stretch}
 .shift-scrap-wide{height:78px;width:100%;margin-top:7px}
+
+.cost-card-label{font-size:15px!important;font-weight:500}
+#scrapCost{font-size:36px!important;line-height:1.2;font-weight:500}
+.cost-daily-average{margin-top:16px;padding-top:10px;border-top:1px solid #29445f;display:flex;flex-direction:column;gap:4px;color:#b5cde1;font-size:11px}
+.cost-daily-average small{font-size:11px;font-weight:400}
+.cost-daily-average b{font-size:19px;font-weight:500;color:#86d3ff;font-variant-numeric:tabular-nums}
+@media(max-width:520px){#scrapCost{font-size:30px!important}}
+
+.shift-kpi-values strong{font-size:27px;font-weight:500;line-height:1.25}
+.shift-leader-name{display:block;font-size:11px;color:#98bedb;font-weight:400;margin-top:3px}
+.shift-leader-icon{color:#78d6f4;background:#153a54;border-radius:9px;padding:6px;box-sizing:content-box;width:22px;height:22px}
+.shift-average{border-top:1px solid #29445f;padding-top:5px;margin-top:4px;font-size:10px!important;line-height:1.5}
+.shift-average span{color:#8ddbf6;font-size:13px;font-variant-numeric:tabular-nums}
+@media(max-width:520px){.shift-kpi-values strong{font-size:23px}}
 </style>
 </head>
 <body>
@@ -844,8 +858,8 @@ html body{top:0!important}
 <small>อัตราของเสีย</small><strong id="rate">0.00%</strong><em>ของเสีย ÷ ยอดผลิต × 100</em>
 </div>
 <div class="metric">
-<small class="cost-card-label"><svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 4 16 4 16 0V6M4 12v6c0 4 16 4 16 0v-6"/></svg>มูลค่าความเสียหาย</small><strong id="scrapCost">0.00</strong><em>บาท</em>
-</div><div class="shift-kpi-group" id="shiftKpiGroup" hidden><div class="shift-kpi-card"><div class="shift-kpi-title"><svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12 1 1M5 19l1-1M18 6l1-1"/></svg><span>Shift A</span></div><div class="shift-kpi-values"><div><small>ยอดของเสีย</small><strong id="shiftAScrap">0</strong><em>ชิ้น</em></div><div><small>มูลค่าความเสียหาย</small><strong id="shiftACost">0.00</strong><em>บาท</em></div></div><div class="shift-mini-chart shift-scrap-wide" id="shiftAScrapTrend"></div></div><div class="shift-kpi-card"><div class="shift-kpi-title"><svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 15A9 9 0 0 1 9 4a9 9 0 1 0 11 11Z"/></svg><span>Shift B</span></div><div class="shift-kpi-values"><div><small>ยอดของเสีย</small><strong id="shiftBScrap">0</strong><em>ชิ้น</em></div><div><small>มูลค่าความเสียหาย</small><strong id="shiftBCost">0.00</strong><em>บาท</em></div></div><div class="shift-mini-chart shift-scrap-wide" id="shiftBScrapTrend"></div></div></div></section><section id="stampingAnalytics" hidden>
+<small class="cost-card-label"><svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 4 16 4 16 0V6M4 12v6c0 4 16 4 16 0v-6"/></svg>มูลค่าความเสียหาย</small><strong id="scrapCost">0.00</strong><em>บาท</em><div class="cost-daily-average"><small>เฉลี่ยต่อวันที่มีข้อมูล</small><span><b id="scrapCostAverage">0.00</b> บาท/วัน</span></div>
+</div><div class="shift-kpi-group" id="shiftKpiGroup" hidden><div class="shift-kpi-card"><div class="shift-kpi-title"><svg class="kpi-icon shift-leader-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3M9 16l3 3 3-3"/></svg><div><span>Shift A</span><small class="shift-leader-name" id="shiftALeader">Mr.Khomsan (Supervisor) / Mr.Thawatchai (Leader)</small></div></div><div class="shift-kpi-values"><div><small>ยอดของเสีย</small><strong id="shiftAScrap">0</strong><em>ชิ้น</em><small class="shift-average">เฉลี่ย <span id="shiftAScrapAverage">0.00</span> ชิ้น/วัน</small></div><div><small>มูลค่าความเสียหาย</small><strong id="shiftACost">0.00</strong><em>บาท</em><small class="shift-average">เฉลี่ย <span id="shiftACostAverage">0.00</span> บาท/วัน</small></div></div><div class="shift-mini-chart shift-scrap-wide" id="shiftAScrapTrend"></div></div><div class="shift-kpi-card"><div class="shift-kpi-title"><svg class="kpi-icon shift-leader-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3M9 16l3 3 3-3"/></svg><div><span>Shift B</span><small class="shift-leader-name" id="shiftBLeader">Mr.Peerapat (Supervisor) / Mr.Amnuai (Leader)</small></div></div><div class="shift-kpi-values"><div><small>ยอดของเสีย</small><strong id="shiftBScrap">0</strong><em>ชิ้น</em><small class="shift-average">เฉลี่ย <span id="shiftBScrapAverage">0.00</span> ชิ้น/วัน</small></div><div><small>มูลค่าความเสียหาย</small><strong id="shiftBCost">0.00</strong><em>บาท</em><small class="shift-average">เฉลี่ย <span id="shiftBCostAverage">0.00</span> บาท/วัน</small></div></div><div class="shift-mini-chart shift-scrap-wide" id="shiftBScrapTrend"></div></div></div></section><section id="stampingAnalytics" hidden>
 <div class="stamping-dashboard-layout"><div class="stamping-kpi-left">
 <section class="panel overall-rate-panel"><h2>อัตราของเสีย</h2>
 <div id="overallRateDonut" class="overall-rate-donut" role="img"><div class="overall-rate-center"><span id="overallRateValue">0.00%</span><small>อัตราของเสีย</small></div></div>
@@ -1270,8 +1284,9 @@ $('#overallRateDonut').setAttribute('aria-label','อัตราของเส
 
 const metricGrid=$('#scrapCost').closest('.metrics');metricGrid.classList.toggle('stamping-metrics',page==='stamping');
 $('#shiftKpiGroup').hidden=page!=='stamping';
-for(const shift of ['A','B']){renderShiftDailyCharts(rows,shift);const shiftRows=rows.filter(r=>String(r.shift||'').trim().toUpperCase().replace(/^SHIFT\s*/, '')===shift);$('#shift'+shift+'Scrap').textContent=fmt(shiftRows.reduce((sum,r)=>sum+(Number(r.scrap)||0),0));$('#shift'+shift+'Cost').textContent=shiftRows.reduce((sum,r)=>sum+recordScrapCost(r),0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}
+for(const shift of ['A','B']){renderShiftDailyCharts(rows,shift);const shiftRows=rows.filter(r=>{const code=String(r.shift||'').trim().toUpperCase().replace(/^SHIFT\s*/,'');return (({DAY:'A',NIGHT:'B'})[code]||code)===shift});const days=new Set(shiftRows.map(r=>r.date).filter(Boolean)).size;$('#shift'+shift+'Leader').textContent=shift==='A'?'Mr.Khomsan (Supervisor) / Mr.Thawatchai (Leader)':'Mr.Peerapat (Supervisor) / Mr.Amnuai (Leader)';$('#shift'+shift+'ScrapAverage').textContent=(days?shiftRows.reduce((sum,r)=>sum+(Number(r.scrap)||0),0)/days:0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});$('#shift'+shift+'CostAverage').textContent=(days?shiftRows.reduce((sum,r)=>sum+recordScrapCost(r),0)/days:0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});$('#shift'+shift+'Scrap').textContent=fmt(shiftRows.reduce((sum,r)=>sum+(Number(r.scrap)||0),0));$('#shift'+shift+'Cost').textContent=shiftRows.reduce((sum,r)=>sum+recordScrapCost(r),0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}
 $('#scrapCost').textContent=rows.reduce((sum,r)=>sum+recordScrapCost(r),0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const costDays=new Set(rows.map(r=>r.date).filter(Boolean)).size,costSum=rows.reduce((sum,r)=>sum+recordScrapCost(r),0);$('#scrapCostAverage').textContent=(costDays?costSum/costDays:0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 $('#count').textContent=fmt(rows.length)+' รายการ';
 if(page==='stamping')renderStamping(rows);else chart(rows);
 let types=group(rows,r=>r.defect||'ไม่ระบุ').sort((a,b)=>b.scrap-a.scrap).slice(0,7),max=Math.max(1,...types.map(x=>x.scrap));
