@@ -763,9 +763,9 @@ html body{top:0!important}
 #cloudLoginDialog{width:min(400px,calc(100vw - 32px));background:#0c2036;color:#dcecff;border:1px solid #335675;border-radius:16px;padding:22px}
 #cloudLoginDialog::backdrop{background:#020b19aa}#cloudLoginDialog .field{margin:14px 0}#cloudLoginDialog input{width:100%;box-sizing:border-box}#cloudLoginNotice{font-size:12px;color:#ffb1a8;min-height:20px}
 
-.stamping-breakdown-pair{display:grid;grid-template-columns:1fr 1fr;min-height:0;border-top:1px solid #29445f}
+.stamping-breakdown-pair{display:grid;grid-template-columns:1fr;grid-template-rows:minmax(320px,1fr) minmax(320px,1fr);min-height:0;border-top:1px solid #29445f}
 .stamping-right-charts .stamping-breakdown-pair>.panel{display:flex;flex-direction:column;min-width:0;min-height:0;height:auto;margin:0;border:0;border-radius:0;background:transparent;padding:14px 16px;overflow:hidden}
-.stamping-model-panel{border-left:1px solid #29445f!important}
+.stamping-model-panel{border-top:1px solid #29445f!important}
 #stampingModelChart{overflow:auto;flex:1;min-height:0;padding:6px 0}
 .model-bar-row{display:grid;grid-template-columns:minmax(65px,105px) 1fr 48px;gap:8px;align-items:center;margin:9px 0;font-size:11px;font-weight:400}
 .model-bar-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -773,6 +773,9 @@ html body{top:0!important}
 .model-bar-fill{height:100%;background:linear-gradient(90deg,#247fd1,#49dbd0);border-radius:4px}
 .model-bar-value{text-align:right;font-variant-numeric:tabular-nums;color:#e4f5ff}
 @media(max-width:620px){.stamping-breakdown-pair{grid-template-columns:1fr;overflow:auto}.stamping-breakdown-pair>.panel{min-height:270px!important}.stamping-model-panel{border-left:0!important;border-top:1px solid #29445f!important}}
+.stamping-dashboard-layout>.stamping-right-charts{height:1060px;grid-template-rows:360px minmax(0,1fr)}
+.stamping-dashboard-layout .overall-rate-panel{height:1060px}
+@media(max-width:900px){.stamping-dashboard-layout .overall-rate-panel{height:auto}.stamping-dashboard-layout>.stamping-right-charts{height:1060px}}
 </style>
 </head>
 <body>
