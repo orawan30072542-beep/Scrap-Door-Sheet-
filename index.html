@@ -792,6 +792,10 @@ html body{top:0!important}
 .production-input-table .group-200T th{background:#1b4053;border-left:4px solid #45c9ba}
 .production-input-table .group-100T th{border-left:4px solid #409eff}
 .production-input-table .group-400T th{background:#343453;border-left:4px solid #a091e9}
+
+.shift-mini-chart{width:100%;height:95px;margin-top:5px;min-width:0}
+.shift-mini-chart svg{display:block;width:100%;height:100%}
+.shift-mini-chart .muted{font-size:10px;margin:10px 0}
 </style>
 </head>
 <body>
@@ -831,7 +835,7 @@ html body{top:0!important}
 </div>
 <div class="metric">
 <small class="cost-card-label"><svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 4 16 4 16 0V6M4 12v6c0 4 16 4 16 0v-6"/></svg>มูลค่าความเสียหาย</small><strong id="scrapCost">0.00</strong><em>บาท</em>
-</div><div class="shift-kpi-group" id="shiftKpiGroup" hidden><div class="shift-kpi-card"><div class="shift-kpi-title"><svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12 1 1M5 19l1-1M18 6l1-1"/></svg><span>Shift A</span></div><div class="shift-kpi-values"><div><small>ยอดของเสีย</small><strong id="shiftAScrap">0</strong><em>ชิ้น</em></div><div><small>มูลค่าความเสียหาย</small><strong id="shiftACost">0.00</strong><em>บาท</em></div></div></div><div class="shift-kpi-card"><div class="shift-kpi-title"><svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 15A9 9 0 0 1 9 4a9 9 0 1 0 11 11Z"/></svg><span>Shift B</span></div><div class="shift-kpi-values"><div><small>ยอดของเสีย</small><strong id="shiftBScrap">0</strong><em>ชิ้น</em></div><div><small>มูลค่าความเสียหาย</small><strong id="shiftBCost">0.00</strong><em>บาท</em></div></div></div></div></section><section id="stampingAnalytics" hidden>
+</div><div class="shift-kpi-group" id="shiftKpiGroup" hidden><div class="shift-kpi-card"><div class="shift-kpi-title"><svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12 1 1M5 19l1-1M18 6l1-1"/></svg><span>Shift A</span></div><div class="shift-kpi-values"><div><small>ยอดของเสีย</small><strong id="shiftAScrap">0</strong><em>ชิ้น</em><div class="shift-mini-chart" id="shiftAScrapTrend"></div></div><div><small>มูลค่าความเสียหาย</small><strong id="shiftACost">0.00</strong><em>บาท</em><div class="shift-mini-chart" id="shiftACostTrend"></div></div></div></div><div class="shift-kpi-card"><div class="shift-kpi-title"><svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M20 15A9 9 0 0 1 9 4a9 9 0 1 0 11 11Z"/></svg><span>Shift B</span></div><div class="shift-kpi-values"><div><small>ยอดของเสีย</small><strong id="shiftBScrap">0</strong><em>ชิ้น</em><div class="shift-mini-chart" id="shiftBScrapTrend"></div></div><div><small>มูลค่าความเสียหาย</small><strong id="shiftBCost">0.00</strong><em>บาท</em><div class="shift-mini-chart" id="shiftBCostTrend"></div></div></div></div></div></section><section id="stampingAnalytics" hidden>
 <div class="stamping-dashboard-layout"><div class="stamping-kpi-left">
 <section class="panel overall-rate-panel"><h2>อัตราของเสีย</h2>
 <div id="overallRateDonut" class="overall-rate-donut" role="img"><div class="overall-rate-center"><span id="overallRateValue">0.00%</span><small>อัตราของเสีย</small></div></div>
@@ -1088,6 +1092,20 @@ function previousMonthScrapTarget(date){
  const source=records.filter(r=>r.page==='stamping'&&String(r.date||'').slice(0,7)===key&&(!$('#line').value||dashboardLine(r)===$('#line').value)&&(!$('#model').value||r.defect===$('#model').value));
  if(!source.length)return null;const total=source.reduce((sum,r)=>sum+(Number(r.scrap)||0),0),base=scrapPeriod==='month'?total:total/days*(scrapPeriod==='week'?7:1);return {key,total,reduce30:base*.7,reduce50:base*.5};
 }
+function renderShiftDailyCharts(rows,shift){
+ const shiftCode=value=>{const text=String(value||'').trim().toUpperCase().replace(/^SHIFT\s*/,'');return ({DAY:'A',NIGHT:'B'})[text]||text};
+ const dates=[...new Set(rows.map(r=>r.date).filter(date=>/^\d{4}-\d{2}-\d{2}$/.test(date)))].sort(),month=$('#monthFilter').value;
+ if(month){const days=new Date(Number(month.slice(0,4)),Number(month.slice(5)),0).getDate();for(let day=1;day<=days;day++){const date=month+'-'+String(day).padStart(2,'0');if((!$('#start').value||date>=$('#start').value)&&(!$('#end').value||date<=$('#end').value)&&!dates.includes(date))dates.push(date)}dates.sort()}
+ const totals=new Map();for(const row of rows){if(shiftCode(row.shift)!==shift)continue;const value=totals.get(row.date)||{scrap:0,cost:0};value.scrap+=Number(row.scrap)||0;value.cost+=recordScrapCost(row);totals.set(row.date,value)}
+ for(const [metric,color] of [['Scrap','#3dd8ee'],['Cost','#a295ff']]){
+ const box=$('#shift'+shift+metric+'Trend');if(!totals.size){box.innerHTML='<p class="muted">ยังไม่มีข้อมูลรายวัน</p>';continue}
+ const values=dates.map(date=>({date,value:totals.has(date)?totals.get(date)[metric.toLowerCase()]:null})),max=Math.max(1,...values.map(item=>item.value||0)),W=260,H=95,L=8,R=8,T=12,B=22,iw=W-L-R,ih=H-T-B,x=i=>L+iw*(values.length===1?.5:i/(values.length-1));
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Shift ${shift} ${metric==='Scrap'?'ยอดของเสีย':'มูลค่าความเสียหาย'}รายวัน"><line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="#29445f"/>`,segment=[];
+ const draw=()=>{if(segment.length)svg+=`<polyline points="${segment.join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`;segment=[]};
+ values.forEach((item,i)=>{if(item.value===null){draw();return}const y=T+ih-item.value/max*ih;segment.push(x(i)+','+y);svg+=`<circle cx="${x(i)}" cy="${y}" r="2" fill="${color}"><title>${item.date}: ${fmt(item.value)} ${metric==='Scrap'?'ชิ้น':'บาท'}</title></circle>`});draw();
+ const indexes=[...new Set([0,Math.floor((values.length-1)/2),values.length-1])];indexes.forEach(i=>{if(!values[i])return;svg+=`<text x="${x(i)}" y="${H-5}" text-anchor="${i===0?'start':i===values.length-1?'end':'middle'}" fill="#9db9ce" font-size="9">${values[i].date.slice(8)+'/'+values[i].date.slice(5,7)}</text>`});box.innerHTML=svg+'</svg>';
+ }
+}
 function renderScrapTrend(rows){
  const box=$('#stampingScrapTrend'),titles={production:'ยอดผลิต',scrap:'ยอดของเสีย',rate:'อัตราของเสีย (%)',cost:'มูลค่าความเสียหาย (บาท)'};
  $('#stampingTrendTitle').textContent='แนวโน้ม'+titles[trendMetric]+' · SCRAP STAMPING';
@@ -1242,7 +1260,7 @@ $('#overallRateDonut').setAttribute('aria-label','อัตราของเส
 
 const metricGrid=$('#scrapCost').closest('.metrics');metricGrid.classList.toggle('stamping-metrics',page==='stamping');
 $('#shiftKpiGroup').hidden=page!=='stamping';
-for(const shift of ['A','B']){const shiftRows=rows.filter(r=>String(r.shift||'').trim().toUpperCase().replace(/^SHIFT\s*/, '')===shift);$('#shift'+shift+'Scrap').textContent=fmt(shiftRows.reduce((sum,r)=>sum+(Number(r.scrap)||0),0));$('#shift'+shift+'Cost').textContent=shiftRows.reduce((sum,r)=>sum+recordScrapCost(r),0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}
+for(const shift of ['A','B']){renderShiftDailyCharts(rows,shift);const shiftRows=rows.filter(r=>String(r.shift||'').trim().toUpperCase().replace(/^SHIFT\s*/, '')===shift);$('#shift'+shift+'Scrap').textContent=fmt(shiftRows.reduce((sum,r)=>sum+(Number(r.scrap)||0),0));$('#shift'+shift+'Cost').textContent=shiftRows.reduce((sum,r)=>sum+recordScrapCost(r),0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}
 $('#scrapCost').textContent=rows.reduce((sum,r)=>sum+recordScrapCost(r),0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 $('#count').textContent=fmt(rows.length)+' รายการ';
 if(page==='stamping')renderStamping(rows);else chart(rows);
