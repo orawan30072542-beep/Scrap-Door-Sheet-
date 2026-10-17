@@ -887,6 +887,7 @@ html body{top:0!important}
 <div class="field">
 <label>ไลน์ / พื้นที่</label><select id="line" hidden><option value="">ทั้งหมด</option></select><div id="lineButtons" class="line-buttons" aria-label="เลือกไลน์หรือพื้นที่"></div>
 </div>
+<div class="field"><label>กะการผลิต</label><select id="shiftFilter"><option value="">ทั้งหมด</option><option value="A">Shift A</option><option value="B">Shift B</option></select></div>
 <div class="field date-range-field"><label>ช่วงวันที่</label><input type="hidden" id="start"><input type="hidden" id="end"><button class="btn" type="button" id="openRangeCalendar">เลือกช่วงวันที่</button></div>
 
 <div class="field">
@@ -1085,7 +1086,8 @@ d.setUTCDate(d.getUTCDate()-day+3);
 let y=d.getUTCFullYear(),first=new Date(Date.UTC(y,0,4)),w=1+Math.round(((d-first)/86400000-3+(first.getUTCDay()+6)%7)/7);
 return `${y}-W${String(w).padStart(2,'0')}`}function weekLabel(value){return /^\d{4}-W\d{2}$/.test(value)?'Week '+Number(value.slice(6))+' / '+value.slice(0,4):value}
 function key(d){return period==='month'?d.slice(0,7):period==='week'?weekKey(d):d}function dashboardLine(r){return r.page==='stamping'?(machineName(r.line)||r.line):r.line}
-function filtered(){return records.filter(r=>r.page===page&&(!$('#monthFilter').value||String(r.date||'').slice(0,7)===$('#monthFilter').value)&&(!$('#start').value||r.date>=$('#start').value)&&(!$('#end').value||r.date<=$('#end').value)&&(!$('#line').value||dashboardLine(r)===$('#line').value)&&(!$('#model').value||r.defect===$('#model').value))}function monthOptions(){
+function dashboardShift(r){const shift=String(r.shift||'').trim().toUpperCase();return ['A','SHIFT A','DAY'].includes(shift)?'A':['B','SHIFT B','NIGHT'].includes(shift)?'B':shift}
+function filtered(){return records.filter(r=>r.page===page&&(!$('#shiftFilter').value||dashboardShift(r)===$('#shiftFilter').value)&&(!$('#monthFilter').value||String(r.date||'').slice(0,7)===$('#monthFilter').value)&&(!$('#start').value||r.date>=$('#start').value)&&(!$('#end').value||r.date<=$('#end').value)&&(!$('#line').value||dashboardLine(r)===$('#line').value)&&(!$('#model').value||r.defect===$('#model').value))}function monthOptions(){
  const el=$('#monthFilter'),months=[...new Set(records.filter(r=>r.page===page&&/^\d{4}-\d{2}-\d{2}$/.test(r.date)).map(r=>r.date.slice(0,7)))].sort(),names=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
  if(!months.includes(el.value))el.value='';
  const years=[...new Set(months.map(m=>m.slice(0,4)))].reverse();
@@ -1409,7 +1411,7 @@ document.addEventListener('click',event=>{
  event.preventDefault();setDashboardView(button.dataset.period);
 },true);
 document.querySelectorAll('[data-trend-metric]').forEach(b=>b.onclick=()=>{trendMetric=b.dataset.trendMetric;document.querySelectorAll('[data-trend-metric]').forEach(x=>x.classList.toggle('active',x===b));render()});
-['line','model'].forEach(id=>$('#'+id).onchange=render);
+['line','model','shiftFilter'].forEach(id=>$('#'+id).onchange=render);
 ['start','end'].forEach(id=>$('#'+id).onchange=()=>{$('#monthFilter').value='';viewAnchorDate=$('#'+id).value;render()});
 $('#lineButtons').onclick=e=>{const button=e.target.closest('[data-line]');if(!button)return;$('#line').value=button.dataset.line;render()};
 $('#monthButtons').onclick=e=>{const button=e.target.closest('[data-month]');if(!button)return;$('#monthFilter').value=button.dataset.month;$('#monthFilter').onchange()};
@@ -1694,7 +1696,7 @@ $('#clearRecordData').onclick=()=>{
  alert('ล้างยอดผลิตและของเสียทั้งหมดแล้ว ฐานข้อมูลยังอยู่');
 };
 
-$('#resetFilters').onclick=()=>{['monthFilter','start','end','line','model'].forEach(id=>$('#'+id).value='');render()};
+$('#resetFilters').onclick=()=>{['monthFilter','start','end','line','model','shiftFilter'].forEach(id=>$('#'+id).value='');render()};
 </script>
 <script>
 (function(){
