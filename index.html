@@ -1477,6 +1477,22 @@ $('#stampScrapFile').onchange=async e=>{const file=e.target.files[0];e.target.va
  notice.textContent=[missingPartCandidates().length?'พบ Part ที่ต้องเติมข้อมูล '+missingPartCandidates().length+' รหัส · เปิดฐานข้อมูล Part เพื่อดาวน์โหลดรายการและอัปโหลดข้อมูลกลับ':'',pendingStampFile.missingModels?.length?'ยังไม่ได้ตั้ง Model '+pendingStampFile.missingModels.length+' Part Code (ยังบันทึกจำนวนได้ครบ และจะแสดง Model ตามฐานข้อมูลเมื่อตั้งค่า): '+pendingStampFile.missingModels.join(', '):'',result.duplicates?'ตรวจพบข้อมูลซ้ำ ระบบจะบันทึกเฉพาะรายการใหม่':'',pendingStampFile.errors?.length?'ยังบันทึกไม่ได้ เพราะมีข้อมูลไม่ถูกต้อง '+pendingStampFile.errors.length+' แถว: '+pendingStampFile.errors.join(' · '):''].filter(Boolean).join(' · ');$('#confirmStampScrap').disabled=!rows.length||Boolean(pendingStampFile.errors?.length);$('#stampScrapPreview').showModal();
  }catch(err){pendingStampFile=null;$('#notice').textContent='อ่านไฟล์ยอดของเสียไม่ได้: '+err.message}};
 function closeStampPreview(){pendingStampFile=null;$('#stampScrapPreview').close()}
+function planStampReplacement(incoming,existing){
+ const months=new Set(incoming.map(r=>r.date.slice(0,7)));
+ const removed=existing.filter(r=>r.page==='stamping'&&Number(r.scrap)>0&&!(Number(r.production)>0)&&months.has(String(r.date||'').slice(0,7))&&(String(r.sourceTag||'').startsWith('stamp-csv:')||String(r.id||'').startsWith('csv:stamp-csv:')));
+ const removeIds=new Set(removed);return {removed,kept:existing.filter(r=>!removeIds.has(r)),months:[...months].sort()};
+}
+const replaceStampImport=document.createElement('button');replaceStampImport.type='button';replaceStampImport.className='btn';replaceStampImport.textContent='แทนที่ข้อมูล Excel เดิมตามเดือนในไฟล์';$('#stampScrapPreviewNotice').after(replaceStampImport);
+replaceStampImport.onclick=()=>{
+ if(!pendingStampFile)return;const incoming=pendingStampFile.rows;
+ if(pendingStampFile.errors?.length){$('#stampScrapPreviewNotice').textContent='กรุณาแก้ข้อผิดพลาดทุกแถวก่อนแทนที่ข้อมูล';return}
+ const plan=planStampReplacement(incoming,records),sum=rows=>rows.reduce((n,r)=>n+(Number(r.scrap)||0),0),groups=rows=>{const map=new Map();for(const r of rows){const k=dashboardShift(r)+' / '+(machineName(r.line)||r.line);map.set(k,(map.get(k)||0)+(Number(r.scrap)||0))}return map},oldGroups=groups(plan.removed),newGroups=groups(incoming),keys=[...new Set([...oldGroups.keys(),...newGroups.keys()])].sort();
+ const review='แทนที่เฉพาะข้อมูลนำเข้า Excel/CSV ของเดือน '+plan.months.join(', ')+'\nโปรดใช้ไฟล์ที่มีข้อมูลครบทั้งเดือน\n\nเดิม '+plan.removed.length+' แถว / '+fmt(sum(plan.removed))+' ชิ้น\nใหม่ '+incoming.length+' แถว / '+fmt(sum(incoming))+' ชิ้น\n\n'+keys.map(k=>k+': '+fmt(oldGroups.get(k)||0)+' → '+fmt(newGroups.get(k)||0)).join('\n')+'\n\nคงยอดผลิตและรายการที่กรอกเองไว้ ยืนยันแทนที่หรือไม่?';
+ if(!confirm(review))return;
+ const previous=records,sourceTag=pendingStampFile.sourceTag;
+ try{localStorage.setItem('scrap_before_excel_replace_v1',JSON.stringify({exportedAt:new Date().toISOString(),records:previous}));records=[...plan.kept,...incoming.map((r,i)=>({...r,id:'csv:'+sourceTag+':'+(crypto.randomUUID?.()||Date.now()+'-'+i),sourceTag}))];save()}catch(error){records=previous;$('#stampScrapPreviewNotice').textContent='แทนที่ไม่ได้: '+error.message;return}
+ $('#monthFilter').value=plan.months.length===1?plan.months[0]:'';['start','end','line','model','shiftFilter'].forEach(id=>$('#'+id).value='');syncShiftButtons();closeStampPreview();render();$('#notice').textContent='แทนที่ข้อมูลนำเข้าแล้ว '+incoming.length+' แถว / '+fmt(sum(incoming))+' ชิ้น · กำลังซิงก์ฐานข้อมูลออนไลน์';
+};
 const manageMissingParts=document.createElement('button');manageMissingParts.type='button';manageMissingParts.className='btn';manageMissingParts.textContent='จัดการ Part ที่ข้อมูลยังไม่ครบ';$('#stampScrapPreviewNotice').after(manageMissingParts);manageMissingParts.onclick=()=>{renderPartsDb();$('#partsDbDialog').showModal()};
 $('#closeStampScrapPreview').onclick=closeStampPreview;$('#cancelStampScrap').onclick=closeStampPreview;
 $('#stampScrapPreview').onclick=e=>{if(e.target===$('#stampScrapPreview'))closeStampPreview()};
