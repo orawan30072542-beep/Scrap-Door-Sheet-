@@ -992,6 +992,35 @@ td{border-color:#2a405b!important;font-weight:400}
 @media(max-width:900px){.wrap{padding:16px!important}.stamping-dashboard-layout{grid-template-columns:1fr}.overall-rate-panel{height:660px!important;min-height:660px!important}.stamping-dashboard-layout>.stamping-right-charts{height:660px!important}}
 @media(max-width:700px){.wrap{padding:12px!important}.stamping-bottom-row,.stamping-bottom-row:has(#stampingSummarySlot:empty){grid-template-columns:1fr}.stamping-bottom-row>.stamping-pareto-panel,.stamping-bottom-row>.model-funnel-panel{height:360px!important}}
 
+
+/* Fit maximized browser windows without stretching the dashboard indefinitely. */
+:root{--dashboard-chart-height:clamp(560px,82vh,700px)}
+.wrap{max-width:1600px!important;padding:16px 20px!important}
+.dashboard-language-bar{padding:5px 20px;min-height:34px}
+.dashboard-language-bar button{padding:3px 10px;font-size:11px}
+.dashboard-header{gap:18px;padding:10px 0;margin-bottom:12px}
+.dashboard-header .haier-header-logo{width:clamp(100px,10vw,145px);max-height:66px;padding-right:16px;align-self:center}
+.dashboard-heading h1{font-size:clamp(21px,1.9vw,29px);margin:5px 0}
+.dashboard-heading .eyebrow{font-size:9px}
+.dashboard-heading .sub{font-size:11px}
+.header-navigation .btn{padding:8px 10px;font-size:11px}
+.filter-panel{padding:10px 14px!important;margin-bottom:12px}
+.filter-heading{margin-bottom:6px}
+.filter-heading strong{font-size:13px}
+.filter-heading span{display:none}
+.filter-panel .filters{grid-template-columns:100px minmax(150px,1.3fr) 100px 110px minmax(150px,1fr) minmax(150px,1fr);gap:10px;align-items:start}
+.filter-panel .line-buttons,.filter-panel .month-buttons{max-height:112px;overflow:auto}
+.filter-panel .field>label{font-size:10px}
+.filter-panel .periods .btn,.filter-panel .month-choice{min-height:22px;padding:3px 7px;font-size:11px}
+.stamping-dashboard-layout>.stamping-right-charts{height:var(--dashboard-chart-height)!important}
+.overall-rate-panel{height:var(--dashboard-chart-height)!important;min-height:var(--dashboard-chart-height)!important;grid-template-rows:auto 140px 54px minmax(0,1fr);gap:8px;padding:14px}
+.overall-rate-donut{width:140px;height:140px}
+.overall-rate-totals{height:54px}
+.stamping-right-charts>.stamping-trend-panel{padding:14px!important}
+.stamping-right-charts #stampingScrapTrend{min-height:200px}
+@media(max-width:1100px){.filter-panel .filters{grid-template-columns:100px minmax(150px,1fr) 100px 105px minmax(145px,1fr) minmax(145px,1fr);overflow-x:auto}.header-navigation{gap:5px}}
+@media(max-width:900px){.wrap{padding:12px!important}.stamping-dashboard-layout{grid-template-columns:1fr}.dashboard-header{position:relative;top:0!important}.stamping-dashboard-layout>.stamping-right-charts{height:620px!important}.overall-rate-panel{height:620px!important;min-height:620px!important}}
+
 </style>
 </head>
 <body>
@@ -1299,6 +1328,13 @@ function renderProductionOverview(rows,box){
  box.innerHTML=entries.length?`<div class="production-overview-scroll"><table class="production-overview-table"><thead><tr><th>ลำดับ</th><th>ช่วงเวลา</th><th>กะการผลิต</th>${machines.map(m=>`<th>${m}</th>`).join('')}<th>ยอดผลิตรวม (ชิ้น)</th></tr></thead><tbody>${entries.map((item,i)=>`<tr><td>${i+1}</td><td>${esc(label(item.date))}</td><td>${esc(item.shift)}</td>${item.values.map(n=>`<td>${fmt(n)}</td>`).join('')}<td class="production-overview-total">${fmt(item.values.reduce((a,b)=>a+b,0))}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="3">ยอดผลิตรวมทั้งหมด</td>${totals.map(n=>`<td>${fmt(n)}</td>`).join('')}<td>${fmt(totals.reduce((a,b)=>a+b,0))}</td></tr></tfoot></table></div>`:'<span class="stamping-empty">ยังไม่มีข้อมูลยอดผลิตในช่วงที่เลือก</span>';
 }
 function previousMonthScrapTarget(date){
+ // Weekly keys are ISO week identifiers, not calendar dates.
+ if(/^\d{4}-W\d{2}$/.test(date)){
+  const selected=$('#monthFilter').value;
+  if(/^\d{4}-\d{2}$/.test(selected))date=selected+'-01';
+  else{const year=Number(date.slice(0,4)),week=Number(date.slice(6)),jan4=new Date(Date.UTC(year,0,4));jan4.setUTCDate(4-((jan4.getUTCDay()+6)%7)+(week-1)*7);date=jan4.toISOString().slice(0,10)}
+ }
+ if(!/^\d{4}-\d{2}(?:-\d{2})?$/.test(date))return null;
  const year=Number(date.slice(0,4)),month=Number(date.slice(5,7)),previous=new Date(Date.UTC(year,month-2,1)),key=previous.toISOString().slice(0,7),days=new Date(Date.UTC(previous.getUTCFullYear(),previous.getUTCMonth()+1,0)).getUTCDate();
  const source=records.filter(r=>r.page==='stamping'&&String(r.date||'').slice(0,7)===key&&(!$('#line').value||dashboardLine(r)===$('#line').value)&&(!$('#model').value||r.defect===$('#model').value));
  if(!source.length)return null;const total=source.reduce((sum,r)=>sum+(Number(r.scrap)||0),0),base=period==='month'?total:total/days*(period==='week'?7:1);return {key,total,reduce30:base*.7,reduce50:base*.5};
