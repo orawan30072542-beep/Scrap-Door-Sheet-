@@ -1211,13 +1211,18 @@ function renderMissingParts(){const codes=missingPartCandidates();$('#missingPar
 function savePartsDb(){localStorage.setItem(PARTS_DB_KEY,JSON.stringify(partsDb));$('#partsDbNotice').textContent=`มี ${Object.keys(partsDb).length} Part ในฐานข้อมูล`}
 function renderPartsDb(){renderMissingParts();$('#partsDbRows').innerHTML=Object.entries(partsDb).sort(([a],[b])=>a.localeCompare(b)).map(([code,p])=>`<tr><td>${esc(code)}</td><td>${esc(p.name)}</td><td class="num">${Number(p.price).toFixed(2)}</td><td>${esc(p.model||'')}</td></tr>`).join('')||'<tr><td colspan="4">ยังไม่มีข้อมูล Part</td></tr>'}
 
-let page='foam',period='month',scrapPeriod='month',trendMetric='scrap',summaryKeys=[],editRecordIndex=-1;
+let page='foam',period='month',trendMetric='scrap',summaryKeys=[],editRecordIndex=-1;
 const $=s=>document.querySelector(s),fmt=n=>new Intl.NumberFormat('th-TH').format(n),rate=(s,p)=>p>0?100*s/p:0,esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),save=()=>localStorage.setItem(KEY,JSON.stringify(records));
 $('input[name=date]').value=new Date().toLocaleDateString('en-CA');
-function weekKey(date){let d=new Date(date+'T12:00:00Z'),day=(d.getUTCDay()+6)%7;
-d.setUTCDate(d.getUTCDate()-day+3);
-let y=d.getUTCFullYear(),first=new Date(Date.UTC(y,0,4)),w=1+Math.round(((d-first)/86400000-3+(first.getUTCDay()+6)%7)/7);
-return `${y}-W${String(w).padStart(2,'0')}`}function weekLabel(value){return /^\d{4}-W\d{2}$/.test(value)?'Week '+Number(value.slice(6))+' / '+value.slice(0,4):value}
+function weekKey(date){
+ const d=new Date(date+'T00:00:00Z');if(!Number.isFinite(d.getTime()))return '';
+ d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7));
+ const year=d.getUTCFullYear(),first=new Date(Date.UTC(year,0,1));
+ const week=Math.ceil((((d-first)/86400000)+1)/7);
+ return `${year}-W${String(week).padStart(2,'0')}`;
+}
+function weekLabel(value){return /^\d{4}-W\d{2}$/.test(value)?'Week '+Number(value.slice(6))+' / '+value.slice(0,4):value}
+function dashboardPeriodLabel(value){return /^\d{4}-W\d{2}$/.test(value)?'Week '+Number(value.slice(6)):/^\d{4}-\d{2}-\d{2}$/.test(value)?value.slice(8):summaryPeriodLabel(value)}
 function key(d){return period==='month'?d.slice(0,7):period==='week'?weekKey(d):d}function dashboardLine(r){return r.page==='stamping'?(machineName(r.line)||r.line):r.line}
 function dashboardShift(r){const shift=String(r.shift||'').trim().toUpperCase();return ['A','SHIFT A','DAY'].includes(shift)?'A':['B','SHIFT B','NIGHT'].includes(shift)?'B':shift}
 function filtered(){return records.filter(r=>r.page===page&&(!$('#shiftFilter').value||dashboardShift(r)===$('#shiftFilter').value)&&(!$('#monthFilter').value||String(r.date||'').slice(0,7)===$('#monthFilter').value)&&(!$('#start').value||r.date>=$('#start').value)&&(!$('#end').value||r.date<=$('#end').value)&&(!$('#line').value||dashboardLine(r)===$('#line').value)&&(!$('#model').value||r.defect===$('#model').value))}function monthOptions(){
@@ -1285,18 +1290,18 @@ function machineName(value){
 function renderProductionOverview(rows,box){
  const machines=['100T','200T','400T'],groups=new Map();
  for(const r of rows){const machine=machineName(r.line);if(!machines.includes(machine)||!/^\d{4}-\d{2}-\d{2}$/.test(r.date))continue;
-  const date=scrapPeriod==='month'?r.date.slice(0,7):scrapPeriod==='week'?weekKey(r.date):r.date,shift=summaryShift(r.shift),id=date+'\u0001'+shift;
+  const date=period==='month'?r.date.slice(0,7):period==='week'?weekKey(r.date):r.date,shift=summaryShift(r.shift),id=date+'\u0001'+shift;
   let item=groups.get(id);if(!item){item={date,shift,values:[0,0,0]};groups.set(id,item)}item.values[machines.indexOf(machine)]+=Number(r.production)||0;
  }
  const entries=[...groups.values()].sort((a,b)=>a.date.localeCompare(b.date)||a.shift.localeCompare(b.shift)),totals=[0,0,0];
- const label=date=>scrapPeriod==='week'?weekLabel(date):scrapPeriod==='month'?date.slice(5)+'/'+date.slice(0,4):date.slice(8)+'/'+date.slice(5,7)+'/'+date.slice(0,4);
+ const label=date=>period==='week'?weekLabel(date):period==='month'?date.slice(5)+'/'+date.slice(0,4):date.slice(8)+'/'+date.slice(5,7)+'/'+date.slice(0,4);
  entries.forEach(item=>item.values.forEach((n,i)=>totals[i]+=n));
  box.innerHTML=entries.length?`<div class="production-overview-scroll"><table class="production-overview-table"><thead><tr><th>ลำดับ</th><th>ช่วงเวลา</th><th>กะการผลิต</th>${machines.map(m=>`<th>${m}</th>`).join('')}<th>ยอดผลิตรวม (ชิ้น)</th></tr></thead><tbody>${entries.map((item,i)=>`<tr><td>${i+1}</td><td>${esc(label(item.date))}</td><td>${esc(item.shift)}</td>${item.values.map(n=>`<td>${fmt(n)}</td>`).join('')}<td class="production-overview-total">${fmt(item.values.reduce((a,b)=>a+b,0))}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="3">ยอดผลิตรวมทั้งหมด</td>${totals.map(n=>`<td>${fmt(n)}</td>`).join('')}<td>${fmt(totals.reduce((a,b)=>a+b,0))}</td></tr></tfoot></table></div>`:'<span class="stamping-empty">ยังไม่มีข้อมูลยอดผลิตในช่วงที่เลือก</span>';
 }
 function previousMonthScrapTarget(date){
  const year=Number(date.slice(0,4)),month=Number(date.slice(5,7)),previous=new Date(Date.UTC(year,month-2,1)),key=previous.toISOString().slice(0,7),days=new Date(Date.UTC(previous.getUTCFullYear(),previous.getUTCMonth()+1,0)).getUTCDate();
  const source=records.filter(r=>r.page==='stamping'&&String(r.date||'').slice(0,7)===key&&(!$('#line').value||dashboardLine(r)===$('#line').value)&&(!$('#model').value||r.defect===$('#model').value));
- if(!source.length)return null;const total=source.reduce((sum,r)=>sum+(Number(r.scrap)||0),0),base=scrapPeriod==='month'?total:total/days*(scrapPeriod==='week'?7:1);return {key,total,reduce30:base*.7,reduce50:base*.5};
+ if(!source.length)return null;const total=source.reduce((sum,r)=>sum+(Number(r.scrap)||0),0),base=period==='month'?total:total/days*(period==='week'?7:1);return {key,total,reduce30:base*.7,reduce50:base*.5};
 }
 function renderShiftDailyCharts(rows,shift){
  const shiftCode=value=>{const text=String(value||'').trim().toUpperCase().replace(/^SHIFT\s*/,'');return ({DAY:'A',NIGHT:'B'})[text]||text};
@@ -1317,18 +1322,18 @@ function renderScrapTrend(rows){
  $('#stampingTrendTitle').textContent='แนวโน้ม'+titles[trendMetric]+' · SCRAP STAMPING';
  if(trendMetric==='cost'){renderScrapCostTrend(rows,box);$('#stampingTrendNote').textContent='มูลค่าความเสียหาย (บาท)';return}
  const totals=new Map();
- for(const r of rows){if(!/^\d{4}-\d{2}-\d{2}$/.test(r.date))continue;const k=scrapPeriod==='month'?r.date.slice(0,7):scrapPeriod==='week'?weekKey(r.date):r.date,v=totals.get(k)||{production:0,scrap:0};v.production+=Number(r.production)||0;v.scrap+=Number(r.scrap)||0;v.shifts??={A:{production:0,scrap:0},B:{production:0,scrap:0},other:{production:0,scrap:0}};const shift=String(r.shift||'').trim().toUpperCase(),bucket=['A','SHIFT A','DAY'].includes(shift)?'A':['B','SHIFT B','NIGHT'].includes(shift)?'B':'other';v.shifts[bucket].production+=Number(r.production)||0;v.shifts[bucket].scrap+=Number(r.scrap)||0;totals.set(k,v)}
+ for(const r of rows){if(!/^\d{4}-\d{2}-\d{2}$/.test(r.date))continue;const k=key(r.date),v=totals.get(k)||{production:0,scrap:0};v.production+=Number(r.production)||0;v.scrap+=Number(r.scrap)||0;v.shifts??={A:{production:0,scrap:0},B:{production:0,scrap:0},other:{production:0,scrap:0}};const shift=String(r.shift||'').trim().toUpperCase(),bucket=['A','SHIFT A','DAY'].includes(shift)?'A':['B','SHIFT B','NIGHT'].includes(shift)?'B':'other';v.shifts[bucket].production+=Number(r.production)||0;v.shifts[bucket].scrap+=Number(r.scrap)||0;totals.set(k,v)}
  const selectedMonth=$('#monthFilter').value;
  const periods=[...totals].sort((a,b)=>a[0].localeCompare(b[0]));
  const values=periods.map(([label,v])=>({label,shifts:v.shifts,amount:trendMetric==='rate'?(v.production>0?rate(v.scrap,v.production):null):v[trendMetric]}));
  const missing=values.filter(v=>v.amount===null).length;
  const showScrapTargets=trendMetric==='scrap'&&Boolean(selectedMonth);
  const scrapTargets=showScrapTargets?values.map(v=>previousMonthScrapTarget(v.label)):[];
- $('#stampingTrendNote').textContent=(scrapPeriod==='month'?'สรุปรายเดือน':scrapPeriod==='week'?'สรุปรายสัปดาห์ · วันจันทร์–อาทิตย์':selectedMonth?'ข้อมูลรายวัน · แสดงเฉพาะวันที่มีรายการ':'ข้อมูลรายวัน')+(trendMetric==='rate'&&missing?' · '+missing+' ช่วงไม่มีข้อมูลยอดผลิต จึงไม่คำนวณ Percent Rate':'');
+ $('#stampingTrendNote').textContent=(period==='month'?'สรุปรายเดือน':period==='week'?'สรุปรายสัปดาห์ · วันจันทร์–อาทิตย์':selectedMonth?'ข้อมูลรายวัน · แสดงเฉพาะวันที่มีรายการ':'ข้อมูลรายวัน')+(trendMetric==='rate'&&missing?' · '+missing+' ช่วงไม่มีข้อมูลยอดผลิต จึงไม่คำนวณ Percent Rate':'');
  if(!values.length||values.every(v=>v.amount===null)){box.innerHTML='<span class="stamping-empty">'+(trendMetric==='rate'?'ยังไม่มียอดผลิตสำหรับคำนวณ Percent Rate':'ยังไม่มีข้อมูล'+titles[trendMetric]+'ในช่วงที่เลือก')+'</span>';return}
- if(showScrapTargets)$('#stampingTrendNote').textContent+=' · Target ลด 30% / 50% จากเดือนก่อน'+(scrapPeriod==='month'?' (ยอดรวมเดือน)':scrapPeriod==='week'?' (เฉลี่ยต่อวัน × 7)':' (เฉลี่ยต่อวันตามวันปฏิทิน)')+(scrapTargets.some(t=>!t)?' · ช่วงที่ไม่มีข้อมูลเดือนก่อนจะไม่แสดง Target':'');
+ if(showScrapTargets)$('#stampingTrendNote').textContent+=' · Target ลด 30% / 50% จากเดือนก่อน'+(period==='month'?' (ยอดรวมเดือน)':period==='week'?' (เฉลี่ยต่อวัน × 7)':' (เฉลี่ยต่อวันตามวันปฏิทิน)')+(scrapTargets.some(t=>!t)?' · ช่วงที่ไม่มีข้อมูลเดือนก่อนจะไม่แสดง Target':'');
  const W=Math.max(320,box.clientWidth||900),H=Math.max(180,box.clientHeight||250),L=55,R=12,T=25,B=55,iw=W-L-R,ih=H-T-B,max=trendMetric==='rate'?Math.max(6,...values.map(v=>(v.amount??0)*1.1)):Math.max(1,...values.map(v=>v.amount??0),...scrapTargets.map(t=>t?.reduce30||0))*1.12,step=iw/values.length,width=Math.min(34,step*.65),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#69baff':'#339dff';
- let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet" aria-label="${titles[trendMetric]}${scrapPeriod==='month'?'รายเดือน':scrapPeriod==='week'?'รายสัปดาห์':'รายวัน'}">`;
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet" aria-label="${titles[trendMetric]}${period==='month'?'รายเดือน':period==='week'?'รายสัปดาห์':'รายวัน'}">`;
  if(trendMetric!=='rate')svg+=`<defs><linearGradient id="trendBarGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#28d9f2"/><stop offset="48%" stop-color="#268ff0"/><stop offset="100%" stop-color="#2548b7"/></linearGradient></defs>`;
  for(let n=0;n<=4;n++){const y=T+ih*n/4,scale=max*(4-n)/4;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#6384a4" stroke-opacity=".18" stroke-dasharray="3 5"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#a7bfd4" font-size="11" font-weight="400">${trendMetric==='rate'?scale.toFixed(2)+'%':fmt(Math.round(scale))}</text>`}
  if(trendMetric==='rate'){
@@ -1337,7 +1342,7 @@ function renderScrapTrend(rows){
   svg+=`<defs><linearGradient id="trendLineGradient" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#20ddff"/><stop offset="50%" stop-color="#458aff"/><stop offset="100%" stop-color="#bb67ff"/></linearGradient><linearGradient id="trendAreaGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#39bfff" stop-opacity=".42"/><stop offset="100%" stop-color="#248bd5" stop-opacity=".06"/></linearGradient></defs>`;
   segments.forEach(points=>{const path=points.map((p,i)=>(i?'L':'M')+p.join(' ')).join(' '),area=path+' L '+points.at(-1)[0]+' '+(T+ih)+' L '+points[0][0]+' '+(T+ih)+' Z';svg+=`<path d="${area}" fill="url(#trendAreaGradient)"/><path d="${path}" fill="none" stroke="#5dd6e8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`});
  }
- values.forEach(({label,amount,shifts},i)=>{const x=L+step*(i+.5),short=scrapPeriod==='week'?weekLabel(label):scrapPeriod==='month'?label.slice(5)+'/'+label.slice(2,4):label.slice(8);if(amount!==null){const h=amount/max*ih,display=trendMetric==='rate'?amount.toFixed(2)+'%':fmt(amount);svg+=(trendMetric==='rate'?`<circle cx="${x}" cy="${T+ih-h}" r="2.8" fill="#5dd6e8"><title>${esc(label)}: ${display}</title></circle>`:(()=>{let bars='',base=0;for(const [shift,fill] of [['A','#5dd6e8'],['B','#587cf5'],['other','#8496ac']]){const value=shifts?.[shift]?.[trendMetric]||0;if(value<=0)continue;const height=value/max*ih;bars+=`<rect data-shift="${shift}" x="${x-width/2}" y="${T+ih-base-height}" width="${width}" height="${height}" fill="${fill}"><title>${esc(label)} · ${shift==='other'?'ไม่ระบุกะ':'Shift '+shift}: ${fmt(value)} ชิ้น · รวม ${display} ชิ้น</title></rect>`;base+=height}return bars})())+`<text x="${x}" y="${Math.max(24,T+ih-h-10)}" text-anchor="middle" fill="#dce9fa" font-size="${trendMetric==='rate'?11:trendMetric==='production'?10:14}" font-weight="400">${display}</text>`}else svg+=`<text x="${x}" y="${T+ih-8}" text-anchor="middle" fill="#9db5ca" font-size="13">—</text>`;svg+=`<text class="trend-date-label" x="${x}" y="${H-34}" text-anchor="middle" fill="#e6f1ff" font-size="10" font-weight="400"><title>${esc(label)}</title>${short}</text>`});
+ values.forEach(({label,amount,shifts},i)=>{const x=L+step*(i+.5),short=dashboardPeriodLabel(label);if(amount!==null){const h=amount/max*ih,display=trendMetric==='rate'?amount.toFixed(2)+'%':fmt(amount);svg+=(trendMetric==='rate'?`<circle cx="${x}" cy="${T+ih-h}" r="2.8" fill="#5dd6e8"><title>${esc(label)}: ${display}</title></circle>`:(()=>{let bars='',base=0;for(const [shift,fill] of [['A','#5dd6e8'],['B','#587cf5'],['other','#8496ac']]){const value=shifts?.[shift]?.[trendMetric]||0;if(value<=0)continue;const height=value/max*ih;bars+=`<rect data-shift="${shift}" x="${x-width/2}" y="${T+ih-base-height}" width="${width}" height="${height}" fill="${fill}"><title>${esc(label)} · ${shift==='other'?'ไม่ระบุกะ':'Shift '+shift}: ${fmt(value)} ชิ้น · รวม ${display} ชิ้น</title></rect>`;base+=height}return bars})())+`<text x="${x}" y="${Math.max(24,T+ih-h-10)}" text-anchor="middle" fill="#dce9fa" font-size="${trendMetric==='rate'?11:trendMetric==='production'?10:14}" font-weight="400">${display}</text>`}else svg+=`<text x="${x}" y="${T+ih-8}" text-anchor="middle" fill="#9db5ca" font-size="13">—</text>`;svg+=`<text class="trend-date-label" x="${x}" y="${H-34}" text-anchor="middle" fill="#e6f1ff" font-size="10" font-weight="400"><title>${esc(label)}</title>${short}</text>`});
  if(showScrapTargets){
   for(const [field,color,dash,label] of [['reduce30','#ffb15c','7 5','Target ลด 30%'],['reduce50','#ff647c','','Target ลด 50%']]){
    scrapTargets.forEach((target,i)=>{if(!target)return;const y=T+ih-target[field]/max*ih;svg+=`<line x1="${L+step*i}" x2="${L+step*(i+1)}" y1="${y}" y2="${y}" stroke="${color}" stroke-width="2" ${dash?`stroke-dasharray="${dash}"`:''}><title>${label} · ฐาน ${target.key}: ${target[field].toFixed(2)} ชิ้น</title></line>`});
@@ -1345,7 +1350,7 @@ function renderScrapTrend(rows){
   }
  }
  // Mark calendar month boundaries without repeating the month on every day.
- if(scrapPeriod==='day'&&values.length){
+ if(period==='day'&&values.length){
   const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   let first=0;
   for(let i=1;i<=values.length;i++){
@@ -1373,7 +1378,7 @@ function renderScrapCostTrend(rows,box){
  const W=Math.max(320,box.clientWidth||900),H=Math.max(180,box.clientHeight||250),L=65,R=15,T=25,B=55,iw=W-L-R,ih=H-T-B,max=Math.max(1,...values.map(v=>v[1])),step=iw/values.length,width=Math.min(38,step*.6);
  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="มูลค่าของเสีย" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="costGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#54d4e8"/><stop offset="1" stop-color="#3967d7"/></linearGradient></defs>`;
  for(let n=0;n<=3;n++){const y=T+ih*n/3;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#29405a"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#9eb6cb" font-size="11">${fmt(Math.round(max*(3-n)/3))}</text>`}
- values.forEach(([label,value],i)=>{const x=L+step*(i+.5),h=value/max*ih,short=period==='day'?label.slice(8):period==='week'?weekLabel(label):label.slice(5)+'/'+label.slice(2,4);svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${Math.max(1,h)}" rx="3" fill="url(#costGradient)"><title>${esc(label)}: ${value.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})} บาท</title></rect><text x="${x}" y="${Math.max(16,T+ih-h-7)}" text-anchor="middle" fill="#e0f0ff" font-size="11">${value.toLocaleString('th-TH',{maximumFractionDigits:0})}</text><text x="${x}" y="${H-18}" text-anchor="middle" fill="#b9cfe2" font-size="10">${esc(short)}</text>`});
+ values.forEach(([label,value],i)=>{const x=L+step*(i+.5),h=value/max*ih,short=dashboardPeriodLabel(label);svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${Math.max(1,h)}" rx="3" fill="url(#costGradient)"><title>${esc(label)}: ${value.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})} บาท</title></rect><text x="${x}" y="${Math.max(16,T+ih-h-7)}" text-anchor="middle" fill="#e0f0ff" font-size="11">${value.toLocaleString('th-TH',{maximumFractionDigits:0})}</text><text x="${x}" y="${H-18}" text-anchor="middle" fill="#b9cfe2" font-size="10">${esc(short)}</text>`});
  box.innerHTML=svg+'</svg>';
 }
 function modelScrapTotals(rows){const totals=new Map();for(const row of rows){const quantity=Number(row.scrap)||0;if(quantity<=0)continue;const name=recordModel(row)||'ไม่ระบุ Model';totals.set(name,(totals.get(name)||0)+quantity)}return [...totals].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))}
@@ -1451,12 +1456,12 @@ function renderStampingMatrix(rows){
  const chart=$('#stampingScrapTrend'),W=Math.max(320,chart.clientWidth||900),L=metric==='cost'?65:55,R=metric==='cost'?15:12,step=dates.length?(W-L-R)/dates.length:0;
  table.querySelector('colgroup')?.remove();const cols=document.createElement('colgroup');cols.innerHTML=`<col style="width:${L}px">`+dates.map(()=>`<col style="width:${step}px">`).join('');table.prepend(cols);table.style.setProperty('width',(W-R)+'px','important');table.style.setProperty('min-width',(W-R)+'px','important');table.style.setProperty('max-width','none','important');
 
- table.querySelector('thead').innerHTML='<tr><th>วันที่</th>'+dates.map(d=>`<th>${esc(period==='day'?d.slice(8):summaryPeriodLabel(d))}</th>`).join('')+'</tr>';
+ table.querySelector('thead').innerHTML='<tr><th>วันที่</th>'+dates.map(d=>`<th>${esc(dashboardPeriodLabel(d))}</th>`).join('')+'</tr>';
  const sections=[{name:'Total',tone:'combined',items:rows},{name:'Shift A',tone:'shift-a',items:rows.filter(r=>dashboardShift(r)==='A')},{name:'Shift B',tone:'shift-b',items:rows.filter(r=>dashboardShift(r)==='B')},{name:'Door Bend',tone:'door-bend',items:rows.filter(r=>/door[\s_-]*bend|^bend$/i.test(String(r.line||'').trim())||/door[\s_-]*bend|^bend$/i.test(String(r.shift||'').trim()))}];
  body.innerHTML=dates.length?sections.map(section=>{const totals=new Map();for(const r of section.items){const d=key(r.date),v=totals.get(d)||{production:0,scrap:0,cost:0};v.production+=Number(r.production)||0;v.scrap+=Number(r.scrap)||0;v.cost+=recordScrapCost(r);totals.set(d,v)}return `<tr class="matrix-row matrix-${section.tone}"><th>${section.name}</th>${dates.map(d=>{const v=totals.get(d);return `<td class="num">${!v?'—':metric==='rate'?rateText(v.scrap,v.production):metric==='cost'?v.cost.toLocaleString('th-TH',{maximumFractionDigits:2}):fmt(v[metric])}</td>`}).join('')}</tr>`}).join(''):'<tr><td>ยังไม่มีข้อมูล</td></tr>';
- $('#periodSummaryPanel').querySelector('h2').textContent='รายละเอียดตามช่วงเวลา · '+({production:'ยอดผลิต (ชิ้น)',scrap:'Scrap (ชิ้น)',rate:'Percent Rate (%)',cost:'มูลค่าความเสียหาย (บาท)'})[metric];
+ $('#periodSummaryPanel').querySelector('h2').textContent='รายละเอียดตามช่วงเวลา · '+({day:'รายวัน',week:'รายสัปดาห์ (Week · จันทร์–อาทิตย์)',month:'รายเดือน'})[period]+' · '+({production:'ยอดผลิต (ชิ้น)',scrap:'Scrap (ชิ้น)',rate:'Percent Rate (%)',cost:'มูลค่าความเสียหาย (บาท)'})[metric];
 }
-function render(){if(page==='issues'){ $('#dashboardPage').hidden=true;$('#issuesPage').hidden=false;$('#openEntry').hidden=true;renderIssues();return}$('#dashboardPage').hidden=false;$('#issuesPage').hidden=true;options();$('#openEntry').hidden=page==='stamping';$('#stampingToolbar').hidden=page!=='stamping';$('#stampingAnalytics').hidden=page!=='stamping';$('#generalCharts').hidden=page==='stamping';
+function render(){document.querySelectorAll('[data-period]').forEach(b=>{b.classList.toggle('active',b.dataset.period===period);b.setAttribute('aria-pressed',String(b.dataset.period===period))});if(page==='issues'){ $('#dashboardPage').hidden=true;$('#issuesPage').hidden=false;$('#openEntry').hidden=true;renderIssues();return}$('#dashboardPage').hidden=false;$('#issuesPage').hidden=true;options();$('#openEntry').hidden=page==='stamping';$('#stampingToolbar').hidden=page!=='stamping';$('#stampingAnalytics').hidden=page!=='stamping';$('#generalCharts').hidden=page==='stamping';
 const summaryPanel=$('#periodSummaryPanel');
 summaryPanel.querySelector('h2').textContent='รายละเอียดตามช่วงเวลา · '+({day:'รายวัน',week:'รายสัปดาห์',month:'รายเดือน'})[period];
 if(page==='stamping')$('#stampingTrendNote').after(summaryPanel);else $('#summaryHomeSlot').after(summaryPanel);
@@ -1539,7 +1544,7 @@ function applyViewRange(){
 }
 function setDashboardView(view){
  if(!['day','week','month'].includes(view))return;
- period=view;scrapPeriod=view;
+ period=view;
  document.querySelectorAll('[data-period]').forEach(button=>{const active=button.dataset.period===view;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active))});
  render();
 }
