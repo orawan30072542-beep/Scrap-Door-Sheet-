@@ -871,6 +871,10 @@ html body{top:0!important}
 #summary .summary-shift-start>td{border-top:2px solid #6184a6!important}
 #summary .summary-date-group{vertical-align:top;background:#102e48;font-weight:500;padding-top:12px;border-right:1px solid #345570}
 #summary .summary-shift-group{vertical-align:top;padding-top:12px;background:#15354f;font-weight:400;border-right:1px solid #345570}
+
+#summary .summary-day-heading th{position:static!important;text-align:left;background:#153d60;color:#eaf7ff;border-top:2px solid #55bfff;padding:10px 12px;font-size:13px;font-weight:500}
+#summary .summary-shift-heading th{position:static!important;text-align:left;background:#102c45;color:#7dd9ff;border-top:1px solid #3a607d;padding:7px 12px;font-size:11px;font-weight:500}
+#summary .summary-group-row td{padding:9px 12px;border-bottom:1px solid #29445b}
 </style>
 </head>
 <body>
@@ -1358,14 +1362,15 @@ let types=group(rows,r=>r.defect||'ไม่ระบุ').sort((a,b)=>b.scrap-a
 $('#pareto').innerHTML=types.length?types.map(x=>`<div class="barrow"><span title="${esc(x.key)}">${esc(x.key)}</span><div class="track"><div class="fill" style="width:${x.scrap/max*100}%"></div></div><b>${fmt(x.scrap)}</b></div>`).join(''):'<p class="muted">ยังไม่มีข้อมูลในช่วงที่เลือก</p>';
 if(page==='stamping'){
  const machines=stampingPeriodSummary(rows);summaryKeys=[];
+ $('#summary').closest('table').querySelector('thead').innerHTML='<tr><th colspan="3">เครื่องจักร</th><th class="num">ยอดผลิต</th><th class="num">ของเสีย</th><th class="num">อัตราของเสีย</th></tr>';
  $('#summary').innerHTML=machines.length?machines.map((machine,index)=>{
   const [date,shift,line]=machine.key.split('\u0001'),label=summaryPeriodLabel(date),previous=index?machines[index-1].key.split('\u0001'):[],dateStart=index===0||previous[0]!==date,shiftStart=dateStart||previous[1]!==shift;
-  let dateSpan=1,shiftSpan=1;
-  if(dateStart)while(index+dateSpan<machines.length&&machines[index+dateSpan].key.split('\u0001')[0]===date)dateSpan++;
-  if(shiftStart)while(index+shiftSpan<machines.length){const next=machines[index+shiftSpan].key.split('\u0001');if(next[0]!==date||next[1]!==shift)break;shiftSpan++}
-  return `<tr class="summary-group-row ${dateStart?'summary-date-start':shiftStart?'summary-shift-start':''}">${dateStart?`<td rowspan="${dateSpan}" class="summary-date-group">${esc(label)}</td>`:''}${shiftStart?`<td rowspan="${shiftSpan}" class="summary-shift-group">${esc(shift||'—')}</td>`:''}<td>${esc(line)}</td><td class="num">${fmt(machine.production)}</td><td class="num">${fmt(machine.scrap)}</td><td class="num">${rateText(machine.scrap,machine.production)}</td></tr>`;
+  const dateRow=dateStart?`<tr class="summary-day-heading"><th colspan="6">${esc(label)}</th></tr>`:'';
+  const shiftRow=shiftStart?`<tr class="summary-shift-heading"><th colspan="6">${esc(shift||'ไม่ระบุกะ')}</th></tr>`:'';
+  return dateRow+shiftRow+`<tr class="summary-group-row"><td colspan="3">${esc(line)}</td><td class="num">${fmt(machine.production)}</td><td class="num">${fmt(machine.scrap)}</td><td class="num">${rateText(machine.scrap,machine.production)}</td></tr>`;
  }).join(''):'<tr><td colspan="6" class="muted">ยังไม่มีข้อมูล</td></tr>';return;
 }
+$('#summary').closest('table').querySelector('thead').innerHTML='<tr><th>ช่วงเวลา</th><th>กะ</th><th>ไลน์ / พื้นที่</th><th class="num">ยอดผลิต</th><th class="num">ของเสีย</th><th class="num">อัตราของเสีย</th></tr>';
 let summary=group(rows,r=>[key(r.date),r.shift||'',dashboardLine(r)].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
 summaryKeys=summary.map(v=>v.key);$('#summary').innerHTML=summary.length?summary.map((v,i)=>{let [d,shift,l]=v.key.split('\u0001');
 return `<tr><td>${esc(summaryPeriodLabel(d))}</td><td>${esc(shift||'—')}</td><td>${esc(l)}</td><td class="num">${fmt(v.production)}</td><td class="num">${fmt(v.scrap)}</td><td class="num">${rateText(v.scrap,v.production)}</td></tr>`}).join(''):'<tr><td colspan="6" class="muted">ยังไม่มีข้อมูล</td></tr>';
