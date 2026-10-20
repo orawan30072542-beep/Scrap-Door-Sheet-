@@ -885,6 +885,18 @@ html body{top:0!important}
 .summary-matrix .matrix-group-start>*{border-top:1px solid #46637c}
 .summary-matrix .matrix-total{background:#173650}
 .summary-matrix .matrix-row td{border-left:1px solid #29445b}
+
+/* Distinct shift sections and matching machine/metric cells. */
+.summary-matrix .matrix-section.matrix-combined th{background:#29465f;color:#eef6ff;border-top-color:#a5c5df}
+.summary-matrix .matrix-row.matrix-combined>*{background:#192d40;color:#dbe7f1}
+.summary-matrix .matrix-row.matrix-combined.matrix-total>*{background:#254058}
+.summary-matrix .matrix-section.matrix-shift-a th{background:#17628a;color:#e8fbff;border-top-color:#55cfff}
+.summary-matrix .matrix-row.matrix-shift-a>*{background:#103c53;color:#d2f4ff}
+.summary-matrix .matrix-row.matrix-shift-a.matrix-total>*{background:#18516d}
+.summary-matrix .matrix-section.matrix-shift-b th{background:#234b94;color:#edf2ff;border-top-color:#729fff}
+.summary-matrix .matrix-row.matrix-shift-b>*{background:#172d50;color:#dce7ff}
+.summary-matrix .matrix-row.matrix-shift-b.matrix-total>*{background:#203e6b}
+.summary-matrix .matrix-row:hover>*{filter:brightness(1.12)}
 </style>
 </head>
 <body>
@@ -1350,7 +1362,8 @@ function renderStampingMatrix(rows){
  const selected=$('#shiftFilter').value,sections=selected?[{label:'Shift '+selected,rows}]:[{label:'รวมทุกกะ',rows},...['A','B'].map(shift=>({label:'Shift '+shift,rows:rows.filter(r=>dashboardShift(r)===shift)}))];
  body.innerHTML=sections.map(section=>{
   const totals=new Map();for(const r of section.rows){const d=key(r.date),machine=machineName(r.line)||r.line;for(const name of ['Total',machine]){const k=d+'|'+name,v=totals.get(k)||{scrap:0,production:0};v.scrap+=Number(r.scrap)||0;v.production+=Number(r.production)||0;totals.set(k,v)}}
-  return `<tr class="matrix-section"><th colspan="${dates.length+2}">${section.label}</th></tr>`+['Total','100T','200T','400T'].map(machine=>['Scrap','Production','Percent'].map((metric,i)=>`<tr class="matrix-row ${i===0?'matrix-group-start':''} ${machine==='Total'?'matrix-total':''}">${i===0?`<th rowspan="3" class="matrix-machine">${machine}</th>`:''}<th class="matrix-metric">${metric}</th>${dates.map(d=>{const v=totals.get(d+'|'+machine);return `<td class="num">${!v?'—':metric==='Percent'?rateText(v.scrap,v.production):fmt(v[metric.toLowerCase()])}</td>`}).join('')}</tr>`).join('')).join('');
+  const tone=section.label==='รวมทุกกะ'?'combined':section.label==='Shift A'?'shift-a':'shift-b';
+  return `<tr class="matrix-section matrix-${tone}"><th colspan="${dates.length+2}">${section.label}</th></tr>`+['Total','100T','200T','400T'].map(machine=>['Scrap','Production','Percent'].map((metric,i)=>`<tr class="matrix-row matrix-${tone} ${i===0?'matrix-group-start':''} ${machine==='Total'?'matrix-total':''}">${i===0?`<th rowspan="3" class="matrix-machine">${machine}</th>`:''}<th class="matrix-metric">${metric}</th>${dates.map(d=>{const v=totals.get(d+'|'+machine);return `<td class="num">${!v?'—':metric==='Percent'?rateText(v.scrap,v.production):fmt(v[metric.toLowerCase()])}</td>`}).join('')}</tr>`).join('')).join('');
  }).join('');
 }
 function render(){if(page==='issues'){ $('#dashboardPage').hidden=true;$('#issuesPage').hidden=false;$('#openEntry').hidden=true;renderIssues();return}$('#dashboardPage').hidden=false;$('#issuesPage').hidden=true;options();$('#openEntry').hidden=page==='stamping';$('#stampingToolbar').hidden=page!=='stamping';$('#stampingAnalytics').hidden=page!=='stamping';$('#generalCharts').hidden=page==='stamping';
