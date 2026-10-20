@@ -890,7 +890,7 @@ html body{top:0!important}
 .summary-matrix .matrix-section.matrix-combined th{background:#29465f;color:#eef6ff;border-top-color:#a5c5df}
 .summary-matrix .matrix-row.matrix-combined>*{background:#192d40;color:#dbe7f1}
 .summary-matrix .matrix-row.matrix-combined.matrix-total>*{background:#254058}
-.summary-matrix .matrix-section.matrix-shift-a th{background:#17628a;color:#e8fbff;border-top-color:#55cfff}
+.summary-matrix .matrix-section.matrix-shift-a th{background:#17628a;color:#e8fbff;border-top-color:#5dd6e8}
 .summary-matrix .matrix-row.matrix-shift-a>*{background:#103c53;color:#d2f4ff}
 .summary-matrix .matrix-row.matrix-shift-a.matrix-total>*{background:#18516d}
 .summary-matrix .matrix-section.matrix-shift-b th{background:#234b94;color:#edf2ff;border-top-color:#729fff}
@@ -942,6 +942,56 @@ html body{top:0!important}
 .stamping-trend-panel .summary-matrix{border-collapse:collapse!important;border-spacing:0!important;margin:0!important}
 .stamping-trend-panel .summary-matrix tr>:first-child{width:auto!important;box-sizing:border-box}
 .stamping-trend-panel .summary-matrix th,.stamping-trend-panel .summary-matrix td{box-sizing:border-box;overflow:hidden;text-overflow:ellipsis}
+
+/* Unified midnight / glacier theme; preserve shared chart and table geometry. */
+:root{color-scheme:dark;--surface:#111f34;--surface-raised:#172940;--line:#2a405b;--muted:#a3b5cb;--accent:#5dd6e8;--shift-a:#5dd6e8;--shift-b:#587cf5;color:#e8f0fc;background:#090f1d}
+body{background:radial-gradient(ellipse at 10% 0%,#172b48 0,transparent 48%),#090f1d;font-weight:400;font-style:normal;line-height:1.5}
+.wrap{width:100%;max-width:1920px!important;padding:24px!important}
+h1,h2,h3{font-weight:600!important;letter-spacing:0;font-style:normal}
+.panel,.metric{background:linear-gradient(145deg,#14243a,#101d30);border-color:var(--line);border-radius:16px;box-shadow:0 8px 28px #02081424}
+.panel h2{color:#edf5ff;font-size:16px;font-weight:500!important}
+.sub,.chart-note,.field label,.metric small{color:var(--muted)}
+.btn{background:#172940;border:1px solid #314b67;color:#cbd9ec;border-radius:9px;font-size:12px;font-weight:400!important;transition:background .15s,border-color .15s,box-shadow .15s}
+.btn:hover{background:#213c57;border-color:#5c8ba6}
+.btn.active,.btn.primary{background:#164e65!important;border-color:#4cbdce!important;color:#edfdff!important;box-shadow:inset 0 1px 0 #b6f5ff18}
+.btn.danger{color:#fda4af}
+button:focus-visible,a:focus-visible{outline:2px solid #7ce4f2;outline-offset:3px}
+.field input,.field select,input,select,textarea{background-color:#0d1a2c;color:#e8f0fc;border-color:#334c67;border-radius:8px;font-weight:400}
+.field input:focus,.field select:focus,textarea:focus{outline:2px solid #5dd6e880;border-color:#5dd6e8}
+dialog{background:#111f34;color:#e8f0fc;border:1px solid #3b5470;border-radius:18px;box-shadow:0 24px 90px #0008}
+dialog::backdrop{background:#030916b8;backdrop-filter:blur(4px)}
+th{background:#1b304a!important;color:#bdcfe5!important;font-weight:500!important}
+td{border-color:#2a405b!important;font-weight:400}
+.tablewrap{border-color:#2a405b;border-radius:10px}
+.stamping-dashboard-layout{grid-template-columns:minmax(0,3fr) minmax(0,7fr);gap:18px;align-items:stretch}
+.stamping-dashboard-layout>.stamping-right-charts{height:700px!important;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,#14243a,#101d30)}
+.overall-rate-panel{height:700px!important;min-height:700px!important;padding:18px;grid-template-rows:auto 156px 60px minmax(0,1fr);gap:12px}
+.overall-rate-donut{width:156px;height:156px}
+.overall-rate-totals{height:60px;gap:16px}
+.overall-rate-totals span{font-size:23px;font-weight:500!important;font-variant-numeric:tabular-nums}
+.overall-rate-panel .machine-donut-card{background:#172a42;border:1px solid #2c4662;border-radius:12px;padding:10px;gap:8px}
+.overall-rate-panel #machineCards{gap:9px;padding-top:2px}
+.overall-rate-panel .machine-rate-value{font-size:22px;font-weight:500!important}
+.stamping-right-charts>.stamping-trend-panel{padding:18px!important}
+.stamping-right-charts #stampingScrapTrend{min-height:260px}
+.stamping-trend-panel #periodSummaryPanel{margin-top:12px;padding-top:12px;border-top:1px solid #2a405b}
+.stamping-trend-panel #periodSummaryPanel h2{font-size:13px;font-weight:500!important;margin-bottom:8px}
+.stamping-bottom-row{gap:18px;margin-top:18px}
+.stamping-bottom-row>.stamping-pareto-panel,.stamping-bottom-row>.model-funnel-panel{height:400px!important;min-height:0!important;padding:18px;background:linear-gradient(145deg,#14243a,#101d30);border:1px solid var(--line);border-radius:16px}
+.shift-kpi-card{background:linear-gradient(140deg,#142c42,#142238);border:1px solid #34576c;border-radius:14px}
+.shift-kpi-card:nth-child(2){background:linear-gradient(140deg,#1c2949,#142238);border-color:#3b4e7e}
+.shift-kpi-title{color:#a3eaf3}
+.shift-kpi-card:nth-child(2) .shift-kpi-title{color:#b3c3ff}
+.shift-kpi-values strong{font-weight:500!important;font-variant-numeric:tabular-nums}
+.shift-leader-name,.shift-average{font-weight:400!important;color:#a8bdd3}
+.summary-matrix .matrix-combined>*{background:#223c57!important;color:#f0f6ff!important}
+.summary-matrix .matrix-shift-a>*{background:#123b49!important;color:#c6f4fa!important}
+.summary-matrix .matrix-shift-b>*{background:#202f56!important;color:#d6e0ff!important}
+.summary-matrix .matrix-door-bend>*{background:#183e3d!important;color:#c3eee4!important}
+@media(min-width:1600px){.wrap{padding:28px 32px!important}}
+@media(max-width:900px){.wrap{padding:16px!important}.stamping-dashboard-layout{grid-template-columns:1fr}.overall-rate-panel{height:660px!important;min-height:660px!important}.stamping-dashboard-layout>.stamping-right-charts{height:660px!important}}
+@media(max-width:700px){.wrap{padding:12px!important}.stamping-bottom-row,.stamping-bottom-row:has(#stampingSummarySlot:empty){grid-template-columns:1fr}.stamping-bottom-row>.stamping-pareto-panel,.stamping-bottom-row>.model-funnel-panel{height:360px!important}}
+
 </style>
 </head>
 <body>
@@ -1285,9 +1335,9 @@ function renderScrapTrend(rows){
   const segments=[];let segment=[];
   values.forEach(({amount},i)=>{if(amount===null){if(segment.length)segments.push(segment);segment=[];return}segment.push([L+step*(i+.5),T+ih-amount/max*ih])});if(segment.length)segments.push(segment);
   svg+=`<defs><linearGradient id="trendLineGradient" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#20ddff"/><stop offset="50%" stop-color="#458aff"/><stop offset="100%" stop-color="#bb67ff"/></linearGradient><linearGradient id="trendAreaGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#39bfff" stop-opacity=".42"/><stop offset="100%" stop-color="#248bd5" stop-opacity=".06"/></linearGradient></defs>`;
-  segments.forEach(points=>{const path=points.map((p,i)=>(i?'L':'M')+p.join(' ')).join(' '),area=path+' L '+points.at(-1)[0]+' '+(T+ih)+' L '+points[0][0]+' '+(T+ih)+' Z';svg+=`<path d="${area}" fill="url(#trendAreaGradient)"/><path d="${path}" fill="none" stroke="#55cfff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`});
+  segments.forEach(points=>{const path=points.map((p,i)=>(i?'L':'M')+p.join(' ')).join(' '),area=path+' L '+points.at(-1)[0]+' '+(T+ih)+' L '+points[0][0]+' '+(T+ih)+' Z';svg+=`<path d="${area}" fill="url(#trendAreaGradient)"/><path d="${path}" fill="none" stroke="#5dd6e8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`});
  }
- values.forEach(({label,amount,shifts},i)=>{const x=L+step*(i+.5),short=scrapPeriod==='week'?weekLabel(label):scrapPeriod==='month'?label.slice(5)+'/'+label.slice(2,4):label.slice(8);if(amount!==null){const h=amount/max*ih,display=trendMetric==='rate'?amount.toFixed(2)+'%':fmt(amount);svg+=(trendMetric==='rate'?`<circle cx="${x}" cy="${T+ih-h}" r="2.8" fill="#55cfff"><title>${esc(label)}: ${display}</title></circle>`:(()=>{let bars='',base=0;for(const [shift,fill] of [['A','#55cfff'],['B','#2859d8'],['other','#8496ac']]){const value=shifts?.[shift]?.[trendMetric]||0;if(value<=0)continue;const height=value/max*ih;bars+=`<rect data-shift="${shift}" x="${x-width/2}" y="${T+ih-base-height}" width="${width}" height="${height}" fill="${fill}"><title>${esc(label)} · ${shift==='other'?'ไม่ระบุกะ':'Shift '+shift}: ${fmt(value)} ชิ้น · รวม ${display} ชิ้น</title></rect>`;base+=height}return bars})())+`<text x="${x}" y="${Math.max(24,T+ih-h-10)}" text-anchor="middle" fill="#dce9fa" font-size="${trendMetric==='rate'?11:trendMetric==='production'?10:14}" font-weight="400">${display}</text>`}else svg+=`<text x="${x}" y="${T+ih-8}" text-anchor="middle" fill="#9db5ca" font-size="13">—</text>`;svg+=`<text class="trend-date-label" x="${x}" y="${H-34}" text-anchor="middle" fill="#e6f1ff" font-size="10" font-weight="400"><title>${esc(label)}</title>${short}</text>`});
+ values.forEach(({label,amount,shifts},i)=>{const x=L+step*(i+.5),short=scrapPeriod==='week'?weekLabel(label):scrapPeriod==='month'?label.slice(5)+'/'+label.slice(2,4):label.slice(8);if(amount!==null){const h=amount/max*ih,display=trendMetric==='rate'?amount.toFixed(2)+'%':fmt(amount);svg+=(trendMetric==='rate'?`<circle cx="${x}" cy="${T+ih-h}" r="2.8" fill="#5dd6e8"><title>${esc(label)}: ${display}</title></circle>`:(()=>{let bars='',base=0;for(const [shift,fill] of [['A','#5dd6e8'],['B','#587cf5'],['other','#8496ac']]){const value=shifts?.[shift]?.[trendMetric]||0;if(value<=0)continue;const height=value/max*ih;bars+=`<rect data-shift="${shift}" x="${x-width/2}" y="${T+ih-base-height}" width="${width}" height="${height}" fill="${fill}"><title>${esc(label)} · ${shift==='other'?'ไม่ระบุกะ':'Shift '+shift}: ${fmt(value)} ชิ้น · รวม ${display} ชิ้น</title></rect>`;base+=height}return bars})())+`<text x="${x}" y="${Math.max(24,T+ih-h-10)}" text-anchor="middle" fill="#dce9fa" font-size="${trendMetric==='rate'?11:trendMetric==='production'?10:14}" font-weight="400">${display}</text>`}else svg+=`<text x="${x}" y="${T+ih-8}" text-anchor="middle" fill="#9db5ca" font-size="13">—</text>`;svg+=`<text class="trend-date-label" x="${x}" y="${H-34}" text-anchor="middle" fill="#e6f1ff" font-size="10" font-weight="400"><title>${esc(label)}</title>${short}</text>`});
  if(showScrapTargets){
   for(const [field,color,dash,label] of [['reduce30','#ffb15c','7 5','Target ลด 30%'],['reduce50','#ff647c','','Target ลด 50%']]){
    scrapTargets.forEach((target,i)=>{if(!target)return;const y=T+ih-target[field]/max*ih;svg+=`<line x1="${L+step*i}" x2="${L+step*(i+1)}" y1="${y}" y2="${y}" stroke="${color}" stroke-width="2" ${dash?`stroke-dasharray="${dash}"`:''}><title>${label} · ฐาน ${target.key}: ${target[field].toFixed(2)} ชิ้น</title></line>`});
@@ -1310,7 +1360,7 @@ function renderScrapTrend(rows){
   for(const target of [3,5]){const y=T+ih-target/max*ih;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#ff596b" stroke-width="1.5" ${target===3?'stroke-dasharray="8 6"':''}/><text x="${W-R-5}" y="${y-7}" text-anchor="end" fill="#ff8794" font-size="10" font-weight="400">Target ${target}%</text>`}
  }
  if(trendMetric==='production'||trendMetric==='scrap'){
- const legend=[['Shift A','#55cfff'],['Shift B','#2859d8']];if(values.some(v=>(v.shifts?.other?.[trendMetric]||0)>0))legend.push(['ไม่ระบุกะ','#8496ac']);
+ const legend=[['Shift A','#5dd6e8'],['Shift B','#587cf5']];if(values.some(v=>(v.shifts?.other?.[trendMetric]||0)>0))legend.push(['ไม่ระบุกะ','#8496ac']);
  legend.forEach(([label,fill],i)=>{const x=L+i*105;svg+=`<rect x="${x}" y="${H-10}" width="9" height="9" rx="2" fill="${fill}"/><text x="${x+14}" y="${H-2}" fill="${fill}" font-size="10">${label}</text>`});
  }
  box.innerHTML=svg+'</svg>'
