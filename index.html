@@ -927,6 +927,21 @@ html body{top:0!important}
 .stamping-bottom-row:has(#stampingSummarySlot:empty){grid-template-columns:1fr}
 
 .summary-matrix .matrix-row.matrix-door-bend>*{background:#143e47;color:#bceee8}
+
+.stamping-dashboard-layout>.stamping-right-charts{grid-template-rows:minmax(0,1fr)!important;height:720px;gap:0}
+.stamping-right-charts>.stamping-trend-panel{height:100%!important;min-height:0;overflow:hidden!important}
+.stamping-right-charts #stampingScrapTrend{min-height:300px;height:auto;flex:1 1 auto}
+.stamping-bottom-row,.stamping-bottom-row:has(#stampingSummarySlot:empty){grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.stamping-bottom-row>.stamping-pareto-panel{grid-column:auto;grid-row:auto;height:430px;min-width:0;padding:18px;display:flex;flex-direction:column;border:1px solid #254869;border-radius:16px;background:#0d2136}
+.stamping-bottom-row .stamping-pareto-panel #stampingPareto{height:auto;min-height:0;flex:1;display:block}
+.stamping-bottom-row #stampingPareto svg{width:100%;height:100%}
+@media(max-width:900px){.stamping-dashboard-layout>.stamping-right-charts{height:660px}}
+@media(max-width:700px){.stamping-bottom-row,.stamping-bottom-row:has(#stampingSummarySlot:empty){grid-template-columns:1fr}}
+
+.stamping-trend-panel #periodSummaryPanel .tablewrap{padding:0!important;border:0;box-sizing:border-box}
+.stamping-trend-panel .summary-matrix{border-collapse:collapse!important;border-spacing:0!important;margin:0!important}
+.stamping-trend-panel .summary-matrix tr>:first-child{width:auto!important;box-sizing:border-box}
+.stamping-trend-panel .summary-matrix th,.stamping-trend-panel .summary-matrix td{box-sizing:border-box;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -978,15 +993,15 @@ html body{top:0!important}
 <div class="periods" style="margin-bottom:10px" aria-label="เลือกข้อมูลในกราฟ"><button class="btn" type="button" data-trend-metric="production">ยอดผลิต</button><button class="btn active" type="button" data-trend-metric="scrap">ยอดของเสีย</button><button class="btn" type="button" data-trend-metric="rate">Percent Rate</button><button class="btn" type="button" data-trend-metric="cost">มูลค่าความเสียหาย</button></div>
 <div id="stampingScrapTrend" class="stamping-chart"></div><div class="chart-note" id="stampingTrendNote">แสดงสูงสุด 21 วัน / 12 สัปดาห์ / 12 เดือน · Week นับวันจันทร์–อาทิตย์</div>
 </section>
-<div class="panel stamping-pareto-panel">
+
+</div></div><div class="stamping-bottom-row"><div id="stampingSummarySlot"></div><div class="panel stamping-pareto-panel">
 <h2>Pareto · ประเภทปัญหา Top 10</h2>
 <div class="stamping-legend">
 <span><i style="background:#339dff"></i>จำนวนของเสีย</span><span><i style="background:#43efd6"></i>สะสม (%)</span>
 </div>
 <div id="stampingPareto" class="stamping-chart"></div>
 <div class="chart-note">แสดงปัญหา Top 10 เรียงจากของเสียมากไปน้อย · อัตราสะสมเทียบกับของเสียทั้งหมด</div>
-</div>
-</div></div><div class="stamping-bottom-row"><div id="stampingSummarySlot"></div><section class="panel model-funnel-panel"><h2>ยอดของเสียตาม Model · Top 10</h2><div id="stampingModelChart"></div><div class="chart-note">จำนวนของเสีย (ชิ้น) · สัดส่วนเทียบกับของเสียทั้งหมดในช่วงที่เลือก</div></section></div>
+</div><section class="panel model-funnel-panel"><h2>ยอดของเสียตาม Model · Top 10</h2><div id="stampingModelChart"></div><div class="chart-note">จำนวนของเสีย (ชิ้น) · สัดส่วนเทียบกับของเสียทั้งหมดในช่วงที่เลือก</div></section></div>
 </section><section class="grid cols" id="generalCharts"><div class="panel">
 <h2>แนวโน้มยอดผลิตและของเสีย</h2>
 <div class="legend">
@@ -1383,6 +1398,9 @@ function stampingPeriodSummary(rows){
 function renderStampingMatrix(rows){
  const body=$('#summary'),table=body.closest('table');table.classList.add('summary-matrix');
  const dates=[...new Set(rows.filter(r=>/^\d{4}-\d{2}-\d{2}$/.test(r.date)).map(r=>key(r.date)))].sort(),metric=trendMetric;
+ const chart=$('#stampingScrapTrend'),W=Math.max(320,chart.clientWidth||900),L=metric==='cost'?65:55,R=metric==='cost'?15:12,step=dates.length?(W-L-R)/dates.length:0;
+ table.querySelector('colgroup')?.remove();const cols=document.createElement('colgroup');cols.innerHTML=`<col style="width:${L}px">`+dates.map(()=>`<col style="width:${step}px">`).join('');table.prepend(cols);table.style.setProperty('width',(W-R)+'px','important');table.style.setProperty('min-width',(W-R)+'px','important');table.style.setProperty('max-width','none','important');
+
  table.querySelector('thead').innerHTML='<tr><th>วันที่</th>'+dates.map(d=>`<th>${esc(period==='day'?d.slice(8):summaryPeriodLabel(d))}</th>`).join('')+'</tr>';
  const sections=[{name:'Total',tone:'combined',items:rows},{name:'Shift A',tone:'shift-a',items:rows.filter(r=>dashboardShift(r)==='A')},{name:'Shift B',tone:'shift-b',items:rows.filter(r=>dashboardShift(r)==='B')},{name:'Door Bend',tone:'door-bend',items:rows.filter(r=>/door[\s_-]*bend|^bend$/i.test(String(r.line||'').trim())||/door[\s_-]*bend|^bend$/i.test(String(r.shift||'').trim()))}];
  body.innerHTML=dates.length?sections.map(section=>{const totals=new Map();for(const r of section.items){const d=key(r.date),v=totals.get(d)||{production:0,scrap:0,cost:0};v.production+=Number(r.production)||0;v.scrap+=Number(r.scrap)||0;v.cost+=recordScrapCost(r);totals.set(d,v)}return `<tr class="matrix-row matrix-${section.tone}"><th>${section.name}</th>${dates.map(d=>{const v=totals.get(d);return `<td class="num">${!v?'—':metric==='rate'?rateText(v.scrap,v.production):metric==='cost'?v.cost.toLocaleString('th-TH',{maximumFractionDigits:2}):fmt(v[metric])}</td>`}).join('')}</tr>`}).join(''):'<tr><td>ยังไม่มีข้อมูล</td></tr>';
@@ -1417,7 +1435,7 @@ if(page==='stamping')renderStamping(rows);else chart(rows);
 let types=group(rows,r=>r.defect||'ไม่ระบุ').sort((a,b)=>b.scrap-a.scrap).slice(0,7),max=Math.max(1,...types.map(x=>x.scrap));
 $('#pareto').innerHTML=types.length?types.map(x=>`<div class="barrow"><span title="${esc(x.key)}">${esc(x.key)}</span><div class="track"><div class="fill" style="width:${x.scrap/max*100}%"></div></div><b>${fmt(x.scrap)}</b></div>`).join(''):'<p class="muted">ยังไม่มีข้อมูลในช่วงที่เลือก</p>';
 if(page==='stamping'){summaryKeys=[];renderStampingMatrix(rows);return}
-$('#summary').closest('table').classList.remove('summary-matrix');
+$('#summary').closest('table').classList.remove('summary-matrix');$('#summary').closest('table').querySelector('colgroup')?.remove();$('#summary').closest('table').style.removeProperty('width');$('#summary').closest('table').style.removeProperty('min-width');$('#summary').closest('table').style.removeProperty('max-width');
 $('#summary').closest('table').querySelector('thead').innerHTML='<tr><th>ช่วงเวลา</th><th>กะ</th><th>ไลน์ / พื้นที่</th><th class="num">ยอดผลิต</th><th class="num">ของเสีย</th><th class="num">อัตราของเสีย</th></tr>';
 let summary=group(rows,r=>[key(r.date),r.shift||'',dashboardLine(r)].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
 summaryKeys=summary.map(v=>v.key);$('#summary').innerHTML=summary.length?summary.map((v,i)=>{let [d,shift,l]=v.key.split('\u0001');
