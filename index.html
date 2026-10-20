@@ -875,6 +875,16 @@ html body{top:0!important}
 #summary .summary-day-heading th{position:static!important;text-align:left;background:#153d60;color:#eaf7ff;border-top:2px solid #55bfff;padding:10px 12px;font-size:13px;font-weight:500}
 #summary .summary-shift-heading th{position:static!important;text-align:left;background:#102c45;color:#7dd9ff;border-top:1px solid #3a607d;padding:7px 12px;font-size:11px;font-weight:500}
 #summary .summary-group-row td{padding:9px 12px;border-bottom:1px solid #29445b}
+
+.summary-matrix{table-layout:auto!important;width:max-content!important;min-width:100%}
+.summary-matrix th,.summary-matrix td{min-width:62px;padding:8px!important;font-size:11px;font-weight:400;white-space:nowrap}
+.summary-matrix thead th{background:#163a57;text-align:right}
+.summary-matrix .matrix-machine{min-width:64px;text-align:left;background:#102c45;vertical-align:middle;font-weight:500}
+.summary-matrix .matrix-metric{min-width:76px;text-align:left;color:#b8cede}
+.summary-matrix .matrix-section th{position:static!important;background:#1b4364;color:#87ddff;text-align:left;border-top:2px solid #458ab9;font-weight:500}
+.summary-matrix .matrix-group-start>*{border-top:1px solid #46637c}
+.summary-matrix .matrix-total{background:#173650}
+.summary-matrix .matrix-row td{border-left:1px solid #29445b}
 </style>
 </head>
 <body>
@@ -1332,6 +1342,17 @@ function stampingPeriodSummary(rows){
  for(const r of rows){const id=[key(r.date),summaryShift(r.shift),dashboardLine(r)].join('\u0001');let machine=machines.get(id);if(!machine){machine={key:id,production:0,scrap:0,R:0,F:0,other:0};machines.set(id,machine)}const scrap=Number(r.scrap)||0;machine.production+=Number(r.production)||0;machine.scrap+=scrap;const model=String(recordModel(r)||r.model||'').trim().toUpperCase();machine[/^R/.test(model)?'R':/^F/.test(model)?'F':'other']+=scrap}
  return [...machines.values()].sort((a,b)=>b.key.localeCompare(a.key));
 }
+function renderStampingMatrix(rows){
+ const body=$('#summary'),table=body.closest('table');table.classList.add('summary-matrix');
+ const dates=[...new Set(rows.map(r=>key(r.date)))].sort();
+ table.querySelector('thead').innerHTML='<tr><th class="matrix-machine">เครื่องจักร</th><th class="matrix-metric">รายการ</th>'+dates.map(d=>`<th>${esc(period==='day'?Number(d.slice(8))+'/'+Number(d.slice(5,7)):summaryPeriodLabel(d))}</th>`).join('')+'</tr>';
+ if(!dates.length){body.innerHTML='<tr><td colspan="2">ยังไม่มีข้อมูล</td></tr>';return}
+ const selected=$('#shiftFilter').value,sections=selected?[{label:'Shift '+selected,rows}]:[{label:'รวมทุกกะ',rows},...['A','B'].map(shift=>({label:'Shift '+shift,rows:rows.filter(r=>dashboardShift(r)===shift)}))];
+ body.innerHTML=sections.map(section=>{
+  const totals=new Map();for(const r of section.rows){const d=key(r.date),machine=machineName(r.line)||r.line;for(const name of ['Total',machine]){const k=d+'|'+name,v=totals.get(k)||{scrap:0,production:0};v.scrap+=Number(r.scrap)||0;v.production+=Number(r.production)||0;totals.set(k,v)}}
+  return `<tr class="matrix-section"><th colspan="${dates.length+2}">${section.label}</th></tr>`+['Total','100T','200T','400T'].map(machine=>['Scrap','Production','Percent'].map((metric,i)=>`<tr class="matrix-row ${i===0?'matrix-group-start':''} ${machine==='Total'?'matrix-total':''}">${i===0?`<th rowspan="3" class="matrix-machine">${machine}</th>`:''}<th class="matrix-metric">${metric}</th>${dates.map(d=>{const v=totals.get(d+'|'+machine);return `<td class="num">${!v?'—':metric==='Percent'?rateText(v.scrap,v.production):fmt(v[metric.toLowerCase()])}</td>`}).join('')}</tr>`).join('')).join('');
+ }).join('');
+}
 function render(){if(page==='issues'){ $('#dashboardPage').hidden=true;$('#issuesPage').hidden=false;$('#openEntry').hidden=true;renderIssues();return}$('#dashboardPage').hidden=false;$('#issuesPage').hidden=true;options();$('#openEntry').hidden=page==='stamping';$('#stampingToolbar').hidden=page!=='stamping';$('#stampingAnalytics').hidden=page!=='stamping';$('#generalCharts').hidden=page==='stamping';
 const summaryPanel=$('#periodSummaryPanel');
 summaryPanel.querySelector('h2').textContent='รายละเอียดตามช่วงเวลา · '+({day:'รายวัน',week:'รายสัปดาห์',month:'รายเดือน'})[period];
@@ -1360,16 +1381,8 @@ $('#count').textContent=fmt(rows.length)+' รายการ';
 if(page==='stamping')renderStamping(rows);else chart(rows);
 let types=group(rows,r=>r.defect||'ไม่ระบุ').sort((a,b)=>b.scrap-a.scrap).slice(0,7),max=Math.max(1,...types.map(x=>x.scrap));
 $('#pareto').innerHTML=types.length?types.map(x=>`<div class="barrow"><span title="${esc(x.key)}">${esc(x.key)}</span><div class="track"><div class="fill" style="width:${x.scrap/max*100}%"></div></div><b>${fmt(x.scrap)}</b></div>`).join(''):'<p class="muted">ยังไม่มีข้อมูลในช่วงที่เลือก</p>';
-if(page==='stamping'){
- const machines=stampingPeriodSummary(rows);summaryKeys=[];
- $('#summary').closest('table').querySelector('thead').innerHTML='<tr><th colspan="3">เครื่องจักร</th><th class="num">ยอดผลิต</th><th class="num">ของเสีย</th><th class="num">อัตราของเสีย</th></tr>';
- $('#summary').innerHTML=machines.length?machines.map((machine,index)=>{
-  const [date,shift,line]=machine.key.split('\u0001'),label=summaryPeriodLabel(date),previous=index?machines[index-1].key.split('\u0001'):[],dateStart=index===0||previous[0]!==date,shiftStart=dateStart||previous[1]!==shift;
-  const dateRow=dateStart?`<tr class="summary-day-heading"><th colspan="6">${esc(label)}</th></tr>`:'';
-  const shiftRow=shiftStart?`<tr class="summary-shift-heading"><th colspan="6">${esc(shift||'ไม่ระบุกะ')}</th></tr>`:'';
-  return dateRow+shiftRow+`<tr class="summary-group-row"><td colspan="3">${esc(line)}</td><td class="num">${fmt(machine.production)}</td><td class="num">${fmt(machine.scrap)}</td><td class="num">${rateText(machine.scrap,machine.production)}</td></tr>`;
- }).join(''):'<tr><td colspan="6" class="muted">ยังไม่มีข้อมูล</td></tr>';return;
-}
+if(page==='stamping'){summaryKeys=[];renderStampingMatrix(rows);return}
+$('#summary').closest('table').classList.remove('summary-matrix');
 $('#summary').closest('table').querySelector('thead').innerHTML='<tr><th>ช่วงเวลา</th><th>กะ</th><th>ไลน์ / พื้นที่</th><th class="num">ยอดผลิต</th><th class="num">ของเสีย</th><th class="num">อัตราของเสีย</th></tr>';
 let summary=group(rows,r=>[key(r.date),r.shift||'',dashboardLine(r)].join('\u0001')).sort((a,b)=>b.key.localeCompare(a.key));
 summaryKeys=summary.map(v=>v.key);$('#summary').innerHTML=summary.length?summary.map((v,i)=>{let [d,shift,l]=v.key.split('\u0001');
