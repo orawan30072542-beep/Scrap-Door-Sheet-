@@ -897,6 +897,14 @@ html body{top:0!important}
 .summary-matrix .matrix-row.matrix-shift-b>*{background:#172d50;color:#dce7ff}
 .summary-matrix .matrix-row.matrix-shift-b.matrix-total>*{background:#203e6b}
 .summary-matrix .matrix-row:hover>*{filter:brightness(1.12)}
+
+.production-daily-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.production-daily-card{background:#10283e;border:1px solid #294d6b;border-radius:12px;padding:14px}
+.production-daily-card h3{color:#77d4ff;margin:0 0 12px;font-size:16px;font-weight:500}
+.production-daily-card table{min-width:0;width:100%}
+.production-daily-card th,.production-daily-card td{font-size:12px;padding:8px;font-weight:400}
+.production-daily-card input{width:100%;min-width:70px;font-size:15px;font-weight:400;text-align:right;box-sizing:border-box}
+@media(max-width:850px){.production-daily-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1611,38 +1619,13 @@ function productionMachines(line){return line==='400T'?['400T']:['100T','200T'].
 const productionShifts=[{id:'day',label:'กะเช้า',start:8,leader:'K.Thawatchai'},{id:'night',label:'กะดึก',start:20,leader:'K.Amnuai'}];
 function productionTimeLabel(phase,index,start=8){const hour=start+({morning:0,afternoon:4,ot:9}[phase])+index,clock=h=>String(h%24).padStart(2,'0')+'.00';return clock(hour)+'–'+clock(hour+1)}
 function productionSlotInput(machine,phase,index,value='',start=8){return `<input type="number" min="0" step="1" data-slot-phase="${phase}" data-slot-index="${index}" aria-label="${esc(machine)} ${productionTimeLabel(phase,index,8)} / ${productionTimeLabel(phase,index,20)}" value="${esc(value)}" placeholder="0">`}
-function showProductionMachines(drafts){
- const form=$('#stampProductionForm'),names=[...productionMachines('100T'),...productionMachines('200T'),...productionMachines('400T')],configs=[{id:'entry',label:'ยอดผลิตรายชั่วโมง',start:8,leader:form.elements.shiftLeader.value}];
- $('#productionMachineFields').innerHTML=names.length?configs.map(config=>{
- const shift=form.elements.shift.value,previous=new Map(names.map(name=>[name,records.find(r=>r.page==='stamping'&&r.kind==='production'&&r.date===form.elements.date.value&&r.shift===shift&&r.line===name)]));
- const slotsFor=name=>{const slots=drafts instanceof Map?drafts.get(config.id+'|'+name):previous.get(name)?.productionSlots;if(slots?.afternoon?.length===4)return {...slots,afternoon:['',...slots.afternoon]};return slots};
- const otCount=Math.max(1,...names.map(name=>slotsFor(name)?.ot?.length||1)),phases=[['morning',4],['afternoon',5],['ot',otCount]],headings=phases.map(([phase,count])=>Array.from({length:count},(_,i)=>`<th scope="col" class="${phase!=='morning'&&i===0?'phase-start':''}">${productionTimeLabel(phase,i,8)}<br><span style="color:#9ec4ed;font-weight:500">${productionTimeLabel(phase,i,20)}</span></th>`).join('')).join('');
- const rows=names.map((name,index)=>{const old=previous.get(name),slots=slotsFor(name),group=machineName(name),groupStart=index===0||machineName(names[index-1])!==group,divider=groupStart?`<tr class="production-machine-group group-${group}"><th colspan="${11+otCount}" scope="colgroup"><span>${group}</span><small>${productionMachines(group).length} เครื่องจักร</small></th></tr>`:'';return divider+`<tr data-production-machine="${name}" data-production-shift="${shift}" data-shift-id="${config.id}" data-shift-leader="${config.leader}"><th scope="row" class="machine-cell">${name}<small>ช่วงแรก <output data-phase-total="morning">0</output> · ช่วงหลัง <output data-phase-total="afternoon">0</output> · OT <output data-phase-total="ot">0</output></small>${old&&!slots?`<small>ยอดเดิม ${fmt(Number(old.production)||0)} ชิ้น<br>เว้นทั้งแถวเพื่อคงยอดเดิม</small>`:''}</th>${phases.map(([phase,count])=>Array.from({length:count},(_,i)=>`<td class="${phase!=='morning'&&i===0?'phase-start':''}">${productionSlotInput(name,phase,i,slots?.[phase]?.[i]??'',config.start)}</td>`).join('')).join('')}<td class="total-cell"><output data-machine-total>${fmt(Number(old?.production)||0)}</output></td></tr>`}).join('');
- const foot=phases.map(([phase,count])=>Array.from({length:count},(_,i)=>`<td class="${phase!=='morning'&&i===0?'phase-start':''}"><output data-column-phase="${phase}" data-column-index="${i}">0</output></td>`).join('')).join('');
- return `<section class="production-shift-section ${config.id}" data-shift-section="${config.id}"><div class="production-table-toolbar"><div><span class="production-shift-label">${shift||'เลือกกะการผลิตด้านบน'}</span><h3 style="margin-top:10px">ยอดผลิตรายชั่วโมง</h3><p>Leader: ${config.leader} · หน่วย: ชิ้น</p></div><button type="button" class="btn" data-add-ot>+ เพิ่มช่อง OT</button></div><div class="production-table-scroll"><table class="production-input-table"><colgroup><col style="width:170px">${Array.from({length:9+otCount},()=>'<col>').join('')}<col style="width:125px"></colgroup><thead><tr><th rowspan="2" scope="col">เครื่องจักร</th><th colspan="4" scope="colgroup" class="morning-head">ช่วงแรก</th><th colspan="5" scope="colgroup" class="afternoon-head phase-start">ช่วงหลัง</th><th colspan="${otCount}" scope="colgroup" class="ot-head phase-start">ช่วง OT</th><th rowspan="2" scope="col" class="total-cell">รวมกะ</th></tr><tr>${headings}</tr></thead><tbody>${rows}</tbody><tfoot><tr><th scope="row" class="machine-cell">รวมทุกเครื่อง</th>${foot}<td class="total-cell"><output data-shift-total>0</output></td></tr></tfoot></table></div></section>`;
- }).join('')+'<div class="production-grand-total"><span>รวมยอดผลิต · กะที่เลือก</span><span><output id="productionGrandTotal">0</output> ชิ้น</span></div><p class="stamping-help">หัวช่องแสดงเวลาเช้า / ดึก · เลือกกะการผลิตด้านบน · กะดึกนับวันที่เริ่มกะ · ลูกศร ← → ↑ ↓ ย้ายช่องกรอก · ช่องว่างคิดเป็น 0 · เว้นทั้งแถวเพื่อคงยอดเดิม</p>':'';
- updateProductionSlotTotals();
+function showProductionMachines(){
+ const form=$('#stampProductionForm'),names=[...productionMachines('100T'),...productionMachines('200T'),...productionMachines('400T')];
+ $('#productionMachineFields').innerHTML='<div class="production-daily-grid">'+['100T','200T','400T'].map(group=>`<section class="production-daily-card"><h3>${group}</h3><table><thead><tr><th>เครื่องจักร</th><th>ยอดผลิตรายวัน (ชิ้น)</th></tr></thead><tbody>${productionMachines(group).map(name=>{const old=records.find(r=>r.page==='stamping'&&r.kind==='production'&&r.date===form.elements.date.value&&r.shift===form.elements.shift.value&&r.line===name);return `<tr data-production-machine="${name}"><th>${name}</th><td><input data-daily-production type="number" min="0" step="1" value="${old?Number(old.production)||0:''}" placeholder="0" aria-label="ยอดผลิตรายวัน ${name}"></td></tr>`}).join('')}</tbody></table></section>`).join('')+'</div><div class="production-grand-total"><span>รวมยอดผลิตรายวัน · กะที่เลือก</span><span><output id="productionGrandTotal">0</output> ชิ้น</span></div><p class="stamping-help">กรอกยอดรวมต่อเครื่องของวันที่และกะที่เลือก · ช่องว่างไม่เปลี่ยนข้อมูลเดิม · กรอก 0 เพื่อล้างยอดเครื่องนั้น · ใช้ลูกศรขึ้นลงเพื่อย้ายช่อง</p>';updateProductionSlotTotals();
 }
-function readProductionSlots(card){const result={};for(const phase of ['morning','afternoon','ot'])result[phase]=[...card.querySelectorAll(`[data-slot-phase="${phase}"]`)].map(input=>Number(input.value)||0);return result}
-function productionSlotsTotal(slots){return Object.values(slots).flat().reduce((sum,n)=>sum+n,0)}
-function updateProductionSlotTotals(){
- let total=0;for(const section of $('#productionMachineFields').querySelectorAll('[data-shift-section]')){
- let shiftTotal=0;const cards=[...section.querySelectorAll('[data-production-machine]')];
- for(const card of cards){const slots=readProductionSlots(card),filled=[...card.querySelectorAll('[data-slot-phase]')].some(i=>i.value!==''),old=records.find(r=>r.page==='stamping'&&r.kind==='production'&&r.date===$('#stampProductionForm').elements.date.value&&r.shift===card.dataset.productionShift&&r.line===card.dataset.productionMachine),sum=filled?productionSlotsTotal(slots):Number(old?.production)||0;shiftTotal+=sum;card.querySelector('[data-machine-total]').textContent=fmt(sum);for(const phase of ['morning','afternoon','ot'])card.querySelector(`[data-phase-total="${phase}"]`).textContent=fmt(slots[phase].reduce((a,b)=>a+b,0))}
- section.querySelector('[data-shift-total]').textContent=fmt(shiftTotal);total+=shiftTotal;
- for(const out of section.querySelectorAll('[data-column-phase]')){let sum=0;for(const card of cards)sum+=Number(card.querySelector(`[data-slot-phase="${out.dataset.columnPhase}"][data-slot-index="${out.dataset.columnIndex}"]`)?.value)||0;out.textContent=fmt(sum)}
- }const out=$('#productionGrandTotal');if(out)out.textContent=fmt(total);
-}
+function updateProductionSlotTotals(){const total=[...$('#productionMachineFields').querySelectorAll('[data-daily-production]')].reduce((sum,input)=>sum+(Number(input.value)||0),0),out=$('#productionGrandTotal');if(out)out.textContent=fmt(total)}
 $('#productionMachineFields').addEventListener('input',updateProductionSlotTotals);
-$('#productionMachineFields').addEventListener('click',event=>{
- const button=event.target.closest('[data-add-ot]');if(!button)return;const section=button.closest('[data-shift-section]'),drafts=new Map;
- for(const card of $('#productionMachineFields').querySelectorAll('[data-production-machine]')){const slots={};for(const phase of ['morning','afternoon','ot'])slots[phase]=[...card.querySelectorAll(`[data-slot-phase="${phase}"]`)].map(input=>input.value);if(card.dataset.shiftId===section.dataset.shiftSection)slots.ot.push('');drafts.set(card.dataset.shiftId+'|'+card.dataset.productionMachine,slots)}showProductionMachines(drafts);
-});
-function productionArrowTarget(rows,row,column,key){const steps={ArrowLeft:[0,-1],ArrowRight:[0,1],ArrowUp:[-1,0],ArrowDown:[1,0]},step=steps[key];if(!step)return null;return rows[row+step[0]]?.[column+step[1]]||null}
-$('#productionMachineFields').addEventListener('keydown',event=>{
- if(!event.target.matches('[data-slot-phase]')||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)||event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
- const rows=[...$('#productionMachineFields').querySelectorAll('[data-production-machine]')].map(row=>[...row.querySelectorAll('[data-slot-phase]')]),row=rows.findIndex(inputs=>inputs.includes(event.target)),column=rows[row].indexOf(event.target),target=productionArrowTarget(rows,row,column,event.key);event.preventDefault();if(target){target.focus();target.select();target.scrollIntoView({block:'nearest',inline:'nearest'})}
-});
+$('#productionMachineFields').addEventListener('keydown',event=>{if(!event.target.matches('[data-daily-production]')||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(event.key)||event.altKey||event.ctrlKey||event.metaKey)return;const inputs=[...$('#productionMachineFields').querySelectorAll('[data-daily-production]')],i=inputs.indexOf(event.target),target=inputs[i+(['ArrowUp','ArrowLeft'].includes(event.key)?-1:1)];event.preventDefault();if(target){target.focus();target.select()}});
 
 $('#stampProductionForm').elements.date.addEventListener('change',showProductionMachines);
 $('#stampProductionForm').elements.shift.addEventListener('change',showProductionMachines);
@@ -1653,11 +1636,11 @@ $('#stampProductionForm').elements.shiftLeader.addEventListener('input',event=>{
 });
 
 $('#stampProductionForm').onsubmit=e=>{
- e.preventDefault();const form=e.target,x=Object.fromEntries(new FormData(form)),cards=[...form.querySelectorAll('[data-production-machine]')].filter(card=>[...card.querySelectorAll('[data-slot-phase]')].some(input=>input.value!=='')),inputs=cards.flatMap(card=>[...card.querySelectorAll('[data-slot-phase]')]);
- if(!x.date||!x.shift||!cards.length||inputs.some(input=>!Number.isSafeInteger(Number(input.value))||Number(input.value)<0)){$('#stampProductionNotice').textContent='เลือกวันที่ กะการผลิต และกรอกยอดอย่างน้อย 1 เครื่อง · ใช้จำนวนเต็มตั้งแต่ 0';return}
- const next=records.map(r=>({...r}));for(const card of cards){const line=card.dataset.productionMachine,shift=x.shift,shiftLeader=String(x.shiftLeader||'').trim(),productionSlots=readProductionSlots(card),production=productionSlotsTotal(productionSlots),old=next.find(r=>r.page==='stamping'&&r.kind==='production'&&r.date===x.date&&r.shift===shift&&r.line===line);if(!Number.isSafeInteger(production)){$('#stampProductionNotice').textContent='ยอดรวมมากเกินไป กรุณาตรวจข้อมูล';return}if(old)Object.assign(old,{production,productionSlots,shiftLeader,productionShift:x.shift});else next.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'production',date:x.date,shift,shiftLeader,productionShift:x.shift,line,production,productionSlots,scrap:0,model:'',defect:'',note:''})}
- const backup=records;records=next;try{save()}catch{records=backup;$('#stampProductionNotice').textContent='บันทึกไม่ได้ พื้นที่เก็บข้อมูลเต็ม';return}
- $('#notice').textContent='บันทึกยอดผลิตกะที่เลือกแล้ว';$('#stampProductionDialog').close();render();
+ e.preventDefault();const form=e.target,x=Object.fromEntries(new FormData(form)),cards=[...form.querySelectorAll('[data-production-machine]')].filter(card=>card.querySelector('[data-daily-production]').value!=='');
+ if(!x.date||!x.shift||!cards.length||cards.some(card=>{const value=Number(card.querySelector('[data-daily-production]').value);return !Number.isSafeInteger(value)||value<0})){$('#stampProductionNotice').textContent='เลือกวันที่ กะ และกรอกยอดผลิตเป็นจำนวนเต็มตั้งแต่ 0 อย่างน้อย 1 เครื่อง';return}
+ const next=records.map(r=>({...r}));for(const card of cards){const line=card.dataset.productionMachine,production=Number(card.querySelector('[data-daily-production]').value),shiftLeader=String(x.shiftLeader||'').trim(),old=next.find(r=>r.page==='stamping'&&r.kind==='production'&&r.date===x.date&&r.shift===x.shift&&r.line===line);
+ if(old){Object.assign(old,{production,shiftLeader,productionShift:x.shift,productionEntryMode:'daily'});delete old.productionSlots}else next.push({id:crypto.randomUUID?.()||String(Date.now()+Math.random()),page:'stamping',kind:'production',date:x.date,shift:x.shift,shiftLeader,productionShift:x.shift,line,production,productionEntryMode:'daily',scrap:0,model:'',defect:'',note:''})}
+ const backup=records;records=next;try{save()}catch{records=backup;$('#stampProductionNotice').textContent='บันทึกไม่ได้ กรุณาลองอีกครั้ง';return}$('#notice').textContent='บันทึกยอดผลิตรายวันแยกเครื่องจักรแล้ว';$('#stampProductionDialog').close();render();
 };
 $('#stampingEntry').onsubmit=e=>{
  e.preventDefault();const form=e.target,meta=Object.fromEntries(new FormData(form)),partRows=[...$('#stampingEntryRows').children];
