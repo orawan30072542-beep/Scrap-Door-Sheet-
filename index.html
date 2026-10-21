@@ -1026,6 +1026,41 @@ td{border-color:#2a405b!important;font-weight:400}
 .filter-panel #lineButtons.line-buttons{width:94px;max-width:100%;height:auto;max-height:104px;overflow-y:auto;padding:2px;gap:1px;border-radius:8px;scrollbar-width:thin}
 .filter-panel #lineButtons.line-buttons .month-choice{flex:0 0 auto;min-height:18px;height:18px;padding:1px 5px;font-size:10px;line-height:16px;border-radius:5px;white-space:nowrap}
 
+
+/* Balanced KPI and trend panel: fixed controls, flexible plot, natural table. */
+:root{--dashboard-chart-height:clamp(560px,72vh,650px)}
+.stamping-dashboard-layout>.stamping-right-charts{min-width:0}
+.stamping-right-charts>.stamping-trend-panel{display:grid!important;grid-template-rows:auto auto minmax(200px,1fr) auto auto;gap:7px;align-content:stretch;width:100%;min-width:0}
+.stamping-trend-panel>.top{margin:0;min-height:22px}
+.stamping-trend-panel>.top h2{margin:0;font-size:15px}
+.stamping-trend-panel>.periods{margin:0!important;gap:5px}
+.stamping-trend-panel>.periods .btn{padding:5px 9px;font-size:11px}
+.stamping-right-charts #stampingScrapTrend{width:100%;height:100%!important;min-height:200px;min-width:0;overflow:hidden}
+.stamping-right-charts #stampingScrapTrend svg{display:block;width:100%;height:100%}
+.stamping-trend-panel>.chart-note{margin:0;font-size:10px;line-height:1.4}
+.stamping-trend-panel #periodSummaryPanel{width:100%;margin:0!important;padding:9px 0 0!important;min-width:0}
+.stamping-trend-panel #periodSummaryPanel h2{font-size:12px!important;margin:0 0 7px;line-height:1.4}
+.stamping-trend-panel #periodSummaryPanel .tablewrap{width:100%;margin:0}
+.stamping-trend-panel .summary-matrix th,.stamping-trend-panel .summary-matrix td{height:25px;line-height:1.3;padding:5px 1px!important;font-size:10px}
+.overall-rate-panel{grid-template-rows:auto 130px 54px minmax(0,1fr);gap:8px;padding:14px}
+.overall-rate-donut{width:130px;height:130px}
+.overall-rate-center>span{font-size:28px!important;line-height:1.15}
+.overall-rate-panel #machineCards{width:100%;gap:8px}
+.overall-rate-panel .machine-donut-card{grid-template-columns:minmax(70px,.85fr) minmax(0,1.15fr);padding:8px 10px;gap:8px}
+.overall-rate-panel .machine-rate-donut{width:64px;height:64px}
+.overall-rate-panel .machine-rate-donut>div{width:50px;height:50px}
+.overall-rate-panel .machine-rate-value{font-size:22px!important;line-height:1.2}
+.overall-rate-panel .machine-donut-details{font-size:11px;gap:3px}
+.overall-rate-panel .machine-chart-side>strong{font-size:12px}
+@media(max-width:900px){.stamping-right-charts>.stamping-trend-panel{grid-template-rows:auto auto minmax(220px,1fr) auto auto}.overall-rate-panel{grid-template-rows:auto 130px 54px minmax(0,1fr)}}
+
+
+/* Narrower, shorter line / area control. */
+.filter-panel #lineButtons.line-buttons{width:76px;max-height:90px;padding:2px;gap:1px;border-radius:7px}
+.filter-panel #lineButtons.line-buttons .month-choice{height:16px;min-height:16px;line-height:14px;padding:1px 4px;font-size:9px;border-radius:4px}
+.filter-panel .filters{grid-template-columns:100px minmax(150px,1.3fr) 80px 110px minmax(150px,1fr) minmax(150px,1fr)}
+@media(max-width:1100px){.filter-panel .filters{grid-template-columns:100px minmax(150px,1fr) 80px 105px minmax(145px,1fr) minmax(145px,1fr)}}
+
 </style>
 </head>
 <body>
@@ -2016,6 +2051,14 @@ load();
  document.getElementById('closeIssueImageLightbox').onclick=()=>dialog.close();
  dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const bounds=dialog.getBoundingClientRect();if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)dialog.close()});
  dialog.addEventListener('close',()=>photo.removeAttribute('src'));
+})();
+</script>
+<script>
+(()=>{let frame=0,last='';const box=document.getElementById('stampingScrapTrend');
+function schedule(){if(frame)return;frame=requestAnimationFrame(()=>{frame=0;if(page!=='stamping'||!box.clientWidth)return;const size=box.clientWidth+':'+box.clientHeight+':'+period+':'+trendMetric;if(size===last)return;last=size;const rows=filtered();renderScrapTrend(rows);renderStampingMatrix(rows)})}
+if(window.ResizeObserver)new ResizeObserver(schedule).observe(box);
+window.addEventListener('resize',schedule);document.addEventListener('fullscreenchange',schedule);
+if(document.fonts)document.fonts.ready.then(schedule);
 })();
 </script>
 </body>
