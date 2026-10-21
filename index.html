@@ -1061,6 +1061,25 @@ td{border-color:#2a405b!important;font-weight:400}
 .filter-panel .filters{grid-template-columns:100px minmax(150px,1.3fr) 80px 110px minmax(150px,1fr) minmax(150px,1fr)}
 @media(max-width:1100px){.filter-panel .filters{grid-template-columns:100px minmax(150px,1fr) 80px 105px minmax(145px,1fr) minmax(145px,1fr)}}
 
+
+.stamping-bottom-row>.stamping-pareto-panel{grid-column:1/-1!important;height:430px!important;display:flex;flex-direction:column;padding:16px!important}
+.pareto-heading{justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.pareto-heading h2{margin:0;font-size:15px}
+.pareto-heading .btn{padding:5px 12px;font-size:11px}
+.pareto-analysis-grid{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:20px;flex:1;min-height:0}
+.pareto-plot-wrap{display:flex;flex-direction:column;min-width:0;min-height:0}
+.stamping-bottom-row .stamping-pareto-panel #stampingPareto{width:100%;height:0;min-height:0;flex:1}
+.pareto-details{min-width:0;display:flex;flex-direction:column;border-left:1px solid #2b4059;padding-left:18px}
+.pareto-details h3{font-size:12px;margin:0 0 10px;font-weight:500}
+.pareto-table-scroll{overflow:auto;min-height:0;flex:1}
+.pareto-details table{width:100%;min-width:0;border-collapse:collapse;font-size:11px}
+.pareto-details th,.pareto-details td{padding:8px 5px;line-height:1.4;border-bottom:1px solid #2a3c54;white-space:nowrap}
+.pareto-details th:first-child,.pareto-details td:first-child{white-space:normal;min-width:90px;text-align:left}
+.pareto-details .num{text-align:right;font-variant-numeric:tabular-nums}
+.pareto-money,.pareto-cumulative{color:#facc15}
+.stamping-bottom-row>.model-funnel-panel{grid-column:1/-1}
+@media(max-width:900px){.stamping-bottom-row>.stamping-pareto-panel{height:auto!important}.pareto-analysis-grid{grid-template-columns:1fr}.stamping-bottom-row .stamping-pareto-panel #stampingPareto{height:310px;flex:none}.pareto-details{border-left:0;border-top:1px solid #2b4059;padding:14px 0 0}.pareto-table-scroll{max-height:350px}}
+
 </style>
 </head>
 <body>
@@ -1114,12 +1133,8 @@ td{border-color:#2a405b!important;font-weight:400}
 </section>
 
 </div></div><div class="stamping-bottom-row"><div id="stampingSummarySlot"></div><div class="panel stamping-pareto-panel">
-<h2>Pareto · ประเภทปัญหา Top 10</h2>
-<div class="stamping-legend">
-<span><i style="background:#339dff"></i>จำนวนของเสีย</span><span><i style="background:#43efd6"></i>สะสม (%)</span>
-</div>
-<div id="stampingPareto" class="stamping-chart"></div>
-<div class="chart-note">แสดงปัญหา Top 10 เรียงจากของเสียมากไปน้อย · อัตราสะสมเทียบกับของเสียทั้งหมด</div>
+<div class="top pareto-heading"><h2>Pareto · ประเภทปัญหา Top 10</h2><div class="periods" aria-label="เรียง Top 10"><button type="button" class="btn active" data-pareto-metric="quantity">จำนวน</button><button type="button" class="btn" data-pareto-metric="cost">มูลค่า</button></div></div>
+<div class="pareto-analysis-grid"><div class="pareto-plot-wrap"><div id="stampingPareto" class="stamping-chart"></div><div class="chart-note">แท่ง: จำนวน / มูลค่า · เส้นสีเหลือง: เปอร์เซ็นต์สะสมเทียบกับทุกปัญหา</div></div><div class="pareto-details"><h3>รายละเอียดปัญหา · Top 10</h3><div class="pareto-table-scroll"><table><thead><tr><th>ปัญหา</th><th>จำนวน</th><th>มูลค่า ฿</th><th>%</th><th>สะสม %</th></tr></thead><tbody id="paretoDetailRows"></tbody></table></div><div id="paretoTotals" class="chart-note"></div></div></div>
 </div><section class="panel model-funnel-panel"><h2>ยอดของเสียตาม Model · Top 10</h2><div id="stampingModelChart"></div><div class="chart-note">จำนวนของเสีย (ชิ้น) · สัดส่วนเทียบกับของเสียทั้งหมดในช่วงที่เลือก</div></section></div>
 </section><section class="grid cols" id="generalCharts"><div class="panel">
 <h2>แนวโน้มยอดผลิตและของเสีย</h2>
@@ -1481,17 +1496,25 @@ function renderStamping(rows){
  const byMachine=new Map(machines.map(m=>[m.name,m]));
  for(const row of rows){const name=machineName(row.line);if(name){let m=byMachine.get(name);m.production+=row.production;m.scrap+=row.scrap}}
  $('#machineCards').innerHTML=machines.map(m=>{const pct=m.production>0?rate(m.scrap,m.production):0,arc=Math.max(0,Math.min(100,pct)),available=m.production>0;return `<div class="machine-card machine-donut-card"><div class="machine-chart-side"><strong>${esc(m.name)}</strong><div class="machine-rate-donut" role="img" aria-label="${esc(m.name)} อัตราของเสีย ${rateText(m.scrap,m.production)}" style="background:conic-gradient(#46baff 0 ${arc}%,#203c59 ${arc}% 100%)"><div><small>${esc(m.name)}</small></div></div></div><div class="machine-donut-details"><span class="machine-rate-value">${rateText(m.scrap,m.production)}</span><small>${available?'อัตราของเสีย':'ยังไม่มียอดผลิต'}</small><span>ของเสีย <b>${fmt(m.scrap)}</b> ชิ้น</span><span>ยอดผลิต <b>${fmt(m.production)}</b> ชิ้น</span></div></div>`}).join('');
- let problem=group(rows,r=>r.defect?.trim()||'ไม่ระบุประเภท').filter(p=>p.scrap>0).sort((a,b)=>b.scrap-a.scrap),total=problem.reduce((n,p)=>n+p.scrap,0);
- if(!problem.length){$('#stampingPareto').innerHTML='<span class="stamping-empty">ยังไม่มีข้อมูลของเสียในช่วงที่เลือก</span>';return}
- let top=problem.slice(0,10);
- const W=Math.max(320,$('#stampingPareto').clientWidth||900),H=Math.max(180,$('#stampingPareto').clientHeight||250),L=35,R=48,T=25,B=80,iw=W-L-R,ih=H-T-B,maxScrap=Math.max(...top.map(p=>p.scrap),1);
- let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet" aria-label="พาเรโตจำนวนของเสียตามประเภทปัญหาและเปอร์เซ็นต์สะสม"><defs><linearGradient id="stampingParetoBlueGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#28d9f2"/><stop offset="48%" stop-color="#268ff0"/><stop offset="100%" stop-color="#2548b7"/></linearGradient></defs>`,sum=0,points=[];
- [0,25,50,75,100].forEach(n=>{let y=T+ih*(1-n/100);svg+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" stroke="#2c4058"/><text x="${W-R+9}" y="${y+6}" fill="#c4e4ff" font-size="12" font-weight="400">${n}%</text>`});
- top.forEach((p,i)=>{let x=L+iw*(i+.5)/top.length,h=ih*p.scrap/maxScrap,width=Math.min(62,iw/top.length*.52);sum+=p.scrap;let y=T+ih-ih*sum/total;points.push([x,y]);const label=p.key,segments=Array.from(label.matchAll(/.{1,9}/gu),m=>m[0]);svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${h}" rx="5" fill="url(#stampingParetoBlueGradient)"><title>${esc(label)}: ${fmt(p.scrap)} ชิ้น</title></rect><text x="${x}" y="${Math.max(22,T+ih-h-10)}" text-anchor="middle" fill="#ecf7ff" class="pareto-value" font-size="13" font-weight="400">${fmt(p.scrap)}</text><text class="pareto-problem-label" data-problem="${esc(label)}" x="${x}" y="${T+ih+29}" text-anchor="middle" fill="#dcecff" font-size="12" font-weight="400">${segments.slice(0,3).map((part,j)=>`<tspan x="${x}" dy="${j?18:0}">${esc(part)}${j===2&&segments.length>3?'…':''}</tspan>`).join('')}</text>`});
- svg+=`<polyline points="${points.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#43efd6" stroke-width="3"/>`;
- points.forEach(p=>svg+=`<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="#b0fff1" stroke="#43efd6" stroke-width="2"/>`);
- $('#stampingPareto').innerHTML=svg+'</svg>'
+ renderProblemPareto(rows);
 }
+let paretoMetric='quantity';
+function problemParetoTotals(rows){const map=new Map();for(const row of rows){const quantity=Number(row.scrap)||0;if(quantity<=0)continue;const name=String(row.defect||'').trim()||'ไม่ระบุประเภท',v=map.get(name)||{name,quantity:0,cost:0};v.quantity+=quantity;v.cost+=recordScrapCost(row);map.set(name,v)}return [...map.values()]}
+function renderProblemPareto(rows){
+ const box=$('#stampingPareto'),ranked=problemParetoTotals(rows).sort((a,b)=>b[paretoMetric]-a[paretoMetric]||a.name.localeCompare(b.name)),top=ranked.slice(0,10),total=ranked.reduce((n,v)=>n+v[paretoMetric],0),money=n=>n.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+ document.querySelectorAll('[data-pareto-metric]').forEach(b=>{const active=b.dataset.paretoMetric===paretoMetric;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});
+ let sum=0;
+ $('#paretoDetailRows').innerHTML=top.length?top.map(v=>{sum+=v[paretoMetric];return `<tr><td>${esc(v.name)}</td><td class="num">${fmt(v.quantity)}</td><td class="num pareto-money">${money(v.cost)}</td><td class="num">${total?(v[paretoMetric]/total*100).toFixed(1):'—'}${total?'%':''}</td><td class="num pareto-cumulative">${total?(sum/total*100).toFixed(1)+'%':'—'}</td></tr>`}).join(''):'<tr><td colspan="5">ยังไม่มีข้อมูล</td></tr>';
+ $('#paretoTotals').textContent='รวมทุกปัญหา: '+fmt(ranked.reduce((n,v)=>n+v.quantity,0))+' ชิ้น · ฿'+money(ranked.reduce((n,v)=>n+v.cost,0))+' · % ตาม'+(paretoMetric==='cost'?'มูลค่า':'จำนวน');
+ if(!top.length||!total){box.innerHTML='<span class="stamping-empty">'+(!top.length?'ยังไม่มีข้อมูลของเสีย':'ยังไม่มีมูลค่าของเสียสำหรับคำนวณ')+'</span>';return}
+ const W=Math.max(360,box.clientWidth||700),H=Math.max(240,box.clientHeight||320),L=58,R=42,T=24,B=88,iw=W-L-R,ih=H-T-B,max=Math.max(1,...top.map(v=>v[paretoMetric]))*1.12,step=iw/top.length,points=[];
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Pareto Top 10 ${paretoMetric==='cost'?'มูลค่า':'จำนวน'}" preserveAspectRatio="xMidYMid meet">`;
+ for(let i=0;i<=4;i++){const y=T+ih*(1-i/4);svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#2b3c54"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#a4b6ce" font-size="10">${fmt(Math.round(max*i/4))}</text><text x="${W-R+6}" y="${y+4}" fill="#a4b6ce" font-size="10">${i*25}%</text>`}
+ sum=0;top.forEach((v,i)=>{const x=L+step*(i+.5),h=v[paretoMetric]/max*ih,width=Math.min(62,step*.72);sum+=v[paretoMetric];points.push([x,T+ih*(1-sum/total)]);const label=window.dashboardText?window.dashboardText(v.name):v.name;svg+=`<rect x="${x-width/2}" y="${T+ih-h}" width="${width}" height="${h}" rx="3" fill="${i===0?'#f24b56':'#3574ec'}"><title>${esc(v.name)}: ${paretoMetric==='cost'?'฿'+money(v.cost):fmt(v.quantity)+' ชิ้น'}</title></rect><text transform="translate(${x},${T+ih+15}) rotate(-32)" text-anchor="end" fill="#c4d1e3" font-size="10"><title>${esc(label)}</title>${esc(Array.from(label).slice(0,19).join(''))}${Array.from(label).length>19?'…':''}</text>`});
+ svg+=`<polyline points="${points.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#facc15" stroke-width="2"/>`;points.forEach(p=>svg+=`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#facc15"/>`);box.innerHTML=svg+'</svg>';
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-pareto-metric]');if(!b)return;paretoMetric=b.dataset.paretoMetric;render()});
+
 function syncPreviousMonthIssueRegister(now=new Date()){
  if(window.scrapCloud&&!window.scrapCloud.canEdit)return;
  const parts=new Intl.DateTimeFormat('en',{timeZone:'Asia/Bangkok',year:'numeric',month:'numeric',day:'2-digit'}).formatToParts(now),value=type=>parts.find(x=>x.type===type).value;
@@ -2065,7 +2088,7 @@ load();
 </script>
 <script>
 (()=>{let frame=0,last='';const box=document.getElementById('stampingScrapTrend');
-function schedule(){if(frame)return;frame=requestAnimationFrame(()=>{frame=0;if(page!=='stamping'||!box.clientWidth)return;const size=box.clientWidth+':'+box.clientHeight+':'+period+':'+trendMetric;if(size===last)return;last=size;const rows=filtered();renderScrapTrend(rows);renderStampingMatrix(rows)})}
+function schedule(){if(frame)return;frame=requestAnimationFrame(()=>{frame=0;if(page!=='stamping'||!box.clientWidth)return;const size=box.clientWidth+':'+box.clientHeight+':'+period+':'+trendMetric;if(size===last)return;last=size;const rows=filtered();renderScrapTrend(rows);renderStampingMatrix(rows);renderProblemPareto(rows)})}
 if(window.ResizeObserver)new ResizeObserver(schedule).observe(box);
 window.addEventListener('resize',schedule);document.addEventListener('fullscreenchange',schedule);
 if(document.fonts)document.fonts.ready.then(schedule);
