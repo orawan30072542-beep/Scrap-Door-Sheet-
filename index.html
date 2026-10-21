@@ -1161,6 +1161,24 @@ td{border-color:#2a405b!important;font-weight:400}
 @media(max-width:1100px){.metric:has(#scrapCost) .cost-daily-average{flex-direction:column;align-items:flex-start;gap:3px}.metric:has(#scrapCost) .cost-daily-average>small{max-width:100%}}
 @media(max-width:900px){.metrics.stamping-metrics>.metric:has(#scrapCost){min-height:200px}.metric:has(#scrapCost) #scrapCost{font-size:38px!important;margin-top:18px!important}.metric:has(#scrapCost) .cost-daily-average{flex-direction:row;align-items:center}}
 
+
+/* Overview target and restrained typography. */
+.overall-rate-panel>h2{font-size:11px!important;letter-spacing:.07em}
+.overall-rate-panel .overall-rate-center>span{font-size:27px!important;font-weight:500}
+.overall-rate-panel .overall-rate-center small{font-size:8px;letter-spacing:.06em}
+.overall-rate-panel .scrap-target-label{color:#f6c85b!important;font-size:8px!important;font-weight:400;letter-spacing:.02em!important;white-space:nowrap;line-height:1.4}
+.overall-rate-panel .overall-rate-center{gap:4px}
+.overall-rate-panel .overall-rate-totals span{font-size:20px!important}
+.overall-rate-panel .overall-rate-totals small{font-size:8px!important}
+.overall-rate-panel .machine-centered-name{font-size:10px}
+.overall-rate-panel .machine-centered-card .machine-ring-number{font-size:clamp(15px,1.45vw,21px)!important;font-weight:500}
+.overall-rate-panel .machine-centered-card .machine-rate-donut>div{gap:3px}
+.overall-rate-panel .machine-centered-card .machine-rate-donut small{font-size:7px}
+.overall-rate-panel .machine-centered-card .scrap-target-label{font-size:6px!important}
+.overall-rate-panel .machine-centered-cost{color:#facc15!important;font-size:10px!important;font-weight:500}
+.overall-rate-panel .machine-qty-line b{font-size:9px}
+.overall-rate-panel .machine-qty-line small{font-size:7px}
+
 </style>
 </head>
 <body>
@@ -1204,7 +1222,7 @@ td{border-color:#2a405b!important;font-weight:400}
 </div><div class="shift-kpi-group" id="shiftKpiGroup" hidden><div class="shift-kpi-card"><div class="shift-kpi-title"><svg class="kpi-icon shift-leader-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3M9 16l3 3 3-3"/></svg><div><span>Shift A</span><small class="shift-leader-name" id="shiftALeader">Mr.Khomsan (Supervisor) / Mr.Thawatchai (Leader)</small></div></div><div class="shift-rate-strip"><div><small>อัตราของเสีย</small><strong id="shiftARate">—</strong></div><span>ยอดผลิต <b id="shiftAProduction">0</b> ชิ้น</span></div><div class="shift-kpi-values"><div><small>ยอดของเสีย</small><strong id="shiftAScrap">0</strong><em>ชิ้น</em><small class="shift-average">เฉลี่ย <span id="shiftAScrapAverage">0.00</span> ชิ้น/วัน</small></div><div><small>มูลค่าความเสียหาย</small><strong id="shiftACost">0.00</strong><em>บาท</em><small class="shift-average">เฉลี่ย <span id="shiftACostAverage">0.00</span> บาท/วัน</small></div></div><div class="shift-mini-chart shift-scrap-wide" id="shiftAScrapTrend"></div></div><div class="shift-kpi-card"><div class="shift-kpi-title"><svg class="kpi-icon shift-leader-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3M9 16l3 3 3-3"/></svg><div><span>Shift B</span><small class="shift-leader-name" id="shiftBLeader">Mr.Peerapat (Supervisor) / Mr.Amnuai (Leader)</small></div></div><div class="shift-rate-strip"><div><small>อัตราของเสีย</small><strong id="shiftBRate">—</strong></div><span>ยอดผลิต <b id="shiftBProduction">0</b> ชิ้น</span></div><div class="shift-kpi-values"><div><small>ยอดของเสีย</small><strong id="shiftBScrap">0</strong><em>ชิ้น</em><small class="shift-average">เฉลี่ย <span id="shiftBScrapAverage">0.00</span> ชิ้น/วัน</small></div><div><small>มูลค่าความเสียหาย</small><strong id="shiftBCost">0.00</strong><em>บาท</em><small class="shift-average">เฉลี่ย <span id="shiftBCostAverage">0.00</span> บาท/วัน</small></div></div><div class="shift-mini-chart shift-scrap-wide" id="shiftBScrapTrend"></div></div></div></section><section id="stampingAnalytics" hidden>
 <div class="stamping-dashboard-layout"><div class="stamping-kpi-left">
 <section class="panel overall-rate-panel" translate="no"><h2>SCRAP RATE OVERVIEW</h2>
-<div id="overallRateDonut" class="overall-rate-donut" role="img"><div class="overall-rate-center"><span id="overallRateValue">0.00%</span><small>SCRAP RATE</small></div></div>
+<div id="overallRateDonut" class="overall-rate-donut" role="img"><div class="overall-rate-center"><span id="overallRateValue">0.00%</span><small>SCRAP RATE</small><small class="scrap-target-label">TARGET ≤ 5%</small></div></div>
 <div class="overall-rate-totals"><div><small>TOTAL SCRAP</small><span id="overallRateScrap">0</span><small>PCS</small></div><div><small>TOTAL PRODUCTION</small><span id="overallRateProduction">0</span><small>PCS</small></div></div>
 <div class="machine-list" id="machineCards"></div>
 </section></div><div class="stamping-right-charts"><section class="panel stamping-trend-panel" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
@@ -1576,7 +1594,7 @@ function renderStamping(rows){
  const machines=names.map(name=>({name,production:0,scrap:0,cost:0}));
  const byMachine=new Map(machines.map(m=>[m.name,m]));
  for(const row of rows){const name=machineName(row.line);if(name){let m=byMachine.get(name);m.production+=Number(row.production)||0;m.scrap+=Number(row.scrap)||0;m.cost+=recordScrapCost(row)}}
- $('#machineCards').innerHTML=machines.map(m=>{const pct=m.production>0?rate(m.scrap,m.production):0,arc=Math.max(0,Math.min(100,pct)),available=m.production>0;return `<div class="machine-card machine-donut-card machine-centered-card"><strong class="machine-centered-name">${esc(m.name)}</strong><div class="machine-rate-donut" role="img" aria-label="${esc(m.name)} SCRAP RATE ${rateText(m.scrap,m.production)}" style="background:conic-gradient(from 0deg,#56d4ef 0 ${arc}%,#263f59 ${arc}% 100%)"><div><span class="machine-ring-number">${available?pct.toFixed(2):'—'}</span><small>% SCRAP</small></div></div><div class="machine-centered-stats"><div class="machine-qty-line"><span><b>${fmt(m.production)}</b><small>PCS</small></span><span class="machine-stat-separator">/</span><span><b>${fmt(m.scrap)}</b><small>SCRAP</small></span></div><strong class="machine-centered-cost">฿${m.cost.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong>${!available?'<small class="machine-no-production">NO PRODUCTION</small>':''}</div></div>`}).join('');
+ $('#machineCards').innerHTML=machines.map(m=>{const pct=m.production>0?rate(m.scrap,m.production):0,arc=Math.max(0,Math.min(100,pct)),available=m.production>0;return `<div class="machine-card machine-donut-card machine-centered-card"><strong class="machine-centered-name">${esc(m.name)}</strong><div class="machine-rate-donut" role="img" aria-label="${esc(m.name)} SCRAP RATE ${rateText(m.scrap,m.production)}" style="background:conic-gradient(from 0deg,#56d4ef 0 ${arc}%,#263f59 ${arc}% 100%)"><div><span class="machine-ring-number">${available?pct.toFixed(2):'—'}</span><small>% SCRAP</small><small class="scrap-target-label">TARGET ≤ 5%</small></div></div><div class="machine-centered-stats"><div class="machine-qty-line"><span><b>${fmt(m.production)}</b><small>PCS</small></span><span class="machine-stat-separator">/</span><span><b>${fmt(m.scrap)}</b><small>SCRAP</small></span></div><strong class="machine-centered-cost">฿${m.cost.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong>${!available?'<small class="machine-no-production">NO PRODUCTION</small>':''}</div></div>`}).join('');
  renderProblemPareto(rows);
 }
 let paretoMetric='quantity';
