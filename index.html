@@ -1147,6 +1147,20 @@ td{border-color:#2a405b!important;font-weight:400}
 @media(min-width:901px) and (max-width:1150px){.overall-rate-panel .machine-centered-card{padding:10px 2px;gap:10px}.overall-rate-panel #machineCards{gap:4px}.machine-qty-line{flex-wrap:wrap;gap:3px}.machine-qty-line b{font-size:9px}.machine-centered-cost{font-size:10px}}
 @media(max-width:900px){.overall-rate-panel .machine-centered-card .machine-rate-donut{width:96px}.overall-rate-panel .machine-centered-card .machine-ring-number{font-size:25px}}
 
+
+/* Cost KPI: balanced title, central amount and bottom daily average. */
+.metrics.stamping-metrics>.metric:has(#scrapCost){display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:0;padding:18px 20px!important;min-height:220px;border:1px solid #36536a;border-top:2px solid #5dd6e8;background:radial-gradient(ellipse at 100% 0,#20506b40,transparent 65%),linear-gradient(145deg,#15273d,#101e32);border-radius:14px;overflow:hidden}
+.metric:has(#scrapCost) .cost-card-label{display:flex;align-items:center;gap:9px;margin:0;color:#b8d5e8;font-size:12px!important;font-weight:400;line-height:1.5}
+.metric:has(#scrapCost) .kpi-icon{width:21px;height:21px;color:#64d4e7;flex-shrink:0}
+.metric:has(#scrapCost) #scrapCost{display:block;align-self:flex-start;font-size:clamp(28px,2.7vw,43px)!important;font-weight:500!important;letter-spacing:-.035em;line-height:1.15;margin:22px 0 5px!important;font-variant-numeric:tabular-nums;color:#f0f8ff;max-width:100%}
+.metric:has(#scrapCost)>em{font-size:10px;font-style:normal;font-weight:400;color:#92adc4;margin:0 0 18px}
+.metric:has(#scrapCost) .cost-daily-average{margin-top:auto;padding-top:12px;border-top:1px solid #35506a;display:flex;flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:5px 10px}
+.metric:has(#scrapCost) .cost-daily-average>small{font-size:10px;color:#9fb9cf;line-height:1.5;max-width:45%}
+.metric:has(#scrapCost) .cost-daily-average>span{font-size:10px;color:#9fb9cf;white-space:nowrap;line-height:1.5}
+.metric:has(#scrapCost) .cost-daily-average b{font-size:19px;font-weight:500;color:#6ed7e9;letter-spacing:-.015em}
+@media(max-width:1100px){.metric:has(#scrapCost) .cost-daily-average{flex-direction:column;align-items:flex-start;gap:3px}.metric:has(#scrapCost) .cost-daily-average>small{max-width:100%}}
+@media(max-width:900px){.metrics.stamping-metrics>.metric:has(#scrapCost){min-height:200px}.metric:has(#scrapCost) #scrapCost{font-size:38px!important;margin-top:18px!important}.metric:has(#scrapCost) .cost-daily-average{flex-direction:row;align-items:center}}
+
 </style>
 </head>
 <body>
