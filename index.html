@@ -1080,6 +1080,25 @@ td{border-color:#2a405b!important;font-weight:400}
 .stamping-bottom-row>.model-funnel-panel{grid-column:1/-1}
 @media(max-width:900px){.stamping-bottom-row>.stamping-pareto-panel{height:auto!important}.pareto-analysis-grid{grid-template-columns:1fr}.stamping-bottom-row .stamping-pareto-panel #stampingPareto{height:310px;flex:none}.pareto-details{border-left:0;border-top:1px solid #2b4059;padding:14px 0 0}.pareto-table-scroll{max-height:350px}}
 
+
+/* Pareto details: contain all ten rows and balance numeric columns. */
+.stamping-bottom-row>.stamping-pareto-panel{height:auto!important;min-height:450px!important;overflow:visible}
+.pareto-analysis-grid{grid-template-columns:minmax(0,58fr) minmax(0,42fr);align-items:stretch;min-height:365px;gap:18px}
+.pareto-plot-wrap{min-height:350px}
+.pareto-details{min-height:0;padding-left:16px;gap:0}
+.pareto-details h3{font-size:12px;margin:0 0 9px;line-height:1.5}
+.pareto-table-scroll{flex:0 0 auto;overflow-x:auto;overflow-y:visible;max-height:none}
+.pareto-details table{table-layout:fixed;width:100%;font-size:11px;margin:0}
+.pareto-details th,.pareto-details td{height:29px;padding:6px 6px;vertical-align:middle;line-height:1.45;border-bottom:1px solid #2a3c54}
+.pareto-details th:first-child,.pareto-details td:first-child{width:34%;min-width:0;white-space:normal;overflow-wrap:anywhere}
+.pareto-details th:nth-child(2){width:14%;text-align:right}
+.pareto-details th:nth-child(3){width:24%;text-align:right}
+.pareto-details th:nth-child(4),.pareto-details th:nth-child(5){width:14%;text-align:right}
+.pareto-details td.num{white-space:nowrap;font-variant-numeric:tabular-nums}
+#paretoTotals{margin-top:10px;font-size:10px;line-height:1.6;white-space:normal}
+@media(max-width:1100px){.pareto-analysis-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.pareto-details th,.pareto-details td{padding:6px 4px;font-size:10px}}
+@media(max-width:900px){.stamping-bottom-row>.stamping-pareto-panel{min-height:0!important}.pareto-analysis-grid{grid-template-columns:1fr;min-height:0}.pareto-plot-wrap{min-height:320px}.pareto-details{padding:14px 0 0}.pareto-table-scroll{max-height:none}.pareto-details th,.pareto-details td{font-size:11px;height:30px}}
+
 </style>
 </head>
 <body>
