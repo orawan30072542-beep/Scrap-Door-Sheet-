@@ -1099,6 +1099,33 @@ td{border-color:#2a405b!important;font-weight:400}
 @media(max-width:1100px){.pareto-analysis-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.pareto-details th,.pareto-details td{padding:6px 4px;font-size:10px}}
 @media(max-width:900px){.stamping-bottom-row>.stamping-pareto-panel{min-height:0!important}.pareto-analysis-grid{grid-template-columns:1fr;min-height:0}.pareto-plot-wrap{min-height:320px}.pareto-details{padding:14px 0 0}.pareto-table-scroll{max-height:none}.pareto-details th,.pareto-details td{font-size:11px;height:30px}}
 
+
+/* English uppercase scrap overview, with clear hierarchy and compact machine rows. */
+.overall-rate-panel{background:radial-gradient(ellipse at 50% 15%,#19384b66,transparent 55%),linear-gradient(145deg,#14243a,#101d30);grid-template-rows:auto 140px 58px minmax(0,1fr);gap:10px;padding:16px}
+.overall-rate-panel>h2{font-size:12px!important;letter-spacing:.09em;font-weight:500!important;color:#cee7f6;margin:0;width:100%}
+.overall-rate-panel .overall-rate-donut{width:140px;height:140px;padding:0;box-shadow:0 0 28px #42cce412;outline:1px solid #5287a52b;outline-offset:5px}
+.overall-rate-center{background:#102034;gap:5px}
+.overall-rate-center>span{font-size:31px!important;font-weight:500;color:#73e1f0;letter-spacing:-.04em;line-height:1.2}
+.overall-rate-center small{font-size:9px;letter-spacing:.13em;color:#9bb9ce}
+.overall-rate-totals{height:58px;padding-top:9px;border-color:#36536a;gap:10px}
+.overall-rate-totals>div{gap:3px 5px}
+.overall-rate-totals small{font-size:9px!important;letter-spacing:.035em;color:#9bb5ca}
+.overall-rate-totals span{font-size:23px!important;font-weight:500!important;letter-spacing:-.02em;color:#edf8ff}
+.overall-rate-panel #machineCards{gap:9px;padding:0}
+.overall-rate-panel .machine-donut-card{grid-template-columns:minmax(68px,.8fr) minmax(0,1.2fr);border:1px solid #304c63;border-left:3px solid #54cadf;border-radius:12px;background:linear-gradient(115deg,#19344a,#162a40);padding:8px 10px;gap:10px}
+.overall-rate-panel .machine-chart-side{gap:5px}
+.overall-rate-panel .machine-chart-side>strong{font-size:11px;letter-spacing:.06em;color:#d2ebfa;font-weight:500}
+.overall-rate-panel .machine-rate-donut{width:62px;height:62px}
+.overall-rate-panel .machine-rate-donut>div{width:49px;height:49px;background:#102238}
+.overall-rate-panel .machine-rate-donut small{font-size:8px;color:#8aa9c0;letter-spacing:.04em}
+.overall-rate-panel .machine-donut-details{gap:3px;line-height:1.35;width:100%}
+.overall-rate-panel .machine-rate-value{font-size:24px!important;font-weight:500;color:#74dff0;letter-spacing:-.025em}
+.overall-rate-panel .machine-donut-details>small{font-size:8px;letter-spacing:.09em;color:#91adc3;margin-bottom:3px}
+.overall-rate-panel .machine-detail-line{display:flex;align-items:baseline;gap:4px;flex-wrap:wrap;font-size:9px;color:#a4bad0;letter-spacing:.015em}
+.overall-rate-panel .machine-detail-line b{font-size:11px;color:#e6f4ff;font-weight:500;font-variant-numeric:tabular-nums;margin-left:auto}
+.overall-rate-panel .machine-over-target{border-left-color:#f4b56d}
+.overall-rate-panel .machine-over-target .machine-rate-value{color:#ffc88c}
+
 </style>
 </head>
 <body>
@@ -1141,9 +1168,9 @@ td{border-color:#2a405b!important;font-weight:400}
 <small class="cost-card-label"><svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 4 16 4 16 0V6M4 12v6c0 4 16 4 16 0v-6"/></svg>มูลค่าความเสียหาย</small><strong id="scrapCost">0.00</strong><em>บาท</em><div class="cost-daily-average"><small>เฉลี่ยต่อวันที่มีข้อมูล</small><span><b id="scrapCostAverage">0.00</b> บาท/วัน</span></div>
 </div><div class="shift-kpi-group" id="shiftKpiGroup" hidden><div class="shift-kpi-card"><div class="shift-kpi-title"><svg class="kpi-icon shift-leader-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3M9 16l3 3 3-3"/></svg><div><span>Shift A</span><small class="shift-leader-name" id="shiftALeader">Mr.Khomsan (Supervisor) / Mr.Thawatchai (Leader)</small></div></div><div class="shift-rate-strip"><div><small>อัตราของเสีย</small><strong id="shiftARate">—</strong></div><span>ยอดผลิต <b id="shiftAProduction">0</b> ชิ้น</span></div><div class="shift-kpi-values"><div><small>ยอดของเสีย</small><strong id="shiftAScrap">0</strong><em>ชิ้น</em><small class="shift-average">เฉลี่ย <span id="shiftAScrapAverage">0.00</span> ชิ้น/วัน</small></div><div><small>มูลค่าความเสียหาย</small><strong id="shiftACost">0.00</strong><em>บาท</em><small class="shift-average">เฉลี่ย <span id="shiftACostAverage">0.00</span> บาท/วัน</small></div></div><div class="shift-mini-chart shift-scrap-wide" id="shiftAScrapTrend"></div></div><div class="shift-kpi-card"><div class="shift-kpi-title"><svg class="kpi-icon shift-leader-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3M9 16l3 3 3-3"/></svg><div><span>Shift B</span><small class="shift-leader-name" id="shiftBLeader">Mr.Peerapat (Supervisor) / Mr.Amnuai (Leader)</small></div></div><div class="shift-rate-strip"><div><small>อัตราของเสีย</small><strong id="shiftBRate">—</strong></div><span>ยอดผลิต <b id="shiftBProduction">0</b> ชิ้น</span></div><div class="shift-kpi-values"><div><small>ยอดของเสีย</small><strong id="shiftBScrap">0</strong><em>ชิ้น</em><small class="shift-average">เฉลี่ย <span id="shiftBScrapAverage">0.00</span> ชิ้น/วัน</small></div><div><small>มูลค่าความเสียหาย</small><strong id="shiftBCost">0.00</strong><em>บาท</em><small class="shift-average">เฉลี่ย <span id="shiftBCostAverage">0.00</span> บาท/วัน</small></div></div><div class="shift-mini-chart shift-scrap-wide" id="shiftBScrapTrend"></div></div></div></section><section id="stampingAnalytics" hidden>
 <div class="stamping-dashboard-layout"><div class="stamping-kpi-left">
-<section class="panel overall-rate-panel"><h2>อัตราของเสีย</h2>
-<div id="overallRateDonut" class="overall-rate-donut" role="img"><div class="overall-rate-center"><span id="overallRateValue">0.00%</span><small>อัตราของเสีย</small></div></div>
-<div class="overall-rate-totals"><div><small>ยอดของเสีย</small><span id="overallRateScrap">0</span><small>ชิ้น</small></div><div><small>ยอดผลิต</small><span id="overallRateProduction">0</span><small>ชิ้น</small></div></div>
+<section class="panel overall-rate-panel" translate="no"><h2>SCRAP RATE OVERVIEW</h2>
+<div id="overallRateDonut" class="overall-rate-donut" role="img"><div class="overall-rate-center"><span id="overallRateValue">0.00%</span><small>SCRAP RATE</small></div></div>
+<div class="overall-rate-totals"><div><small>TOTAL SCRAP</small><span id="overallRateScrap">0</span><small>PCS</small></div><div><small>TOTAL PRODUCTION</small><span id="overallRateProduction">0</span><small>PCS</small></div></div>
 <div class="machine-list" id="machineCards"></div>
 </section></div><div class="stamping-right-charts"><section class="panel stamping-trend-panel" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
 <div class="top"><h2 id="stampingTrendTitle">แนวโน้มยอดของเสีย · SCRAP STAMPING</h2></div>
@@ -1514,7 +1541,7 @@ function renderStamping(rows){
  const machines=names.map(name=>({name,production:0,scrap:0}));
  const byMachine=new Map(machines.map(m=>[m.name,m]));
  for(const row of rows){const name=machineName(row.line);if(name){let m=byMachine.get(name);m.production+=row.production;m.scrap+=row.scrap}}
- $('#machineCards').innerHTML=machines.map(m=>{const pct=m.production>0?rate(m.scrap,m.production):0,arc=Math.max(0,Math.min(100,pct)),available=m.production>0;return `<div class="machine-card machine-donut-card"><div class="machine-chart-side"><strong>${esc(m.name)}</strong><div class="machine-rate-donut" role="img" aria-label="${esc(m.name)} อัตราของเสีย ${rateText(m.scrap,m.production)}" style="background:conic-gradient(#46baff 0 ${arc}%,#203c59 ${arc}% 100%)"><div><small>${esc(m.name)}</small></div></div></div><div class="machine-donut-details"><span class="machine-rate-value">${rateText(m.scrap,m.production)}</span><small>${available?'อัตราของเสีย':'ยังไม่มียอดผลิต'}</small><span>ของเสีย <b>${fmt(m.scrap)}</b> ชิ้น</span><span>ยอดผลิต <b>${fmt(m.production)}</b> ชิ้น</span></div></div>`}).join('');
+ $('#machineCards').innerHTML=machines.map(m=>{const pct=m.production>0?rate(m.scrap,m.production):0,arc=Math.max(0,Math.min(100,pct)),available=m.production>0;return `<div class="machine-card machine-donut-card ${m.production>0&&pct>5?'machine-over-target':''}"><div class="machine-chart-side"><strong>${esc(m.name)}</strong><div class="machine-rate-donut" role="img" aria-label="${esc(m.name)} SCRAP RATE ${rateText(m.scrap,m.production)}" style="background:conic-gradient(#46baff 0 ${arc}%,#203c59 ${arc}% 100%)"><div><small>${esc(m.name)}</small></div></div></div><div class="machine-donut-details"><span class="machine-rate-value">${rateText(m.scrap,m.production)}</span><small>${available?'SCRAP RATE':'NO PRODUCTION'}</small><span class="machine-detail-line">SCRAP <b>${fmt(m.scrap)}</b> PCS</span><span class="machine-detail-line">PRODUCTION <b>${fmt(m.production)}</b> PCS</span></div></div>`}).join('');
  renderProblemPareto(rows);
 }
 let paretoMetric='quantity';
