@@ -1236,6 +1236,21 @@ td{border-color:#2a405b!important;font-weight:400}
 .overall-rate-panel .machine-centered-card .machine-rate-donut{width:clamp(72px,7vw,106px)}
 @media(max-width:900px){.overall-rate-panel{height:760px!important;min-height:760px!important}.stamping-dashboard-layout>.stamping-right-charts{height:660px!important}.overall-rate-panel .machine-centered-card .machine-rate-donut{width:105px}}
 
+
+/* Raise overview to the same top edge as Shift A; shifts sit above trend on right. */
+.metrics.stamping-metrics{display:none!important}
+.stamping-dashboard-layout{align-items:stretch}
+.stamping-dashboard-layout>.stamping-right-charts{height:auto!important;min-height:0;display:grid;grid-template-rows:260px minmax(620px,1fr)!important;gap:16px;background:transparent;border:0;border-radius:0;overflow:visible}
+.stamping-right-charts>#shiftKpiGroup{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;min-width:0;grid-row:1}
+.stamping-right-charts>#shiftKpiGroup>.shift-kpi-card{height:260px;min-height:0;padding:14px;display:grid;grid-template-rows:36px 40px minmax(0,1fr) 60px;gap:7px;overflow:hidden}
+.stamping-right-charts>#shiftKpiGroup .shift-scrap-wide{height:60px!important;margin:0}
+.stamping-right-charts>.stamping-trend-panel{grid-row:2;height:100%!important;min-height:620px;border:1px solid #2a405b;border-radius:16px;background:linear-gradient(145deg,#14243a,#101d30)}
+.stamping-dashboard-layout .overall-rate-panel{height:100%!important;min-height:896px!important;grid-template-rows:auto 240px 65px 95px minmax(0,1fr)!important;gap:16px}
+.overall-rate-panel .overall-rate-donut{width:240px;height:240px;max-width:100%}
+.overall-rate-panel .overall-rate-center>span{font-size:44px!important}
+@media(max-width:900px){.stamping-dashboard-layout .overall-rate-panel{height:760px!important;min-height:760px!important;grid-template-rows:auto 200px 58px 87px minmax(0,1fr)!important}.overall-rate-panel .overall-rate-donut{width:200px;height:200px}.stamping-dashboard-layout>.stamping-right-charts{grid-template-rows:260px 620px!important}.stamping-right-charts>#shiftKpiGroup{gap:12px}}
+@media(max-width:600px){.stamping-right-charts>#shiftKpiGroup{grid-template-columns:1fr}.stamping-dashboard-layout>.stamping-right-charts{grid-template-rows:auto 620px!important}}
+
 </style>
 </head>
 <body>
@@ -1747,6 +1762,7 @@ $('#overallRateDonut').style.background=`conic-gradient(#36c9fa 0 ${Math.max(0,M
 $('#overallRateDonut').setAttribute('aria-label','อัตราของเสีย '+rateText(s,p));
 
 const standaloneCostCard=$('#scrapCost').closest('.metric');standaloneCostCard.hidden=page==='stamping';if(page==='stamping')standaloneCostCard.style.setProperty('display','none','important');else standaloneCostCard.style.removeProperty('display');
+const shiftGroup=$('#shiftKpiGroup'),rightCharts=document.querySelector('.stamping-right-charts');if(page==='stamping'){rightCharts.prepend(shiftGroup)}else{$('#scrapCost').closest('.metrics').append(shiftGroup)}
 const metricGrid=$('#scrapCost').closest('.metrics');metricGrid.classList.toggle('stamping-metrics',page==='stamping');
 $('#shiftKpiGroup').hidden=page!=='stamping';
 for(const shift of ['A','B']){renderShiftDailyCharts(rows,shift);const shiftRows=rows.filter(r=>{const code=String(r.shift||'').trim().toUpperCase().replace(/^SHIFT\s*/,'');return (({DAY:'A',NIGHT:'B'})[code]||code)===shift});const days=new Set(shiftRows.map(r=>r.date).filter(Boolean)).size;const shiftProduction=shiftRows.reduce((n,r)=>n+(Number(r.production)||0),0),shiftScrap=shiftRows.reduce((n,r)=>n+(Number(r.scrap)||0),0),rateNode=$('#shift'+shift+'Rate');rateNode.textContent=rateText(shiftScrap,shiftProduction);rateNode.closest('.shift-rate-strip').classList.toggle('over-target',shiftProduction>0&&rate(shiftScrap,shiftProduction)>5);$('#shift'+shift+'Production').textContent=fmt(shiftProduction);$('#shift'+shift+'Leader').textContent=shift==='A'?'MR.KHOMSAN (SUPERVISOR) / MR.THAWATCHAI (LEADER)':'MR.PEERAPAT (SUPERVISOR) / MR.AMNUAI (LEADER)';$('#shift'+shift+'ScrapAverage').textContent=(days?shiftRows.reduce((sum,r)=>sum+(Number(r.scrap)||0),0)/days:0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});$('#shift'+shift+'CostAverage').textContent=(days?shiftRows.reduce((sum,r)=>sum+recordScrapCost(r),0)/days:0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});$('#shift'+shift+'Scrap').textContent=fmt(shiftRows.reduce((sum,r)=>sum+(Number(r.scrap)||0),0));$('#shift'+shift+'Cost').textContent=shiftRows.reduce((sum,r)=>sum+recordScrapCost(r),0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}
