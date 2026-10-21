@@ -1126,6 +1126,27 @@ td{border-color:#2a405b!important;font-weight:400}
 .overall-rate-panel .machine-over-target{border-left-color:#f4b56d}
 .overall-rate-panel .machine-over-target .machine-rate-value{color:#ffc88c}
 
+
+/* Reference 2: centered percentage ring and totals underneath, original blue palette. */
+.overall-rate-panel{grid-template-rows:auto 150px 58px minmax(0,1fr)}
+.overall-rate-panel #machineCards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:1fr;align-items:center;gap:8px;padding-top:10px}
+.overall-rate-panel .machine-centered-card{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:13px;height:auto;min-height:220px;width:100%;padding:12px 5px;border:1px solid #304c63;border-radius:12px;background:linear-gradient(150deg,#19344a,#12273e)}
+.machine-centered-name{font-size:11px;font-weight:500;letter-spacing:.06em;color:#cce6f8}
+.overall-rate-panel .machine-centered-card .machine-rate-donut{width:clamp(64px,6.2vw,98px);height:auto;aspect-ratio:1;box-shadow:0 4px 18px #020b192b;border-radius:50%}
+.overall-rate-panel .machine-centered-card .machine-rate-donut>div{width:80%;height:80%;background:#102238;gap:4px;border-radius:50%}
+.overall-rate-panel .machine-centered-card .machine-ring-number{font-size:clamp(16px,1.65vw,25px);font-weight:600;line-height:1.1;color:#e8f8ff;letter-spacing:-.04em}
+.overall-rate-panel .machine-centered-card .machine-rate-donut small{font-size:8px;letter-spacing:.07em;color:#9ab9d1}
+.machine-centered-stats{width:100%;display:flex;flex-direction:column;align-items:center;gap:7px;border-top:1px solid #35506a;padding-top:10px}
+.machine-qty-line{display:flex;justify-content:center;align-items:center;gap:4px;width:100%;font-variant-numeric:tabular-nums}
+.machine-qty-line>span:not(.machine-stat-separator){display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+.machine-qty-line b{font-size:10px;font-weight:500;color:#beddf3}
+.machine-qty-line small{font-size:7px;letter-spacing:.045em;color:#89a8c3}
+.machine-stat-separator{font-size:10px;color:#698aa9}
+.machine-centered-cost{font-size:11px;font-weight:500;color:#6ad9ed;white-space:nowrap;font-variant-numeric:tabular-nums}
+.machine-no-production{font-size:7px;color:#9ab3ca}
+@media(min-width:901px) and (max-width:1150px){.overall-rate-panel .machine-centered-card{padding:10px 2px;gap:10px}.overall-rate-panel #machineCards{gap:4px}.machine-qty-line{flex-wrap:wrap;gap:3px}.machine-qty-line b{font-size:9px}.machine-centered-cost{font-size:10px}}
+@media(max-width:900px){.overall-rate-panel .machine-centered-card .machine-rate-donut{width:96px}.overall-rate-panel .machine-centered-card .machine-ring-number{font-size:25px}}
+
 </style>
 </head>
 <body>
@@ -1538,10 +1559,10 @@ function renderStamping(rows){
  renderModelScrap(rows);
  renderScrapTrend(rows);
  const names=[...new Set(['400T','200T','100T',...rows.map(r=>machineName(r.line)).filter(Boolean)])];
- const machines=names.map(name=>({name,production:0,scrap:0}));
+ const machines=names.map(name=>({name,production:0,scrap:0,cost:0}));
  const byMachine=new Map(machines.map(m=>[m.name,m]));
- for(const row of rows){const name=machineName(row.line);if(name){let m=byMachine.get(name);m.production+=row.production;m.scrap+=row.scrap}}
- $('#machineCards').innerHTML=machines.map(m=>{const pct=m.production>0?rate(m.scrap,m.production):0,arc=Math.max(0,Math.min(100,pct)),available=m.production>0;return `<div class="machine-card machine-donut-card ${m.production>0&&pct>5?'machine-over-target':''}"><div class="machine-chart-side"><strong>${esc(m.name)}</strong><div class="machine-rate-donut" role="img" aria-label="${esc(m.name)} SCRAP RATE ${rateText(m.scrap,m.production)}" style="background:conic-gradient(#46baff 0 ${arc}%,#203c59 ${arc}% 100%)"><div><small>${esc(m.name)}</small></div></div></div><div class="machine-donut-details"><span class="machine-rate-value">${rateText(m.scrap,m.production)}</span><small>${available?'SCRAP RATE':'NO PRODUCTION'}</small><span class="machine-detail-line">SCRAP <b>${fmt(m.scrap)}</b> PCS</span><span class="machine-detail-line">PRODUCTION <b>${fmt(m.production)}</b> PCS</span></div></div>`}).join('');
+ for(const row of rows){const name=machineName(row.line);if(name){let m=byMachine.get(name);m.production+=Number(row.production)||0;m.scrap+=Number(row.scrap)||0;m.cost+=recordScrapCost(row)}}
+ $('#machineCards').innerHTML=machines.map(m=>{const pct=m.production>0?rate(m.scrap,m.production):0,arc=Math.max(0,Math.min(100,pct)),available=m.production>0;return `<div class="machine-card machine-donut-card machine-centered-card"><strong class="machine-centered-name">${esc(m.name)}</strong><div class="machine-rate-donut" role="img" aria-label="${esc(m.name)} SCRAP RATE ${rateText(m.scrap,m.production)}" style="background:conic-gradient(from 0deg,#56d4ef 0 ${arc}%,#263f59 ${arc}% 100%)"><div><span class="machine-ring-number">${available?pct.toFixed(2):'—'}</span><small>% SCRAP</small></div></div><div class="machine-centered-stats"><div class="machine-qty-line"><span><b>${fmt(m.production)}</b><small>PCS</small></span><span class="machine-stat-separator">/</span><span><b>${fmt(m.scrap)}</b><small>SCRAP</small></span></div><strong class="machine-centered-cost">฿${m.cost.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}</strong>${!available?'<small class="machine-no-production">NO PRODUCTION</small>':''}</div></div>`}).join('');
  renderProblemPareto(rows);
 }
 let paretoMetric='quantity';
