@@ -1217,6 +1217,25 @@ td{border-color:#2a405b!important;font-weight:400}
 .shift-kpi-title{letter-spacing:.045em}
 .shift-kpi-values small,.shift-rate-strip small{letter-spacing:.025em}
 
+
+/* Consolidate overall scrap cost beneath the larger overview donut. */
+.metrics.stamping-metrics{grid-template-columns:minmax(0,1fr)!important}
+.metrics.stamping-metrics>.metric:has(#scrapCost){display:none!important}
+.metrics.stamping-metrics>.shift-kpi-group{grid-column:1/-1}
+:root{--dashboard-chart-height:clamp(700px,88vh,800px)}
+.overall-rate-panel{height:var(--dashboard-chart-height)!important;min-height:var(--dashboard-chart-height)!important;grid-template-rows:auto 200px 58px 87px minmax(0,1fr)!important;gap:13px;padding:18px}
+.overall-rate-panel .overall-rate-donut{width:200px;height:200px}
+.overall-rate-panel .overall-rate-center>span{font-size:39px!important;letter-spacing:-.035em}
+.overall-rate-panel .overall-rate-center small{font-size:10px;letter-spacing:.12em}
+.overview-cost-total{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-top:1px solid #35506a;padding-top:12px}
+.overview-cost-total>small{font-size:9px;letter-spacing:.12em;color:#9fbad0}
+.overview-cost-total>strong{font-size:27px;font-weight:500;color:#facc15;line-height:1.2;font-variant-numeric:tabular-nums;letter-spacing:-.025em}
+.overview-cost-total>span{font-size:8px;color:#94aec6;letter-spacing:.025em}
+.overview-cost-total b{font-size:11px;color:#f4d974;font-weight:400}
+.overall-rate-panel .machine-centered-card{min-height:235px;gap:13px}
+.overall-rate-panel .machine-centered-card .machine-rate-donut{width:clamp(72px,7vw,106px)}
+@media(max-width:900px){.overall-rate-panel{height:760px!important;min-height:760px!important}.stamping-dashboard-layout>.stamping-right-charts{height:660px!important}.overall-rate-panel .machine-centered-card .machine-rate-donut{width:105px}}
+
 </style>
 </head>
 <body>
@@ -1262,6 +1281,7 @@ td{border-color:#2a405b!important;font-weight:400}
 <section class="panel overall-rate-panel" translate="no"><h2>SCRAP RATE OVERVIEW</h2>
 <div id="overallRateDonut" class="overall-rate-donut" role="img"><div class="overall-rate-center"><span id="overallRateValue">0.00%</span><small>SCRAP RATE</small></div></div>
 <div class="overall-rate-totals"><div><small>TOTAL SCRAP</small><span id="overallRateScrap">0</span><small>PCS</small></div><div><small>TOTAL PRODUCTION</small><span id="overallRateProduction">0</span><small>PCS</small></div></div>
+<div class="overview-cost-total"><small>TOTAL SCRAP COST</small><strong id="overviewScrapCost">฿0.00</strong><span>DAILY AVERAGE <b id="overviewCostAverage">฿0.00</b> / DAY</span></div>
 <div class="machine-list" id="machineCards"></div>
 </section></div><div class="stamping-right-charts"><section class="panel stamping-trend-panel" aria-label="กราฟแนวโน้มการผลิตและของเสีย">
 <div class="top"><h2 id="stampingTrendTitle">แนวโน้มยอดของเสีย · SCRAP STAMPING</h2></div>
@@ -1731,6 +1751,7 @@ $('#shiftKpiGroup').hidden=page!=='stamping';
 for(const shift of ['A','B']){renderShiftDailyCharts(rows,shift);const shiftRows=rows.filter(r=>{const code=String(r.shift||'').trim().toUpperCase().replace(/^SHIFT\s*/,'');return (({DAY:'A',NIGHT:'B'})[code]||code)===shift});const days=new Set(shiftRows.map(r=>r.date).filter(Boolean)).size;const shiftProduction=shiftRows.reduce((n,r)=>n+(Number(r.production)||0),0),shiftScrap=shiftRows.reduce((n,r)=>n+(Number(r.scrap)||0),0),rateNode=$('#shift'+shift+'Rate');rateNode.textContent=rateText(shiftScrap,shiftProduction);rateNode.closest('.shift-rate-strip').classList.toggle('over-target',shiftProduction>0&&rate(shiftScrap,shiftProduction)>5);$('#shift'+shift+'Production').textContent=fmt(shiftProduction);$('#shift'+shift+'Leader').textContent=shift==='A'?'MR.KHOMSAN (SUPERVISOR) / MR.THAWATCHAI (LEADER)':'MR.PEERAPAT (SUPERVISOR) / MR.AMNUAI (LEADER)';$('#shift'+shift+'ScrapAverage').textContent=(days?shiftRows.reduce((sum,r)=>sum+(Number(r.scrap)||0),0)/days:0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});$('#shift'+shift+'CostAverage').textContent=(days?shiftRows.reduce((sum,r)=>sum+recordScrapCost(r),0)/days:0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});$('#shift'+shift+'Scrap').textContent=fmt(shiftRows.reduce((sum,r)=>sum+(Number(r.scrap)||0),0));$('#shift'+shift+'Cost').textContent=shiftRows.reduce((sum,r)=>sum+recordScrapCost(r),0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}
 $('#scrapCost').textContent=rows.reduce((sum,r)=>sum+recordScrapCost(r),0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 const costDays=new Set(rows.map(r=>r.date).filter(Boolean)).size,costSum=rows.reduce((sum,r)=>sum+recordScrapCost(r),0);$('#scrapCostAverage').textContent=(costDays?costSum/costDays:0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+$('#overviewScrapCost').textContent='฿'+costSum.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});$('#overviewCostAverage').textContent='฿'+(costDays?costSum/costDays:0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 $('#count').textContent=fmt(rows.length)+' รายการ';
 if(page==='stamping')renderStamping(rows);else chart(rows);
 let types=group(rows,r=>r.defect||'ไม่ระบุ').sort((a,b)=>b.scrap-a.scrap).slice(0,7),max=Math.max(1,...types.map(x=>x.scrap));
