@@ -1264,6 +1264,33 @@ td{border-color:#2a405b!important;font-weight:400}
 .overall-rate-panel .overall-rate-donut{width:220px;height:220px}
 @media(max-width:900px){.stamping-dashboard-layout .overall-rate-panel{height:980px!important;min-height:980px!important}.overall-rate-panel .machine-centered-card .machine-rate-donut{width:82px;height:82px}}
 
+
+/* Balanced overview and trend proportions with four equal machine cards. */
+.stamping-dashboard-layout{grid-template-columns:minmax(0,3fr) minmax(0,7fr);gap:16px;align-items:stretch}
+.stamping-dashboard-layout>.stamping-right-charts{grid-template-rows:220px minmax(0,1fr)!important;height:850px!important;gap:16px}
+.stamping-right-charts>#shiftKpiGroup>.shift-kpi-card{height:220px;grid-template-rows:30px 35px minmax(0,1fr) 48px;padding:12px;gap:6px}
+.stamping-right-charts>#shiftKpiGroup .shift-scrap-wide{height:48px!important}
+.stamping-right-charts>#shiftKpiGroup .shift-kpi-title{font-size:12px}
+.stamping-right-charts>#shiftKpiGroup .shift-leader-name{font-size:8px;line-height:1.3}
+.stamping-right-charts>#shiftKpiGroup .shift-kpi-values strong{font-size:clamp(19px,1.8vw,26px)!important}
+.stamping-right-charts>.stamping-trend-panel{min-height:0!important;height:100%!important;grid-template-rows:auto auto minmax(230px,1fr) auto auto;gap:8px;padding:16px!important}
+.stamping-trend-panel #periodSummaryPanel{padding-top:8px!important}
+.stamping-dashboard-layout .overall-rate-panel{height:850px!important;min-height:850px!important;grid-template-rows:22px 180px 55px 78px minmax(0,1fr)!important;gap:12px;padding:16px}
+.overall-rate-panel .overall-rate-donut{width:180px;height:180px}
+.overall-rate-panel .overall-rate-center>span{font-size:35px!important}
+.overall-rate-panel .overview-cost-total{padding-top:8px;gap:4px}
+.overall-rate-panel .overview-cost-total>strong{font-size:24px}
+.overall-rate-panel #machineCards{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:10px;align-items:stretch}
+.overall-rate-panel .machine-centered-card{height:100%;min-height:0!important;padding:9px 6px;gap:7px}
+.overall-rate-panel .machine-centered-card .machine-rate-donut{width:84px;height:84px}
+.overall-rate-panel .machine-centered-card .machine-ring-number{font-size:22px!important}
+.overall-rate-panel .machine-centered-stats{padding-top:7px;gap:5px}
+.overall-rate-panel .machine-centered-name{align-self:center;font-size:10px}
+.overall-rate-panel .machine-qty-line b{font-size:10px}
+@media(max-width:1100px) and (min-width:901px){.overall-rate-panel .machine-centered-card .machine-rate-donut{width:72px;height:72px}.overall-rate-panel .machine-centered-cost{font-size:10px!important}}
+@media(max-width:900px){.stamping-dashboard-layout{grid-template-columns:1fr}.stamping-dashboard-layout .overall-rate-panel{height:850px!important;min-height:850px!important}.stamping-dashboard-layout>.stamping-right-charts{height:850px!important}.overall-rate-panel .machine-centered-card .machine-rate-donut{width:92px;height:92px}}
+@media(max-width:600px){.stamping-dashboard-layout>.stamping-right-charts{height:auto!important;grid-template-rows:auto 600px!important}.stamping-right-charts>#shiftKpiGroup{grid-template-columns:1fr}.stamping-right-charts>#shiftKpiGroup>.shift-kpi-card{height:240px}}
+
 </style>
 </head>
 <body>
@@ -1618,7 +1645,7 @@ function renderScrapTrend(rows){
  if(!values.length||values.every(v=>v.amount===null)){box.innerHTML='<span class="stamping-empty">'+(trendMetric==='rate'?'ยังไม่มียอดผลิตสำหรับคำนวณ Percent Rate':'ยังไม่มีข้อมูล'+titles[trendMetric]+'ในช่วงที่เลือก')+'</span>';return}
  if(doorBendSelected()&&trendMetric==='rate')$('#stampingTrendNote').textContent+=' · ของเสีย Door Bend ÷ ยอดผลิตรวมกะเดียวกัน × 100';
  if(showScrapTargets)$('#stampingTrendNote').textContent+=' · Target ลด 30% / 50% จากเดือนก่อน'+(period==='month'?' (ยอดรวมเดือน)':period==='week'?' (เฉลี่ยต่อวัน × 7)':' (เฉลี่ยต่อวันตามวันปฏิทิน)')+(scrapTargets.some(t=>!t)?' · ช่วงที่ไม่มีข้อมูลเดือนก่อนจะไม่แสดง Target':'');
- const W=Math.max(320,box.clientWidth||900),H=Math.max(180,box.clientHeight||250),L=55,R=12,T=25,B=55,iw=W-L-R,ih=H-T-B,max=trendMetric==='rate'?Math.max(6,...values.map(v=>(v.amount??0)*1.1)):Math.max(1,...values.map(v=>v.amount??0),...scrapTargets.map(t=>t?.reduce30||0))*1.12,step=iw/values.length,width=Math.min(34,step*.65),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#69baff':'#339dff';
+ const W=Math.max(320,box.clientWidth||900),H=Math.max(180,box.clientHeight||250),L=55,R=12,T=25,B=55,iw=W-L-R,ih=H-T-B,max=trendMetric==='rate'?Math.max(6,...values.map(v=>(v.amount??0)*1.1)):Math.max(1,...values.map(v=>v.amount??0),...scrapTargets.map(t=>t?.reduce30||0))*1.12,step=iw/values.length,width=Math.min(period==='day'?30:72,step*.52),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#69baff':'#339dff';
  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet" aria-label="${titles[trendMetric]}${period==='month'?'รายเดือน':period==='week'?'รายสัปดาห์':'รายวัน'}">`;
  if(trendMetric!=='rate')svg+=`<defs><linearGradient id="trendBarGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#28d9f2"/><stop offset="48%" stop-color="#268ff0"/><stop offset="100%" stop-color="#2548b7"/></linearGradient></defs>`;
  for(let n=0;n<=4;n++){const y=T+ih*n/4,scale=max*(4-n)/4;svg+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="#6384a4" stroke-opacity=".18" stroke-dasharray="3 5"/><text x="${L-8}" y="${y+4}" text-anchor="end" fill="#a7bfd4" font-size="11" font-weight="400">${trendMetric==='rate'?scale.toFixed(2)+'%':fmt(Math.round(scale))}</text>`}
