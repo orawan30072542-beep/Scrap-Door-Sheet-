@@ -1393,12 +1393,21 @@ function renderShiftDailyCharts(rows,shift){
  const indexes=[...new Set([0,Math.floor((values.length-1)/2),values.length-1])];indexes.forEach(i=>{if(!values[i])return;svg+=`<text x="${x(i)}" y="${H-5}" text-anchor="${i===0?'start':i===values.length-1?'end':'middle'}" fill="#9db9ce" font-size="9">${values[i].date.slice(8)+'/'+values[i].date.slice(5,7)}</text>`});box.innerHTML=svg+'</svg>';
  }
 }
+function isDoorBend(row){return /^(?:door[\s_-]*bend|bend)$/i.test(String(row.line||'').trim())}
+function doorBendSelected(){return isDoorBend({line:$('#line').value})}
+function doorBendProduction(items){
+ // Count each selected period + shift once; never borrow the other shift's production.
+ const pairs=new Set(items.filter(isDoorBend).map(r=>key(r.date)+'\u0001'+dashboardShift(r)).filter(k=>/\u0001[AB]$/.test(k)));
+ return records.reduce((sum,r)=>sum+(r.page==='stamping'&&!isDoorBend(r)&&pairs.has(key(r.date)+'\u0001'+dashboardShift(r))&&(!$('#monthFilter').value||r.date.slice(0,7)===$('#monthFilter').value)&&(!$('#start').value||r.date>=$('#start').value)&&(!$('#end').value||r.date<=$('#end').value)?Number(r.production)||0:0),0);
+}
 function renderScrapTrend(rows){
  const box=$('#stampingScrapTrend'),titles={production:'ยอดผลิต',scrap:'ยอดของเสีย',rate:'อัตราของเสีย (%)',cost:'มูลค่าความเสียหาย (บาท)'};
- $('#stampingTrendTitle').textContent='แนวโน้ม'+titles[trendMetric]+' · SCRAP STAMPING';
+ $('#stampingTrendTitle').textContent='แนวโน้ม'+titles[trendMetric]+' · '+(doorBendSelected()?'DOOR BEND':'SCRAP STAMPING');
+ if(doorBendSelected()&&trendMetric==='production'){box.innerHTML='<span class="stamping-empty">Door Bend ไม่มีการบันทึกยอดผลิตแยก</span>';$('#stampingTrendNote').textContent='Percent Rate ใช้ยอดผลิตรวมของกะเดียวกันในช่วงเวลาที่เลือก';return}
  if(trendMetric==='cost'){renderScrapCostTrend(rows,box);$('#stampingTrendNote').textContent='มูลค่าความเสียหาย (บาท)';return}
  const totals=new Map();
  for(const r of rows){if(!/^\d{4}-\d{2}-\d{2}$/.test(r.date))continue;const k=key(r.date),v=totals.get(k)||{production:0,scrap:0};v.production+=Number(r.production)||0;v.scrap+=Number(r.scrap)||0;v.shifts??={A:{production:0,scrap:0},B:{production:0,scrap:0},other:{production:0,scrap:0}};const shift=String(r.shift||'').trim().toUpperCase(),bucket=['A','SHIFT A','DAY'].includes(shift)?'A':['B','SHIFT B','NIGHT'].includes(shift)?'B':'other';v.shifts[bucket].production+=Number(r.production)||0;v.shifts[bucket].scrap+=Number(r.scrap)||0;totals.set(k,v)}
+ if(doorBendSelected())for(const [k,v] of totals)v.production=doorBendProduction(rows.filter(r=>key(r.date)===k));
  const selectedMonth=$('#monthFilter').value;
  const periods=[...totals].sort((a,b)=>a[0].localeCompare(b[0]));
  const values=periods.map(([label,v])=>({label,shifts:v.shifts,amount:trendMetric==='rate'?(v.production>0?rate(v.scrap,v.production):null):v[trendMetric]}));
@@ -1407,6 +1416,7 @@ function renderScrapTrend(rows){
  const scrapTargets=showScrapTargets?values.map(v=>previousMonthScrapTarget(v.label)):[];
  $('#stampingTrendNote').textContent=(period==='month'?'สรุปรายเดือน':period==='week'?'สรุปรายสัปดาห์ · วันจันทร์–อาทิตย์':selectedMonth?'ข้อมูลรายวัน · แสดงเฉพาะวันที่มีรายการ':'ข้อมูลรายวัน')+(trendMetric==='rate'&&missing?' · '+missing+' ช่วงไม่มีข้อมูลยอดผลิต จึงไม่คำนวณ Percent Rate':'');
  if(!values.length||values.every(v=>v.amount===null)){box.innerHTML='<span class="stamping-empty">'+(trendMetric==='rate'?'ยังไม่มียอดผลิตสำหรับคำนวณ Percent Rate':'ยังไม่มีข้อมูล'+titles[trendMetric]+'ในช่วงที่เลือก')+'</span>';return}
+ if(doorBendSelected()&&trendMetric==='rate')$('#stampingTrendNote').textContent+=' · ของเสีย Door Bend ÷ ยอดผลิตรวมกะเดียวกัน × 100';
  if(showScrapTargets)$('#stampingTrendNote').textContent+=' · Target ลด 30% / 50% จากเดือนก่อน'+(period==='month'?' (ยอดรวมเดือน)':period==='week'?' (เฉลี่ยต่อวัน × 7)':' (เฉลี่ยต่อวันตามวันปฏิทิน)')+(scrapTargets.some(t=>!t)?' · ช่วงที่ไม่มีข้อมูลเดือนก่อนจะไม่แสดง Target':'');
  const W=Math.max(320,box.clientWidth||900),H=Math.max(180,box.clientHeight||250),L=55,R=12,T=25,B=55,iw=W-L-R,ih=H-T-B,max=trendMetric==='rate'?Math.max(6,...values.map(v=>(v.amount??0)*1.1)):Math.max(1,...values.map(v=>v.amount??0),...scrapTargets.map(t=>t?.reduce30||0))*1.12,step=iw/values.length,width=Math.min(34,step*.65),color=trendMetric==='production'?'#248de4':trendMetric==='rate'?'#69baff':'#339dff';
  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" preserveAspectRatio="xMidYMid meet" aria-label="${titles[trendMetric]}${period==='month'?'รายเดือน':period==='week'?'รายสัปดาห์':'รายวัน'}">`;
@@ -1534,7 +1544,7 @@ function renderStampingMatrix(rows){
 
  table.querySelector('thead').innerHTML='<tr><th>วันที่</th>'+dates.map(d=>`<th>${esc(dashboardPeriodLabel(d))}</th>`).join('')+'</tr>';
  const sections=[{name:'Total',tone:'combined',items:rows},{name:'Shift A',tone:'shift-a',items:rows.filter(r=>dashboardShift(r)==='A')},{name:'Shift B',tone:'shift-b',items:rows.filter(r=>dashboardShift(r)==='B')},{name:'Door Bend',tone:'door-bend',items:rows.filter(r=>/door[\s_-]*bend|^bend$/i.test(String(r.line||'').trim())||/door[\s_-]*bend|^bend$/i.test(String(r.shift||'').trim()))}];
- body.innerHTML=dates.length?sections.map(section=>{const totals=new Map();for(const r of section.items){const d=key(r.date),v=totals.get(d)||{production:0,scrap:0,cost:0};v.production+=Number(r.production)||0;v.scrap+=Number(r.scrap)||0;v.cost+=recordScrapCost(r);totals.set(d,v)}return `<tr class="matrix-row matrix-${section.tone}"><th>${section.name}</th>${dates.map(d=>{const v=totals.get(d);return `<td class="num">${!v?'—':metric==='rate'?rateText(v.scrap,v.production):metric==='cost'?v.cost.toLocaleString('th-TH',{maximumFractionDigits:2}):fmt(v[metric])}</td>`}).join('')}</tr>`}).join(''):'<tr><td>ยังไม่มีข้อมูล</td></tr>';
+ body.innerHTML=dates.length?sections.map(section=>{const totals=new Map();for(const r of section.items){const d=key(r.date),v=totals.get(d)||{production:0,scrap:0,cost:0};v.production+=Number(r.production)||0;v.scrap+=Number(r.scrap)||0;v.cost+=recordScrapCost(r);totals.set(d,v)}return `<tr class="matrix-row matrix-${section.tone}"><th>${section.name}</th>${dates.map(d=>{const v=totals.get(d);return `<td class="num">${!v?'—':metric==='production'&&(section.tone==='door-bend'||doorBendSelected())?'—':metric==='rate'?rateText(v.scrap,(section.tone==='door-bend'||doorBendSelected())?doorBendProduction(section.items.filter(r=>key(r.date)===d)):v.production):metric==='cost'?v.cost.toLocaleString('th-TH',{maximumFractionDigits:2}):fmt(v[metric])}</td>`}).join('')}</tr>`}).join(''):'<tr><td>ยังไม่มีข้อมูล</td></tr>';
  $('#periodSummaryPanel').querySelector('h2').textContent='รายละเอียดตามช่วงเวลา · '+({day:'รายวัน',week:'รายสัปดาห์ (Week · จันทร์–อาทิตย์)',month:'รายเดือน'})[period]+' · '+({production:'ยอดผลิต (ชิ้น)',scrap:'Scrap (ชิ้น)',rate:'Percent Rate (%)',cost:'มูลค่าความเสียหาย (บาท)'})[metric];
 }
 function render(){document.querySelectorAll('[data-period]').forEach(b=>{b.classList.toggle('active',b.dataset.period===period);b.setAttribute('aria-pressed',String(b.dataset.period===period))});if(page==='issues'){ $('#dashboardPage').hidden=true;$('#issuesPage').hidden=false;$('#openEntry').hidden=true;renderIssues();return}$('#dashboardPage').hidden=false;$('#issuesPage').hidden=true;options();$('#openEntry').hidden=page==='stamping';$('#stampingToolbar').hidden=page!=='stamping';$('#stampingAnalytics').hidden=page!=='stamping';$('#generalCharts').hidden=page==='stamping';
