@@ -1404,6 +1404,17 @@ td{border-color:#2a405b!important;font-weight:400}
 #modelDonutTooltip>div{display:flex;justify-content:space-between;gap:18px;padding:3px 0}
 #modelDonutTooltip span{color:#9db7ce;font-size:10px}#modelDonutTooltip b{font-weight:500;font-variant-numeric:tabular-nums}#modelDonutTooltip>div:nth-child(3) b{color:#facc15}
 
+
+/* Keep the brand at the right edge of the dashboard heading. */
+.dashboard-header .dashboard-heading{order:0}
+.dashboard-header .haier-header-logo{order:1;margin-left:auto;padding-right:0;border-right:0;padding-left:18px;border-left:1px solid #36516e;flex-shrink:0;width:clamp(100px,10vw,145px)}
+.dashboard-header .header-navigation{order:2}
+.dashboard-header #adminEditButton{order:3}
+.dashboard-header #exportData{order:4}
+@media(min-width:1151px){.dashboard-header{flex-wrap:wrap}.dashboard-header .dashboard-heading{flex:1 1 calc(100% - 190px)}.dashboard-header .header-navigation{margin-left:auto}}
+@media(max-width:1150px){.dashboard-header .dashboard-heading{flex:1 1 calc(100% - 190px)}}
+@media(max-width:620px){.dashboard-header .dashboard-heading{flex:1 1 calc(100% - 125px)}.dashboard-header .haier-header-logo{width:90px;padding-left:10px}.dashboard-header{gap:10px}}
+
 </style>
 </head>
 <body>
