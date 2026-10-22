@@ -1313,6 +1313,15 @@ td{border-color:#2a405b!important;font-weight:400}
 @media(max-width:1100px) and (min-width:901px){.stamping-right-charts>#shiftKpiGroup>.shift-kpi-card{padding:12px!important}.stamping-right-charts>#shiftKpiGroup .shift-kpi-values{gap:8px}.stamping-right-charts>#shiftKpiGroup .shift-kpi-values strong{font-size:20px!important}.stamping-right-charts>#shiftKpiGroup .shift-rate-strip>span{font-size:8px}.stamping-right-charts>#shiftKpiGroup .shift-average{font-size:8px!important}.stamping-right-charts>#shiftKpiGroup .shift-average span{font-size:9px}}
 @media(max-width:600px){.stamping-dashboard-layout>.stamping-right-charts{grid-template-rows:auto 600px!important}.stamping-right-charts>#shiftKpiGroup{grid-template-columns:1fr;gap:12px}}
 
+
+/* Filters: month, view, wider line/area and shift controls. */
+.filter-panel .filters{grid-template-columns:minmax(170px,1.35fr) 110px minmax(130px,.9fr) minmax(130px,.9fr) minmax(160px,1fr) minmax(150px,1fr)!important;gap:14px;align-items:start}
+.filter-panel .filters>.field:first-child{grid-column:auto;padding:0;border:0}
+.filter-panel #lineButtons.line-buttons,.filter-panel #shiftButtons.line-buttons{width:100%;max-width:100%;padding:3px;gap:2px;max-height:126px}
+.filter-panel #lineButtons.line-buttons .month-choice,.filter-panel #shiftButtons.line-buttons .month-choice{width:100%;height:21px;min-height:21px;padding:3px 9px;font-size:11px;line-height:15px}
+.filter-panel .field:has([data-period]) .periods{width:100%}
+@media(max-width:1100px){.filter-panel .filters{grid-template-columns:170px 110px 140px 130px 165px 150px!important;overflow-x:auto;padding-bottom:7px}}
+
 </style>
 </head>
 <body>
@@ -1325,12 +1334,12 @@ td{border-color:#2a405b!important;font-weight:400}
 <h2 class="stamping-title" id="stampingToolbar" hidden>SCRAP STAMPING <span>· วิเคราะห์รายเครื่องจักร</span> <button class="btn primary" type="button" id="openStampEntry">+ เพิ่มข้อมูลรายวัน STAMPING</button> <button class="btn" type="button" id="openStampProduction">+ บันทึกยอดผลิต</button> <label class="btn" style="display:inline-block;cursor:pointer">+ นำเข้า Excel / CSV<input id="stampScrapFile" type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" hidden></label> <label class="btn" style="cursor:pointer">Import PDF<input id="stampPdfFile" type="file" accept=".pdf,application/pdf" hidden></label></h2>
 <section class="panel filter-panel"><div class="filter-heading"><div><strong>ตัวกรองข้อมูล</strong><span>เลือกมุมมองและช่วงเวลาที่ต้องการ</span></div><button class="btn" type="button" id="resetFilters">รีเซ็ตตัวกรอง</button></div><div class="grid filters">
 <div class="field">
+<label>เลือกเดือน</label><input type="hidden" id="monthFilter"><div id="monthButtons" class="month-buttons" aria-label="เลือกเดือน"></div>
+</div>
+<div class="field">
 <label>มุมมอง</label><div class="periods">
 <button type="button" class="btn" data-period="day">รายวัน</button><button type="button" class="btn" data-period="week">รายสัปดาห์</button><button type="button" class="btn active" data-period="month">รายเดือน</button>
 </div>
-</div>
-<div class="field">
-<label>เลือกเดือน</label><input type="hidden" id="monthFilter"><div id="monthButtons" class="month-buttons" aria-label="เลือกเดือน"></div>
 </div>
 <div class="field">
 <label>ไลน์ / พื้นที่</label><select id="line" hidden><option value="">ทั้งหมด</option></select><div id="lineButtons" class="line-buttons" aria-label="เลือกไลน์หรือพื้นที่"></div>
