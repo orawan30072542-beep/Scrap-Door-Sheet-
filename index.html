@@ -1358,6 +1358,30 @@ td{border-color:#2a405b!important;font-weight:400}
 .model-detail-table .model-money,.model-detail-table .model-cumulative{color:#facc15}
 .model-detail-table th:not(:first-child){text-align:right}
 
+
+/* Model Top10: balanced label, bar and numeric columns. */
+.stamping-bottom-row>.model-funnel-panel{padding:16px 18px!important}
+.model-detail-heading{margin-bottom:12px;align-items:center}
+.model-detail-heading h2{font-size:15px!important;margin:0}
+.model-detail-table{table-layout:fixed;min-width:640px;width:100%;border-collapse:collapse}
+.model-detail-table th:first-child{width:18%!important}
+.model-detail-table th:nth-child(2){width:42%!important}
+.model-detail-table th:nth-child(3){width:20%!important}
+.model-detail-table th:nth-child(4),.model-detail-table th:last-child{width:10%!important}
+.model-detail-table th,.model-detail-table td{height:35px;padding:8px 12px;font-size:12px;line-height:1.45;vertical-align:middle}
+.model-detail-table th{font-size:11px;font-weight:500}
+.model-detail-table td:first-child{font-size:11px;overflow-wrap:anywhere;color:#d3e8f8}
+.model-detail-table .model-table-bar{height:18px;gap:8px;padding-right:0;isolation:isolate}
+.model-detail-table .model-table-bar>span{height:12px;max-width:calc(100% - 66px);border-radius:4px;background:linear-gradient(90deg,#286780,#62c2d5);opacity:.85}
+.model-detail-table .model-table-bar>b{background:#102338;border:1px solid #2d4b62;border-radius:5px;min-width:56px;padding:2px 6px;font-size:11px;line-height:1.4;font-weight:400;text-align:right;color:#e2f3ff}
+.model-detail-table tbody tr:nth-child(even){background:#132c3c}
+.model-detail-table tbody tr:nth-child(odd){background:#122338}
+.model-detail-table tbody tr:hover{background:#1c3a50}
+.model-detail-table .num{font-size:11px}
+.model-detail-table tfoot td{height:38px;padding:9px 12px;background:#1a3b50;font-size:11px;font-weight:500}
+#stampingModelChart>.chart-note{margin:9px 0 0;font-size:10px}
+@media(max-width:700px){.stamping-bottom-row>.model-funnel-panel{padding:12px!important}.model-detail-table th,.model-detail-table td{padding:7px 8px;height:33px}}
+
 </style>
 </head>
 <body>
