@@ -1449,6 +1449,17 @@ td{border-color:#2a405b!important;font-weight:400}
 .record-shift{font-size:10px;letter-spacing:.02em;color:#70d4e6;white-space:nowrap}.record-shift.shift-b{color:#9baeff}
 .model-record-scroll th{font-size:10px;letter-spacing:.035em}.model-record-scroll table{min-width:520px}
 
+
+/* Left brand with a shared export / cloud action row. */
+.dashboard-header{display:grid!important;grid-template-columns:auto minmax(0,1fr);gap:14px 20px!important;align-items:center}
+.dashboard-header .haier-header-logo{grid-column:1;grid-row:1;order:0;margin:0!important;width:120px;max-height:52px;padding:0 20px 0 0!important;border-left:0!important;border-right:1px solid #33516e!important}
+.dashboard-header .dashboard-heading{grid-column:2;grid-row:1;order:1;min-width:0}
+.dashboard-header .header-navigation{grid-column:1 / -1;grid-row:2;order:2;width:100%;box-sizing:border-box;margin:0!important;padding-top:12px;justify-content:flex-start;flex-wrap:wrap}
+.dashboard-header-actions{grid-column:1 / -1;grid-row:3;display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap;padding-top:2px}
+.dashboard-header .dashboard-header-actions .btn{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:34px;margin:0!important;padding:8px 12px;font-size:11px;font-weight:400;line-height:1.4;border-radius:8px;white-space:nowrap;cursor:pointer}
+@media(min-width:1350px){.dashboard-header{grid-template-columns:auto minmax(0,1fr) auto}.dashboard-header .dashboard-heading{grid-column:2 / -1}.dashboard-header .header-navigation{grid-column:1 / 3;grid-row:2;border-top:0;padding-top:8px}.dashboard-header-actions{grid-column:3;grid-row:2;padding-top:8px}}
+@media(max-width:620px){.dashboard-header{grid-template-columns:auto minmax(0,1fr);gap:12px!important}.dashboard-header .haier-header-logo{width:80px;padding-right:12px!important}.dashboard-header .dashboard-heading{grid-column:2;grid-row:1}.dashboard-header-actions{justify-content:flex-start;gap:6px}.dashboard-header .dashboard-header-actions .btn{font-size:10px;min-height:32px;padding:7px 10px}.dashboard-header .header-navigation .btn{flex:1}}
+
 </style>
 </head>
 <body>
@@ -2471,6 +2482,10 @@ $('#cloudBackup').onclick=()=>{const payload={format:'scrap-dashboard-backup-v1'
 $('#cloudMigrate').onclick=()=>{if(!canEdit||!ready)return;const backup=read(BACKUP_KEY);if(!backup)return;if(KEYS.some(k=>ARRAY_KEYS.has(k)?(read(k)||[]).length:Object.keys(read(k)||{}).length)){alert('ออนไลน์มีข้อมูลอยู่แล้ว กรุณานำเข้า Excel หรือ JSON เพื่อรวมข้อมูลแทนการเขียนทับ');return}if(!confirm('นำข้อมูลเดิมที่สำรองไว้ในเบราว์เซอร์นี้ขึ้นฐานข้อมูลออนไลน์หรือไม่?'))return;for(const key of KEYS){const payload=backup[key]||empty(key);localStorage.setItem(key,JSON.stringify(payload))}updateVariables();flush()};
 // Restore a complete JSON backup only through an authenticated editor.
 const importLabel=document.createElement('label');importLabel.className='btn';importLabel.textContent='นำเข้า JSON';const importInput=document.createElement('input');importInput.type='file';importInput.accept='.json,application/json';importInput.hidden=true;importLabel.append(importInput);document.querySelector('.cloud-toolbar').append(importLabel);
+const headerActions=document.createElement('div');headerActions.className='dashboard-header-actions';headerActions.setAttribute('aria-label','Data actions');
+document.querySelector('.dashboard-header').append(headerActions);
+for(const control of [document.getElementById('adminEditButton'),document.getElementById('exportData'),document.getElementById('cloudRefresh'),document.getElementById('cloudBackup'),importLabel])if(control)headerActions.append(control);
+
 importInput.onchange=async()=>{const file=importInput.files[0];importInput.value='';if(!file)return;if(!canEdit||!ready){alert('กรุณากด Edit และเข้าสู่ระบบผู้ดูแลก่อนนำเข้า');return}try{const backup=JSON.parse(await file.text());if(backup.format!=='scrap-dashboard-backup-v1')throw Error('ไม่ใช่ไฟล์สำรองของแดชบอร์ด');const data=backup.data;for(const key of KEYS)if(!valid(key,data?.[key]))throw Error('ไฟล์สำรองไม่ครบหรือไม่ถูกต้อง');if(!confirm('รวมข้อมูลจากไฟล์สำรองเข้าฐานข้อมูลออนไลน์หรือไม่?'))return;for(const key of KEYS){const current=read(key)||empty(key);let merged;if(ARRAY_KEYS.has(key)){const signatures=new Set(current.map(row=>row.id?'id:'+row.id:JSON.stringify(row)));merged=[...current];for(const row of data[key]){const signature=row.id?'id:'+row.id:JSON.stringify(row);if(!signatures.has(signature)){signatures.add(signature);merged.push(row)}}}else merged={...data[key],...current};localStorage.setItem(key,JSON.stringify(merged))}updateVariables();flush()}catch(error){alert('นำเข้าไม่ได้: '+error.message)}};
 window.scrapCloud={get canEdit(){return canEdit},get ready(){return ready},load,flush};
 window.addEventListener('beforeunload',e=>{if(dirty.size){e.preventDefault();e.returnValue=''}});
