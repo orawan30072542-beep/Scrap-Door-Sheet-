@@ -1480,6 +1480,15 @@ td{border-color:#2a405b!important;font-weight:400}
 @media(max-width:1250px){.dashboard-header{grid-template-columns:minmax(225px,.7fr) minmax(0,2fr)!important;gap:14px 18px!important}.dashboard-brand-block{flex-direction:column;align-items:flex-start;gap:12px}.dashboard-header .dashboard-brand-block .haier-header-logo{border:0!important;padding:0!important}.dashboard-header .filter-panel .filters{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px}.dashboard-header .filter-panel .month-buttons{grid-template-columns:repeat(5,minmax(0,1fr))}.dashboard-header .filter-panel .periods{flex-direction:row}.dashboard-header .filter-panel .periods .btn{padding:4px 2px;font-size:9px}}
 @media(max-width:760px){.dashboard-header{grid-template-columns:minmax(0,1fr)!important}.dashboard-brand-block{grid-column:1;grid-row:1;flex-direction:row;align-items:center}.dashboard-header>.filter-panel{grid-column:1;grid-row:2;padding:14px 0 0!important;border-left:0;border-top:1px solid #29435b}.dashboard-header .header-navigation{grid-column:1!important;grid-row:3!important}.dashboard-header-actions{grid-column:1!important;grid-row:4!important;justify-content:flex-start}.dashboard-header .filter-panel .filters{grid-template-columns:repeat(2,minmax(0,1fr))!important}.dashboard-header .filter-panel .periods{flex-direction:column}}
 
+
+/* Year groups occupy the full month-filter width. */
+.dashboard-header .filter-panel #monthButtons.month-buttons{display:flex!important;flex-direction:column!important;align-items:stretch;gap:6px;width:100%;min-width:0;max-height:156px;overflow-y:auto;overflow-x:hidden;box-sizing:border-box;padding:0 2px 2px 0;scrollbar-width:thin}
+.dashboard-header .filter-panel #monthButtons>.month-choice{display:block;width:100%;flex:0 0 auto;height:25px;min-height:25px;box-sizing:border-box;white-space:nowrap}
+.dashboard-header .filter-panel #monthButtons .month-year{width:100%;min-width:0;margin:0;box-sizing:border-box}
+.dashboard-header .filter-panel #monthButtons .month-year>span{display:block;font-size:10px;line-height:16px;margin:0 0 4px;padding-left:2px;color:#9dbbd4}
+.dashboard-header .filter-panel #monthButtons .month-year>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;width:100%;min-width:0}
+.dashboard-header .filter-panel #monthButtons .month-year .month-choice{display:block;width:100%;min-width:0;min-height:26px;height:26px;padding:3px 2px;font-size:10px;line-height:18px;text-align:center;white-space:nowrap;box-sizing:border-box;overflow:hidden;text-overflow:clip}
+
 </style>
 </head>
 <body>
