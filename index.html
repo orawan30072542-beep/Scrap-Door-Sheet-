@@ -1415,6 +1415,19 @@ td{border-color:#2a405b!important;font-weight:400}
 @media(max-width:1150px){.dashboard-header .dashboard-heading{flex:1 1 calc(100% - 190px)}}
 @media(max-width:620px){.dashboard-header .dashboard-heading{flex:1 1 calc(100% - 125px)}.dashboard-header .haier-header-logo{width:90px;padding-left:10px}.dashboard-header{gap:10px}}
 
+
+.model-record-section{margin-top:24px;padding-top:18px;border-top:1px solid #2a405b}
+.model-record-heading{font-size:13px;font-weight:500;color:#e4f3ff;margin-bottom:12px}.model-record-heading span{font-size:10px;color:#8da8c1;margin-left:12px;font-weight:400}
+.model-record-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.model-record-card{min-width:0;border:1px solid #2b405a;border-radius:12px;padding:14px;background:#0d192b}
+.model-record-card h3{font-size:12px;font-weight:500;color:#78ceee;margin:0 0 12px}.model-record-card h3 small{float:right;font-size:10px;font-weight:400;color:#8fa9c0}
+.model-record-scroll{max-height:360px;overflow:auto;scrollbar-width:thin;scrollbar-color:#385471 #111f32}
+.model-record-scroll table{width:100%;min-width:490px;border-collapse:separate;border-spacing:0;font-size:11px}
+.model-record-scroll th{position:sticky;top:0;z-index:1;background:#13243b;color:#9db9d2;font-weight:500;text-align:left;white-space:nowrap}
+.model-record-scroll td,.model-record-scroll th{padding:9px 8px;border-bottom:1px solid #20334b}.model-record-scroll td{font-weight:400}.model-record-scroll .num{text-align:right;white-space:nowrap}
+.model-record-scroll tbody tr:hover{background:#172c44}.model-record-scroll .model-record-divider td{border-top:2px solid #426383}.model-record-scroll tfoot td{position:sticky;bottom:0;background:#14273e;font-weight:500}
+@media(max-width:1000px){.model-record-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -1830,6 +1843,12 @@ function renderModelScrap(rows){
 
  const donut=`<aside class="model-large-donut"><svg viewBox="0 0 360 360" role="img" aria-label="สัดส่วนของเสียตาม Model"><circle cx="180" cy="180" r="130" fill="none" stroke="#263b54" stroke-width="35"/>${ring}<text x="180" y="157" text-anchor="middle" fill="#a2bdd4" font-size="12">${modelRankMetric==='cost'?'TOTAL COST · THB':'TOTAL SCRAP · PCS'}</text><text x="180" y="192" text-anchor="middle" fill="${modelRankMetric==='cost'?'#facc15':'#e7f5ff'}" font-size="${modelRankMetric==='cost'?26:36}" font-weight="500">${modelRankMetric==='cost'?money(cost):fmt(qty)}</text><text x="180" y="220" text-anchor="middle" fill="#89a9c4" font-size="11">ALL MODELS</text></svg><div class="model-donut-caption">TOP 10 · ${(total?topTotal/total*100:0).toFixed(1)}%${other>0?' / OTHERS · '+(other/total*100).toFixed(1)+'%':''}</div></aside>`;
  box.innerHTML=`<div class="model-donut-layout">${donut}<div class="model-details-scroll"><table class="model-bar-table model-detail-table"><thead><tr><th>Model</th><th>${modelRankMetric==='cost'?'มูลค่า ฿':'จำนวน (ชิ้น)'}</th><th>${modelRankMetric==='cost'?'จำนวน (ชิ้น)':'มูลค่า ฿'}</th><th>%</th></tr></thead><tbody>${items.map((v,i)=>`<tr><td title="${esc(v.name)}"><i class="model-legend-dot" style="background:${colors[i]}"></i>${esc(v.name)}</td><td><div class="model-table-bar"><span style="width:${v[modelRankMetric]/max*100}%"></span><b>${modelRankMetric==='cost'?money(v.cost):fmt(v.quantity)}</b></div></td><td class="num ${modelRankMetric==='quantity'?'model-money':''}">${modelRankMetric==='cost'?fmt(v.quantity):money(v.cost)}</td><td class="num">${total?(v[modelRankMetric]/total*100).toFixed(1)+'%':'—'}</td></tr>`).join('')}</tbody><tfoot><tr><td>รวมทุก Model</td><td class="num">${modelRankMetric==='cost'?money(cost):fmt(qty)}</td><td class="num">${modelRankMetric==='cost'?fmt(qty):money(cost)}</td><td class="num">${total?'100%':'—'}</td></tr></tfoot></table><p class="chart-note">% เทียบกับทุก Model ในช่วงที่เลือก · สีตรงกับกราฟโดนัท</p></div></div>`;
+ const productionRows=rows.filter(r=>(Number(r.production)||0)>0).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(a.line).localeCompare(String(b.line))||dashboardShift(a.shift).localeCompare(dashboardShift(b.shift)));
+ const scrapRows=rows.filter(r=>(Number(r.scrap)||0)>0).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(a.line).localeCompare(String(b.line))||dashboardShift(a.shift).localeCompare(dashboardShift(b.shift)));
+ const dateLabel=d=>{const v=String(d||'').split('-');return v.length===3?v[2]+'/'+v[1]+'/'+v[0]:String(d||'—')};
+ const detailTable=(list,isScrap)=>`<section class="model-record-card"><h3>${isScrap?'รายละเอียดของเสีย':'รายละเอียดยอดผลิต'} <small>${fmt(list.length)} รายการ</small></h3><div class="model-record-scroll"><table><thead><tr><th>วันที่</th><th>เครื่องจักร</th><th>กะ</th><th>Model</th>${isScrap?'<th>ปัญหา</th>':''}<th class="num">${isScrap?'ของเสีย':'ยอดผลิต'} (ชิ้น)</th>${isScrap?'<th class="num">มูลค่า ฿</th>':''}</tr></thead><tbody>${list.length?list.map((r,i)=>{const previous=list[i-1],newGroup=previous&&(previous.date!==r.date||dashboardShift(previous.shift)!==dashboardShift(r.shift));return `<tr${newGroup?' class="model-record-divider"':''}><td>${esc(dateLabel(r.date))}</td><td>${esc(r.line||'—')}</td><td>${esc(dashboardShift(r.shift)||'—')}</td><td>${esc(recordModel(r)||'—')}</td>${isScrap?`<td>${esc(r.defect||'—')}</td>`:''}<td class="num">${fmt(Number(isScrap?r.scrap:r.production)||0)}</td>${isScrap?`<td class="num model-money">${money(recordScrapCost(r))}</td>`:''}</tr>`}).join(''):`<tr><td colspan="${isScrap?7:5}" class="muted">ยังไม่มีข้อมูลในช่วงที่เลือก</td></tr>`}</tbody><tfoot><tr><td colspan="${isScrap?5:4}">รวม</td><td class="num">${fmt(list.reduce((n,r)=>n+(Number(isScrap?r.scrap:r.production)||0),0))}</td>${isScrap?`<td class="num model-money">${money(list.reduce((n,r)=>n+recordScrapCost(r),0))}</td>`:''}</tr></tfoot></table></div></section>`;
+ box.insertAdjacentHTML('beforeend',`<div class="model-record-section"><div class="model-record-heading">รายละเอียดข้อมูลตาม Model <span>แสดงตามตัวกรองที่เลือก</span></div><div class="model-record-grid">${detailTable(productionRows,false)}${detailTable(scrapRows,true)}</div></div>`);
+
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-model-rank]');if(!b)return;modelRankMetric=b.dataset.modelRank;render()});
 function renderStamping(rows){
